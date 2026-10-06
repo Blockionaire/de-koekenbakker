@@ -370,6 +370,13 @@ button{font:inherit;color:inherit}
   background:var(--papier);font-family:var(--tekst);font-size:.9rem}
 .leeg{text-align:center;color:var(--zacht);display:grid;gap:16px;justify-items:center;padding:34px 0}
 .leeg svg{width:96px;opacity:.75}
+.bedankt{padding:28px 24px;display:grid;gap:14px;justify-items:center;text-align:center;align-content:start}
+.bedankt svg{width:110px}
+.bedankt h3{font-size:1.5rem}
+.bedankt p{color:var(--zacht);font-size:.97rem;max-width:34ch}
+.bedankt b{color:var(--inkt);font-family:var(--kop);font-weight:800;letter-spacing:.06em}
+.bedankt-klein{font-size:.88rem}
+.bedankt .knop{margin-top:6px}
 .spaarbalk{padding:14px 20px;background:var(--zand);border-block:2px solid var(--inkt);display:grid;gap:8px}
 .spaarbalk p{font-family:var(--kop);font-weight:700;font-size:.9rem}
 .spaarbalk .baan-bar{height:9px;background:rgba(46,34,23,.14);border-radius:99px;overflow:hidden}
@@ -547,7 +554,7 @@ button{font:inherit;color:inherit}
       </div>
       <div class="stappen toon">
         <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, los te combineren. Vanaf 3 koekjes bestel je al.</p></div></div>
-        <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je mandje staat als berichtje klaar. Ik bevestig je bestelling persoonlijk.</p></div></div>
+        <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
         <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Afhalen, of ik breng het langs in de Hoeksche Waard — dezelfde middag nog.</p></div></div>
       </div>
     </div>
@@ -676,6 +683,14 @@ button{font:inherit;color:inherit}
     <h3>Je mandje</h3>
     <button class="dicht" id="ladeDicht" aria-label="Mandje sluiten">✕</button>
   </div>
+  <section class="bedankt" id="bedankt" hidden>
+    <span id="bedanktKoek" aria-hidden="true"></span>
+    <h3>Gelukt — ik heb 'm!</h3>
+    <p>Je bestelling staat op mijn lijst onder nummer <b id="bedanktCode">—</b>. Ik bevestig 'm
+       persoonlijk, meestal nog dezelfde dag, via het contactgegeven dat je hebt ingevuld.</p>
+    <p class="bedankt-klein" id="bedanktWanneer"></p>
+    <button class="knop knop--vol" id="nogmaals" type="button">Nog iets bestellen</button>
+  </section>
   <div class="spaarbalk">
     <p id="spaarTekst">Nog 5 koekjes tot een gratis koekje.</p>
     <div class="baan-bar"><i id="spaarBalk" style="width:0%"></i></div>
@@ -707,7 +722,7 @@ button{font:inherit;color:inherit}
     <p class="grens" id="grens" hidden></p>
     <button class="knop knop--vol" id="bestelKnop" type="button">Bestelling versturen</button>
     <button class="knop knop--stil knop--vol" id="overlegKnop" type="button" hidden>Stuur me een berichtje</button>
-    <p class="mini">Je bestelling komt als berichtje bij mij binnen. Betalen doe je bij het afhalen of bezorgen.</p>
+    <p class="mini">Je bestelling komt meteen bij mij binnen. Betalen doe je bij het afhalen of bezorgen.</p>
   </div>
 </aside>
 
@@ -987,6 +1002,7 @@ function neemHap(id, bron){
 let mandje = lees("kb-mandje", {});
 let gratisKeuze = lees("kb-gratis", []);
 let lever = lees("kb-lever", "Afhalen");
+let bevestigd = "";   // het bestelnummer zodra een bestelling genoteerd is
 let afhaalmoment = lees("kb-afhaal", "");
 
 function afhaalDatum(dagNr){
@@ -1042,6 +1058,20 @@ function inMandje(id, aantal){
 }
 
 function ververs(){
+  // Net besteld? Dan laat de lade alleen de bevestiging zien.
+  $("#bedankt").hidden = !bevestigd;
+  $(".spaarbalk").hidden = !!bevestigd;
+  $(".lade-scroll").hidden = !!bevestigd;
+  $(".lade-voet").hidden = !!bevestigd;
+  if (bevestigd){
+    $("#bedanktCode").textContent = bevestigd;
+    $("#bedanktWanneer").textContent = lever === "Bezorgen"
+      ? "Ik breng ze vrijdagmiddag langs in " + CONFIG.stad + "."
+      : (afhaalmoment && afhaalmoment !== "In overleg"
+          ? "Ophalen: " + afhaalmoment + "."
+          : "We spreken samen een afhaalmoment af.");
+  }
+
   const betaald = aantalBetaald(), gratis = aantalGratis(), sub = subtotaal();
   $("#mandjeTeller").textContent = koekjesTotaal();
   $("#balkTotaal").textContent = euro(sub);
@@ -1203,30 +1233,31 @@ async function versturen(){
     melding("Kies even wanneer je het ophaalt.");
     return;
   }
-  let code = "";
+  // Met verbinding gaat de bestelling rechtstreeks naar mijn bestellijst.
   if (db){
     const knop = $("#bestelKnop");
     knop.disabled = true;
     knop.textContent = "Bezig met versturen…";
-    const nieuweCode = bestelCode();
-    const gelukt = await bewaarBestelling(nieuweCode);
+    const code = bestelCode();
+    const gelukt = await bewaarBestelling(code);
     knop.textContent = "Bestelling versturen";
     knop.disabled = false;
-    if (gelukt) code = nieuweCode;
-    else melding("Opslaan lukte niet — je bestelling gaat als berichtje.");
+    if (gelukt){
+      bevestigd = code;
+      mandje = {};
+      gratisKeuze = [];
+      bewaar("kb-mandje", mandje);
+      bewaar("kb-gratis", gratisKeuze);
+      ververs();
+      $(".lade-scroll").scrollTop = 0;
+      return;
+    }
+    melding("Opslaan lukte even niet — je bestelling gaat als berichtje.");
   }
 
-  stuur(bestelTekst(code), "Bestelling De Koekenbakker",
-        code ? "Bestelling " + code + " is binnen en staat klaar" : "Je bestelling staat klaar");
-
-  if (code){
-    mandje = {};
-    gratisKeuze = [];
-    bewaar("kb-mandje", mandje);
-    bewaar("kb-gratis", gratisKeuze);
-    ververs();
-    setTimeout(function(){ openLade(false); }, 400);
-  }
+  // Vangnet: zolang er geen verbinding is (of hij hapert) gaat het als berichtje,
+  // zodat een bestelling nooit verloren gaat.
+  stuur(bestelTekst(""), "Bestelling De Koekenbakker", "Je bestelling staat klaar");
 }
 
 function stuur(tekst, onderwerp, bevestiging){
@@ -1356,6 +1387,7 @@ function start(){
   $("#uitKoekje").innerHTML = koekSVG(KOEKJES[0]);
   $("#cursor").innerHTML = koekSVG(KOEKJES[1]);
   $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
+  $("#bedanktKoek").innerHTML = koekSVG(KOEKJES[3]);
 
   // loper
   const woorden = ["Vers gebakken", "Koop er 5 · de 6e gratis", "Elke vrijdag een nieuwe batch", "48 uur gerijpt deeg", "Bezorgd in " + CONFIG.stad, "Zelf gebakken, ik ben 16"];
@@ -1446,6 +1478,7 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#mandjeKnop, #balkKnop")){ openLade(true); return; }
   if (e.target.closest("#dealKnop")){ $("#assortiment").scrollIntoView({behavior: rustig ? "auto" : "smooth"}); return; }
   if (e.target.closest("#ladeDicht, #sluier")){ openLade(false); return; }
+  if (e.target.closest("#nogmaals")){ bevestigd = ""; ververs(); return; }
   if (e.target.closest("#cursorSchakel")){ cursorAan = !cursorAan; bewaar("kb-cursor", cursorAan); cursorInstellen(); return; }
   if (e.target.closest("#verrasMij")){
     inMandje(BOX.id, 1);

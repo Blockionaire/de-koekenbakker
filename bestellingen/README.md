@@ -91,7 +91,7 @@ leegtrekken of het limiet veranderen.
   een klant niets bestellen. Komt er onzin binnen, dan gooi je die hier weg en corrigeer je
   de teller. Wordt het een probleem, dan is Firebase App Check de volgende stap.
 - **Er is geen melding op je telefoon.** De portal ververst zichzelf live zolang hij
-  openstaat, maar hij port je niet. Daarom stuurt de webshop de klant nog steeds langs
-  WhatsApp of e-mail — dat berichtje is je seintje. Wil je echte pushberichten, dan kan dat
-  later met dezelfde opzet als de app `geheime-dienst` in deze repo.
+  openstaat, maar hij port je niet, en de webshop stuurt geen appje meer: bestellingen
+  komen hier binnen en nergens anders. Zet de portal daarom op je beginscherm en kijk er
+  dagelijks in. Echte pushberichten kunnen later worden toegevoegd.
 - **Betalen gaat buiten de site om**, bij het afhalen of bezorgen.

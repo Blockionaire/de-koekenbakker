@@ -139,10 +139,21 @@ bestellingen komen als berichtje binnen via WhatsApp of e-mail.
 
 ## Bestellen — hoe het werkt
 
-De site verwerkt geen betalingen. Een bestelling wordt opgemaakt als berichtje met alle
-koekjes, het totaal, afhalen of bezorgen en de gegevens van de klant. Die tekst gaat naar
-WhatsApp (als het nummer is ingevuld) of naar de mail, en wordt tegelijk naar het klembord
-gekopieerd. Zara bevestigt daarna zelf.
+De site verwerkt geen betalingen. Zodra de verbinding met Firebase staat, gaat een
+bestelling **rechtstreeks naar de bestellijst** in de portal: de klant krijgt een
+bevestiging met een bestelnummer op het scherm, en jij ziet 'm live binnenkomen onder
+*Bestellingen → Nieuw*. Er gaat dus geen appje of mailtje meer heen en weer.
+
+Twee uitzonderingen, allebei met opzet:
+
+- **Zonder verbinding** (zolang `firebase-config.js` leeg is, of als het opslaan hapert)
+  valt de site terug op het oude gedrag: de bestelling wordt als berichtje klaargezet in
+  WhatsApp of de mail. Zo gaat een bestelling nooit verloren.
+- **Bij meer dan 20 koekjes of een volle week** gaat de knop op slot en kan de klant een
+  berichtje sturen om te overleggen. Dat is geen bestelling maar een vraag.
+
+> Let op: omdat er geen appje meer binnenkomt, is de portal je enige seintje. Zet 'm op je
+> beginscherm en kijk er dagelijks even in. Echte pushberichten kunnen later.
 
 Wil je later echt online afrekenen, dan is een betaallink (Mollie, Tikkie) de kleinste stap:
 die kan als extra knop naast "Bestelling versturen".
