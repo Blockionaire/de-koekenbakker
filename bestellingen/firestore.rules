@@ -9,9 +9,9 @@
      Firebase Console → Firestore Database → Rules → alles hieronder
      erin plakken → Publish.
 
-   ZET EERST JE EIGEN E-MAILADRES IN bakkerMails() HIERONDER. Dat is het
-   adres waarmee je in de portal inlogt. Zonder dat kun je geen enkele
-   bestelling lezen — ook jij niet.
+   In bakkerMails() hieronder staat het adres waarmee Zara in de portal
+   inlogt. Wil je er iemand bij (bijvoorbeeld om mee te kijken), zet het
+   adres er dan bij in de lijst en publiceer de regels opnieuw.
 
    De afspraak in het kort:
 
@@ -37,7 +37,7 @@ service cloud.firestore {
        Meerdere mag: return ['zara@voorbeeld.nl', 'mama@voorbeeld.nl'];
        --------------------------------------------------------------- */
     function bakkerMails() {
-      return ['jij@voorbeeld.nl'];
+      return ['zaraprins08@gmail.com'];
     }
 
     function isBakker() {
