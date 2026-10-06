@@ -37,7 +37,7 @@ service cloud.firestore {
        Meerdere mag: return ['zara@voorbeeld.nl', 'mama@voorbeeld.nl'];
        --------------------------------------------------------------- */
     function bakkerMails() {
-      return ['zaraprins08@gmail.com'];
+      return ['zaraprins08@gmail.com', 'joostprins2001@gmail.com'];
     }
 
     function isBakker() {
