@@ -6,6 +6,10 @@
 <title>Bestellingen — De Koekenbakker</title>
 <meta name="theme-color" content="#E6D9C2">
 <meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icoon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bestellingen">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Figtree:wght@300..800&display=swap">
@@ -66,7 +70,7 @@ a{color:inherit}
   border-bottom:2px solid var(--inkt)}
 .top-in{display:flex;align-items:center;gap:12px;padding:12px 0}
 .top .merk{font-size:1.05rem}
-.uitlog{margin-left:auto;font-family:var(--kop);font-weight:700;font-size:.8rem;color:var(--zacht);
+.uitlog{font-family:var(--kop);font-weight:700;font-size:.8rem;color:var(--zacht);
   border-bottom:2px solid transparent}
 .uitlog:hover{color:var(--inkt);border-color:var(--karamel)}
 .tabs{display:flex;gap:8px;padding:0 0 12px}
@@ -166,6 +170,8 @@ main{padding:18px 0 80px;display:grid;gap:16px}
     <div class="wrap">
       <div class="top-in">
         <div class="merk"><span id="merkKoek2" aria-hidden="true"></span> Bestellingen</div>
+        <button class="knop knop--stil knop--klein" id="meldKnop" type="button" hidden
+                style="margin-left:auto">Meldingen aan</button>
         <button class="uitlog" id="uitlogKnop" type="button">Uitloggen</button>
       </div>
       <div class="tabs">
@@ -220,6 +226,14 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       </section>
 
       <section id="vlakInstellingen" hidden>
+        <div class="kaart" style="margin-bottom:16px">
+          <div class="kaartkop"><h3>Meldingen</h3><span class="etiket" id="meldStand">—</span></div>
+          <p class="uitleg">Zet dit aan en je krijgt een melding zodra er een bestelling
+            binnenkomt, ook als de portal op de achtergrond staat. Op een iPhone werkt dat
+            alleen als je de portal eerst via Deel → <em>Zet op beginscherm</em> installeert.</p>
+          <button class="knop knop--vol" id="meldAanzetten" type="button" style="margin-top:14px">Meldingen aanzetten</button>
+          <button class="knop knop--stil knop--vol" id="meldProef" type="button" style="margin-top:8px">Stuur een proefmelding</button>
+        </div>
         <div class="kaart">
           <h3>Deze week</h3>
           <div class="veld" style="margin-top:12px">
@@ -256,6 +270,68 @@ const RUIMTE = INST.ruimte || "zara";
 const $ = (s, el) => (el || document).querySelector(s);
 const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
 const euro = n => "€ " + (n || 0).toLocaleString("nl-NL", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+/* ---------- meldingen bij een nieuwe bestelling ---------- */
+function meldingenMogelijk(){ return "Notification" in window; }
+
+function meldStandTonen(){
+  const knop = $("#meldKnop"), stand = $("#meldStand"), aanzetten = $("#meldAanzetten");
+  if (!meldingenMogelijk()){
+    stand.textContent = "niet ondersteund";
+    knop.hidden = true; aanzetten.disabled = true;
+    return;
+  }
+  const r = Notification.permission;
+  stand.textContent = r === "granted" ? "staan aan" : r === "denied" ? "geweigerd in de browser" : "staan uit";
+  knop.hidden = r !== "default";
+  aanzetten.disabled = r !== "default";
+  aanzetten.textContent = r === "granted" ? "Meldingen staan aan"
+    : r === "denied" ? "Zet ze weer aan in je browserinstellingen" : "Meldingen aanzetten";
+}
+
+async function meldingenVragen(){
+  if (!meldingenMogelijk()) return;
+  try { await Notification.requestPermission(); } catch (e) {}
+  meldStandTonen();
+  if (Notification.permission === "granted") melden("Meldingen staan aan.");
+}
+
+/* Een kort belletje, zodat je het ook hoort als je er niet naar kijkt. */
+function piep(){
+  try {
+    const a = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1180].forEach(function (toon, i){
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = "sine"; o.frequency.value = toon;
+      o.connect(g); g.connect(a.destination);
+      const t = a.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.start(t); o.stop(t + 0.18);
+    });
+  } catch (e) { /* geluid mag altijd mislukken */ }
+}
+
+function meldNieuweBestelling(b){
+  piep();
+  if (!meldingenMogelijk() || Notification.permission !== "granted") return;
+  try {
+    const m = new Notification("Nieuwe bestelling — " + (b.naam || "?"), {
+      body: (b.koekjes || 0) + " koekjes · " + euro(b.bedrag)
+          + (b.levering === "Bezorgen" ? " · bezorgen" : " · afhalen"),
+      icon: "icoon-512.png",
+      badge: "icoon-512.png",
+      tag: "bestelling-" + (b.code || Math.random()),
+      requireInteraction: false
+    });
+    m.onclick = function(){ window.focus(); m.close(); };
+  } catch (e) { /* op sommige telefoons mag dit alleen via de service worker */ }
+}
+
+function titelBijwerken(nieuw){
+  document.title = (nieuw ? "(" + nieuw + ") " : "") + "Bestellingen — De Koekenbakker";
+}
 
 function melden(tekst){
   const m = $("#melding");
@@ -365,6 +441,11 @@ async function start(){
   auth = fa.getAuth(app);
   db = fx.getFirestore(app);
 
+  meldStandTonen();
+  if ("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(function(){ /* niet erg, de portal werkt gewoon */ });
+  }
+
   fa.onAuthStateChanged(auth, function(gebruiker){
     $("#inlogScherm").hidden = !!gebruiker;
     $("#app").hidden = !gebruiker;
@@ -388,9 +469,18 @@ function luister(){
     vulInstellingen();
   });
 
+  let eersteLading = true;
   stopBestellingen = fx.onSnapshot(
     fx.query(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), fx.where("week", "==", huidigeWeek)),
     function(snap){
+      // Bij het openen van de portal niet alles opnieuw melden — alleen wat erbij komt.
+      if (!eersteLading){
+        snap.docChanges().forEach(function(verschil){
+          const b = verschil.doc.data();
+          if (verschil.type === "added" && b.status === "nieuw") meldNieuweBestelling(b);
+        });
+      }
+      eersteLading = false;
       bestellingen = snap.docs.map(d => Object.assign({id: d.id}, d.data()));
       bestellingen.sort((a, b) => (b.gemaakt && b.gemaakt.seconds || 0) - (a.gemaakt && a.gemaakt.seconds || 0));
       tekenOverzicht();
@@ -415,6 +505,7 @@ function tekenOverzicht(){
   const nieuw = bestellingen.filter(b => b.status === "nieuw").length;
   $("#cNieuw").textContent = nieuw;
   $("#telNieuw").textContent = nieuw;
+  titelBijwerken(nieuw);
   $("#cKoekjes").textContent = lopend().reduce((n, b) => n + (b.koekjes || 0), 0);
   $("#cOmzet").textContent = euro(lopend().reduce((n, b) => n + (b.bedrag || 0), 0));
   $("#cVrij").textContent = Math.max(0, limiet - besteld);
@@ -621,6 +712,12 @@ document.addEventListener("click", function(e){
     return;
   }
   if (e.target.closest("#uitlogKnop")){ fa.signOut(auth); return; }
+  if (e.target.closest("#meldKnop, #meldAanzetten")){ meldingenVragen(); return; }
+  if (e.target.closest("#meldProef")){
+    meldNieuweBestelling({naam: "Proefmelding", koekjes: 6, bedrag: 16.75, levering: "Afhalen", code: "PROEF"});
+    if (Notification.permission !== "granted") melden("Zet meldingen eerst aan.");
+    return;
+  }
 });
 
 start().catch(function(fout){

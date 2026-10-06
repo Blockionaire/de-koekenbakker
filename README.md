@@ -152,8 +152,9 @@ Twee uitzonderingen, allebei met opzet:
 - **Bij meer dan 20 koekjes of een volle week** gaat de knop op slot en kan de klant een
   berichtje sturen om te overleggen. Dat is geen bestelling maar een vraag.
 
-> Let op: omdat er geen appje meer binnenkomt, is de portal je enige seintje. Zet 'm op je
-> beginscherm en kijk er dagelijks even in. Echte pushberichten kunnen later.
+> Zara krijgt een melding zodra er een bestelling binnenkomt — die zet ze zelf aan in de
+> portal — en elke donderdag om 20:00 een mail met het bakbriefje en alle bestellingen van
+> die week.
 
 Wil je later echt online afrekenen, dan is een betaallink (Mollie, Tikkie) de kleinste stap:
 die kan als extra knop naast "Bestelling versturen".

@@ -90,8 +90,15 @@ leegtrekken of het limiet veranderen.
 - **Spam is mogelijk.** Iedereen kan een bestelling aanmaken; dat hoort ook zo, anders kan
   een klant niets bestellen. Komt er onzin binnen, dan gooi je die hier weg en corrigeer je
   de teller. Wordt het een probleem, dan is Firebase App Check de volgende stap.
-- **Er is geen melding op je telefoon.** De portal ververst zichzelf live zolang hij
-  openstaat, maar hij port je niet, en de webshop stuurt geen appje meer: bestellingen
-  komen hier binnen en nergens anders. Zet de portal daarom op je beginscherm en kijk er
-  dagelijks in. Echte pushberichten kunnen later worden toegevoegd.
+- **Meldingen** krijg je zodra je ze in de portal aanzet (Instellingen → *Meldingen
+  aanzetten*): bij elke nieuwe bestelling een melding met naam, aantal en bedrag, plus een
+  kort belletje. Dat werkt zolang de portal openstaat of op de achtergrond draait — ook als
+  app op je beginscherm. Is je telefoon helemaal afgesloten, dan komt de melding zodra je
+  de portal weer opent.
+- **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
+  *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
+  geen meldingen toe.
+- **Het weekbericht** komt elke donderdag om 20:00 per mail, met het bakbriefje en alle
+  bestellingen van die week. Dat is de betrouwbare vangnet-melding: die komt binnen ook
+  als de portal dicht is. Zie `.github/workflows/weekbericht.yml`.
 - **Betalen gaat buiten de site om**, bij het afhalen of bezorgen.

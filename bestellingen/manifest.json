@@ -1,0 +1,16 @@
+{
+  "name": "Bestellingen — De Koekenbakker",
+  "short_name": "Bestellingen",
+  "description": "De bestellingen van De Koekenbakker, met het bakbriefje van de week.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF4EA",
+  "theme_color": "#E6D9C2",
+  "lang": "nl",
+  "icons": [
+    {"src": "icoon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icoon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
