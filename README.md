@@ -66,6 +66,9 @@ const CONFIG = {
   gratisBezorgenVanaf: 6,
   bakdag: 5,                     // 0 = zondag, 5 = vrijdag
   bakuur: 16,
+  sluitdag: 4,                   // bestellen kan tot donderdag…
+  sluituur: 20,                  // …20:00; daarna schuift alles een week op
+  toonRestVanaf: 10,             // pas zoveel koekjes over noem je het aantal
   boxPrijs: 14.50,               // verrassingsbox: zes koekjes, je betaalt er vijf
   maxPerBestelling: 20,          // daarboven eerst even overleggen
   weekLimiet: 100,               // zoveel koekjes kun je in één week bakken
@@ -78,7 +81,9 @@ const CONFIG = {
 };
 ```
 
-De afhaalmomenten rekenen zichzelf uit vanaf de eerstvolgende bakdag: `dagNr` 5 is
+Bakdag, baktijd en sluitmoment zijn ook **per week in de portal** in te stellen; wat daar
+staat gaat voor op de waarden hierboven, die alleen nog het vangnet zijn. De afhaalmomenten
+rekenen zichzelf uit vanaf de eerstvolgende bakdag: `dagNr` 5 is
 vrijdag, 6 is zaterdag. Wil je geen tijdsloten aanbieden, zet dan `afhaalKeuze` op
 `false` — het hele blok verdwijnt dan uit het bestelformulier en je spreekt het
 moment af in je bevestiging. De prijs van de verrassingsbox staat los van de losse
@@ -107,8 +112,10 @@ Twee rem­men, zodat je nooit meer toezegt dan je kunt bakken:
    ik het samen met je in."* Daaronder staat een knop die een kort berichtje voor je
    klaarzet met wat de klant in gedachten heeft, zodat je het met elkaar kunt afspreken.
 2. **Het weeklimiet** (`weekLimiet`, standaard 100) — past de bestelling niet meer in de
-   batch van deze week, dan komt er: *"Mijn baklimiet voor deze week is bijna bereikt: ik
-   kan er nog X bakken."* In de sectie **Bakdag** staat doorlopend hoeveel er nog vrij zijn.
+   batch van deze week, dan gaat de knop op slot. Hoeveel er nog vrij zijn staat nergens
+   op de site: dat getal krijgt een bezoeker pas te zien als het écht krap is, namelijk als
+   er nog **10 of minder** over zijn (`toonRestVanaf`) én zijn mandje groter is dan dat.
+   Daarboven blijft het bij *"Deze week zit bijna vol — stuur me even een berichtje."*
 
 **Hoe het weeklimiet weet hoe vol de week zit**, hangt ervan af of je de database hebt
 aangezet (zie hieronder):

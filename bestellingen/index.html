@@ -60,6 +60,9 @@ a{color:inherit}
 .merk span{width:30px;height:30px;display:block}
 .veld{display:grid;gap:5px}
 .veld label{font-family:var(--kop);font-weight:700;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--zacht)}
+.tweeluik{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vinkje{display:flex;align-items:center;gap:10px;font-size:.94rem;cursor:pointer}
+.vinkje input{width:20px;height:20px;accent-color:#8E5A3B}
 .veld input,.veld select{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;background:var(--room);
   font-family:var(--tekst);font-size:.96rem;width:100%}
 .fout{color:var(--karamel-diep);font-size:.88rem;font-weight:600}
@@ -255,6 +258,30 @@ main{padding:18px 0 80px;display:grid;gap:16px}
           </div>
           <button class="knop knop--stil knop--vol" id="sTellerOpslaan" type="button" style="margin-top:10px">Teller bijwerken</button>
         </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Bakdag en bestellen</h3><span class="etiket">deze week</span></div>
+          <p class="uitleg">Wat je hier zet, gebruikt de webshop meteen: de aftelklok, de teksten
+            over bakken en bestellen, en het moment waarop bestellingen doorschuiven naar de
+            week erna.</p>
+          <div class="tweeluik">
+            <div class="veld"><label for="sBakdag">Bakdag</label>
+              <select id="sBakdag"></select></div>
+            <div class="veld"><label for="sBakuur">Oven aan om</label>
+              <select id="sBakuur"></select></div>
+          </div>
+          <div class="tweeluik" style="margin-top:12px">
+            <div class="veld"><label for="sSluitdag">Bestellen kan tot</label>
+              <select id="sSluitdag"></select></div>
+            <div class="veld"><label for="sSluituur">Om</label>
+              <select id="sSluituur"></select></div>
+          </div>
+          <label class="vinkje" style="margin-top:14px">
+            <input type="checkbox" id="sVolgende" checked>
+            <span>Ook instellen voor de komende vier weken</span>
+          </label>
+          <button class="knop knop--vol" id="sTijdenOpslaan" type="button" style="margin-top:14px">Opslaan</button>
+        </div>
       </section>
     </main>
   </div>
@@ -442,6 +469,7 @@ async function start(){
   db = fx.getFirestore(app);
 
   meldStandTonen();
+  vulKeuzelijsten();
   if ("serviceWorker" in navigator){
     navigator.serviceWorker.register("sw.js").catch(function(){ /* niet erg, de portal werkt gewoon */ });
   }
@@ -638,10 +666,53 @@ async function statusZetten(id, nieuw){
   }
 }
 
+const DAGEN = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
+const STANDAARD = {bakdag: 5, bakuur: 16, sluitdag: 4, sluituur: 20};
+
+function vulKeuzelijsten(){
+  const dagen = DAGEN.map((d, i) => '<option value="' + i + '">' + d.charAt(0).toUpperCase() + d.slice(1) + '</option>').join("");
+  let uren = "";
+  for (let u = 6; u <= 23; u++) uren += '<option value="' + u + '">' + String(u).padStart(2, "0") + ':00</option>';
+  $("#sBakdag").innerHTML = dagen;
+  $("#sSluitdag").innerHTML = dagen;
+  $("#sBakuur").innerHTML = uren;
+  $("#sSluituur").innerHTML = uren;
+}
+
+function weekVerderop(code, stappen){
+  const ma = maandagVan(code);
+  ma.setUTCDate(ma.getUTCDate() + stappen * 7);
+  return weekCode(new Date(ma.getUTCFullYear(), ma.getUTCMonth(), ma.getUTCDate()));
+}
+
 function vulInstellingen(){
   $("#sLimiet").value = weekDoc && typeof weekDoc.limiet === "number" ? weekDoc.limiet : (INST.weekLimiet || 100);
   $("#sBesteld").value = weekDoc && typeof weekDoc.besteld === "number" ? weekDoc.besteld : 0;
   $("#sOpen").value = (weekDoc && weekDoc.open === false) ? "nee" : "ja";
+  Object.keys(STANDAARD).forEach(function(naam){
+    const veld = {bakdag: "#sBakdag", bakuur: "#sBakuur", sluitdag: "#sSluitdag", sluituur: "#sSluituur"}[naam];
+    const waarde = (weekDoc && typeof weekDoc[naam] === "number") ? weekDoc[naam] : STANDAARD[naam];
+    $(veld).value = String(waarde);
+  });
+}
+
+async function tijdenOpslaan(){
+  const velden = {
+    bakdag: parseInt($("#sBakdag").value, 10),
+    bakuur: parseInt($("#sBakuur").value, 10),
+    sluitdag: parseInt($("#sSluitdag").value, 10),
+    sluituur: parseInt($("#sSluituur").value, 10)
+  };
+  const weken = [huidigeWeek];
+  if ($("#sVolgende").checked) for (let i = 1; i <= 4; i++) weken.push(weekVerderop(huidigeWeek, i));
+  try {
+    for (const w of weken){
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", w), velden, {merge: true});
+    }
+    melden(weken.length === 1 ? "Opgeslagen." : "Opgeslagen voor " + weken.length + " weken.");
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+  }
 }
 
 async function weekOpslaan(velden){
@@ -707,6 +778,7 @@ document.addEventListener("click", function(e){
     weekOpslaan({limiet: Math.max(0, parseInt($("#sLimiet").value, 10) || 0), open: $("#sOpen").value === "ja"});
     return;
   }
+  if (e.target.closest("#sTijdenOpslaan")){ tijdenOpslaan(); return; }
   if (e.target.closest("#sTellerOpslaan")){
     weekOpslaan({besteld: Math.max(0, parseInt($("#sBesteld").value, 10) || 0)});
     return;

@@ -31,9 +31,20 @@ Een bestelling loopt langs vier stappen: **nieuw → bevestigd → gebakken → 
 Annuleren kan altijd; het aantal koekjes gaat dan automatisch weer van de weekteller af.
 
 ### Instellingen
-Het baklimiet voor deze week, en een knop om bestellingen te sluiten — dan zegt de webshop
-dat de week vol zit. Nam je een bestelling buiten de site om aan, dan kun je de teller met
-de hand bijstellen.
+Drie dingen:
+
+- **Meldingen** aanzetten, met een proefmelding om het te testen.
+- **Deze week**: hoeveel koekjes je aankunt, en een knop om bestellingen te sluiten — dan
+  zegt de webshop dat de week vol zit. Nam je een bestelling buiten de site om aan, dan kun
+  je de teller met de hand bijstellen.
+- **Bakdag en bestellen**: op welke dag en hoe laat de oven aangaat, en tot wanneer klanten
+  kunnen bestellen. De webshop neemt dat meteen over in de aftelklok en de teksten, en
+  schuift bestellingen na het sluitmoment door naar de week erna. Met het vinkje zet je
+  dezelfde tijden ook voor de komende vier weken; laat je het uit, dan geldt het alleen
+  voor de week die je bekijkt.
+
+Hoeveel er nog vrij is zie je alleen hier. Bezoekers van de webshop krijgen dat getal pas
+te zien als er nog tien of minder over zijn én hun mandje groter is.
 
 De weken staan los van elkaar: met de pijltjes bovenin blader je naar de vorige of
 volgende week, inclusief de bestellingen en het limiet van die week.

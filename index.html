@@ -542,15 +542,14 @@ button{font:inherit;color:inherit}
     <div class="wrap agenda">
       <div class="toon">
         <span class="eyebrow">Bakdag</span>
-        <h2 class="titel">De oven gaat vrijdag om 16:00 aan.</h2>
-        <p class="lead" style="margin-top:14px">Ik bak één keer per week, in kleine batches naast school. Bestel je vóór donderdagavond 20:00, dan zit je in de batch van vrijdag.</p>
+        <h2 class="titel" id="bakdagKop">De oven gaat vrijdag om 16:00 aan.</h2>
+        <p class="lead" style="margin-top:14px">Ik bak één keer per week, in kleine batches naast school. <span id="bakdagUitleg">Bestel je vóór donderdag 20:00, dan zit je in de batch van vrijdag.</span></p>
         <div class="klok" id="klok" role="timer" aria-label="Tijd tot de volgende bakdag">
           <div><b id="kD">0</b><span>dagen</span></div>
           <div><b id="kU">0</b><span>uur</span></div>
           <div><b id="kM">0</b><span>min</span></div>
           <div><b id="kS">0</b><span>sec</span></div>
         </div>
-        <p class="ruimte" id="ruimteTekst"></p>
       </div>
       <div class="stappen toon">
         <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, los te combineren. Vanaf 3 koekjes bestel je al.</p></div></div>
@@ -631,7 +630,7 @@ button{font:inherit;color:inherit}
       </div>
       <div class="faq toon">
         <details open><summary>Hoe werkt "koop er 5, krijg de 6e gratis"?</summary><p>Zodra er vijf koekjes in je mandje liggen, verschijnt er automatisch een gratis koekje. Bij tien krijg je er twee, en zo door. Je kiest zelf de smaak van elk gratis koekje, of je laat het aan mij over.</p></details>
-        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p>Elke vrijdagmiddag. Bestel je vóór donderdag 20:00, dan zit je in de batch van diezelfde week. Daarna schuif je door naar de vrijdag erop.</p></details>
+        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdagmiddag. Bestel je vóór donderdag 20:00, dan zit je in de batch van diezelfde week.</span> Daarna schuif je door naar de week erop.</p></details>
         <details><summary>Bezorgen of afhalen?</summary><p>Afhalen kan vrijdagavond tussen 17:00 en 19:00 of zaterdagochtend tussen 10:00 en 12:00 — je kiest je moment bij het bestellen. Bezorgen doe ik zelf op de fiets, alleen binnen de Hoeksche Waard: gratis vanaf zes koekjes, daaronder reken ik € 2,50. Woon je er buiten, dan kun je altijd afhalen.</p></details>
         <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel — tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden.</p></details>
         <details><summary>Allergenen</summary><p>Alle koekjes bevatten tarwe (gluten), ei, melk en soja. De Nootje Noir en Witte Wolk bevatten noten, en alles wordt gebakken in een keuken waar noten aanwezig zijn. Laat het weten bij je bestelling als er iets speelt.</p></details>
@@ -740,8 +739,11 @@ const CONFIG = {
   stad: "de Hoeksche Waard",           // hier bezorg ik, en nergens anders
   bezorgkosten: 2.50,
   gratisBezorgenVanaf: 6,
-  bakdag: 5,                          // 5 = vrijdag
+  bakdag: 5,                          // 5 = vrijdag (zondag is 0)
   bakuur: 16,
+  sluitdag: 4,                        // tot wanneer je kunt bestellen: 4 = donderdag
+  sluituur: 20,
+  toonRestVanaf: 10,                  // pas vanaf zoveel koekjes over zeg je hoeveel er nog kunnen
   boxPrijs: 14.50,                    // verrassingsbox: zes koekjes, je betaalt er vijf
   maxPerBestelling: 20,               // daarboven eerst even overleggen
   weekLimiet: 100,                    // zoveel koekjes kun je in één week bakken
@@ -795,8 +797,9 @@ async function verbind(){
     db = fx.getFirestore(initializeApp(INST.firebase));
     fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "weken", dezeWeek()), function(snap){
       weekStand = snap.exists() ? snap.data() : {besteld: 0, limiet: CONFIG.weekLimiet, open: true};
+      bakdagTonen();
+      tikTak();
       ververs();
-      ruimteTonen();
     }, function(){ /* geen verbinding: de site werkt gewoon door */ });
   } catch (fout){
     console.warn("Geen verbinding met de database, de site werkt zonder.", fout);
@@ -1022,6 +1025,10 @@ function tekenMomenten(){
 const aantalBetaald = () => Object.keys(mandje).filter(id => id !== BOX.id).reduce((n, id) => n + mandje[id], 0);
 const aantalBoxen = () => mandje[BOX.id] || 0;
 const weekLimiet = () => (weekStand && typeof weekStand.limiet === "number") ? weekStand.limiet : CONFIG.weekLimiet;
+// Zara kan de bakdag en het sluitmoment per week aanpassen in de portal.
+const instel = (naam) => (weekStand && typeof weekStand[naam] === "number") ? weekStand[naam] : CONFIG[naam];
+const DAGEN = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
+const uurTekst = u => String(u).padStart(2, "0") + ":00";
 const weekBesteld = () => (weekStand && typeof weekStand.besteld === "number") ? weekStand.besteld : CONFIG.alBesteld;
 const weekOpen = () => !weekStand || weekStand.open !== false;
 const ruimteDezeWeek = () => Math.max(0, weekLimiet() - weekBesteld());
@@ -1033,10 +1040,13 @@ function grensTekst(){
   if (!weekOpen())
     return "Ik heb de bestellingen voor deze week gesloten. Stuur me een berichtje, dan zet ik je op de lijst voor de volgende batch.";
   if (CONFIG.weekLimiet && vrij === 0)
-    return "Mijn baklimiet voor deze week is bereikt. Stuur me een berichtje, dan zet ik je bovenaan voor de batch van volgende week.";
+    return "Deze week zit mijn oven vol. Stuur me een berichtje, dan zet ik je bovenaan voor de batch erna.";
   if (CONFIG.weekLimiet && n > vrij)
-    return "Mijn baklimiet voor deze week is bijna bereikt: ik kan er nog " + vrij + " bakken. Haal er " + (n - vrij)
-         + " uit je mandje, of stuur me een berichtje voor volgende week.";
+    // Hoeveel er nog kunnen zeg ik pas als het echt krap wordt; anders houd ik dat voor mezelf.
+    return vrij <= CONFIG.toonRestVanaf
+      ? "Deze week kan ik er nog " + vrij + " bakken. Haal er " + (n - vrij)
+        + " uit je mandje, of stuur me een berichtje voor de week erna."
+      : "Deze week zit bijna vol. Stuur me even een berichtje, dan kijk ik wat er nog past.";
   if (n > CONFIG.maxPerBestelling)
     return "Meer dan " + CONFIG.maxPerBestelling + " koekjes? Neem even contact met me op, dan plan ik het samen met je in.";
   return "";
@@ -1332,12 +1342,27 @@ function tekenQuiz(){
 }
 
 /* ---------- aftellen naar de bakdag ---------- */
+// De eerstvolgende bakdag waar je nog voor kunt bestellen. Is het sluitmoment
+// van die bakdag voorbij, dan schuift alles een week op.
 function volgendeBakdag(){
   const nu = new Date();
-  const d = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate(), CONFIG.bakuur, 0, 0, 0);
-  let dagen = (CONFIG.bakdag - d.getDay() + 7) % 7;
+  const bakdag = instel("bakdag"), bakuur = instel("bakuur");
+  const d = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate(), bakuur, 0, 0, 0);
+  let dagen = (bakdag - d.getDay() + 7) % 7;
   if (dagen === 0 && nu > d) dagen = 7;
   d.setDate(d.getDate() + dagen);
+  if (nu > sluitMoment(d)) d.setDate(d.getDate() + 7);
+  return d;
+}
+
+// Het moment waarop de bestellingen voor een bakdag dichtgaan.
+function sluitMoment(bakdagDatum){
+  const sluitdag = instel("sluitdag"), sluituur = instel("sluituur");
+  const d = new Date(bakdagDatum);
+  let terug = (bakdagDatum.getDay() - sluitdag + 7) % 7;
+  if (terug === 0) terug = 7;                 // zelfde dag? dan de week ervoor
+  d.setDate(d.getDate() - terug);
+  d.setHours(sluituur, 0, 0, 0);
   return d;
 }
 function tikTak(){
@@ -1406,7 +1431,7 @@ function start(){
   cursorInstellen();
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
-  ruimteTonen();
+  bakdagTonen();
   $$("#keuzes button").forEach(b => b.classList.toggle("aan", b.dataset.lever === lever));
 
   // in beeld schuiven
@@ -1420,13 +1445,14 @@ function start(){
   }
 }
 
-function ruimteTonen(){
-  const vrij = ruimteDezeWeek();
-  $("#ruimteTekst").textContent = !weekOpen()
-    ? "De bestellingen voor deze week zijn gesloten. Wat je nu bestelt, bak ik volgende week."
-    : vrij === 0
-      ? "De batch van deze week zit vol. Bestel je nu, dan bak ik je koekjes volgende week."
-      : "Nog " + vrij + " van de " + weekLimiet() + " koekjes vrij in de batch van deze week.";
+// De teksten over bakken en bestellen volgen wat Zara in de portal heeft gezet.
+function bakdagTonen(){
+  const dag = DAGEN[instel("bakdag")], uur = uurTekst(instel("bakuur"));
+  const sdag = DAGEN[instel("sluitdag")], suur = uurTekst(instel("sluituur"));
+  $("#bakdagKop").textContent = "De oven gaat " + dag + " om " + uur + " aan.";
+  $("#bakdagUitleg").textContent = "Bestel je vóór " + sdag + " " + suur + ", dan zit je in de batch van " + dag + ".";
+  $("#faqBakdag").textContent = "Elke " + dag + "middag. Bestel je vóór " + sdag + " " + suur
+    + ", dan zit je in de batch van diezelfde week.";
 }
 
 /* ---------- klikken en typen ---------- */
