@@ -11,7 +11,14 @@
 
 window.KOEKENBAKKER_PORTAL_CONFIG = {
 
-  firebase: null,
+  firebase: {
+    apiKey: "AIzaSyBAmbmqhSYISdD_77wKZztRuMIDGkR8dsM",
+    authDomain: "de-koekenbakker-ed75f.firebaseapp.com",
+    projectId: "de-koekenbakker-ed75f",
+    storageBucket: "de-koekenbakker-ed75f.firebasestorage.app",
+    messagingSenderId: "856126578657",
+    appId: "1:856126578657:web:4052ff2ca393d697ccbca0"
+  },
 
   /* Voorbeeld:
 
