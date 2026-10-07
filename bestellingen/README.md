@@ -4,7 +4,7 @@ De werkkant van de webshop: hier komen alle bestellingen live binnen, staat het 
 voor de week, en zet je het baklimiet. Alleen Zara komt erin.
 
 **🔗 Live op:**
-👉 https://blockionaire.github.io/de-koekenbakker/bestellingen/
+👉 https://dekoekenbakkerzara.nl/bestellingen/
 
 De webshop zelf staat in de hoofdmap van deze repo. Ze praten met hetzelfde
 Firebase-project.

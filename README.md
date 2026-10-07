@@ -13,7 +13,7 @@ De twee andere ontwerprichtingen die we hebben uitgewerkt staan nog in de oude r
 [`koekenbakker-pocket/`](../koekenbakker-pocket/) (donker en mobiel).
 
 **🔗 De site staat live op:**
-👉 https://blockionaire.github.io/de-koekenbakker/
+👉 https://dekoekenbakkerzara.nl
 
 Eén bestand, geen build, geen server: `index.html` bevat de hele site (opmaak, tekeningen en
 logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
