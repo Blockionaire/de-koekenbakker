@@ -182,18 +182,46 @@ def bouw_bericht(bestellingen, weekdoc, vrijdag):
 
 
 def verstuur(onderwerp, html, plat):
-    afzender = os.environ["MAIL_AFZENDER"]
+    # Een meegekopieerde spatie of regeleinde laat Gmail de verbinding verbreken,
+    # dus we schrapen alle witruimte eraf. Google toont het app-wachtwoord nu
+    # eenmaal in vier groepjes, dus dat gebeurt makkelijk.
+    afzender = os.environ["MAIL_AFZENDER"].strip()
+    wachtwoord = "".join(os.environ["MAIL_WACHTWOORD"].split())
     ontvangers = [a.strip() for a in os.environ["MAIL_ONTVANGERS"].split(",") if a.strip()]
+
     bericht = EmailMessage()
     bericht["Subject"] = onderwerp
     bericht["From"] = "De Koekenbakker <%s>" % afzender
     bericht["To"] = ", ".join(ontvangers)
     bericht.set_content(plat)
     bericht.add_alternative(html, subtype="html")
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as post:
-        post.login(afzender, os.environ["MAIL_WACHTWOORD"])
-        post.send_message(bericht)
-    print("Verstuurd naar %s" % ", ".join(ontvangers))
+
+    print("Versturen vanaf %s naar %s (wachtwoord van %d tekens)"
+          % (afzender, ", ".join(ontvangers), len(wachtwoord)))
+
+    # Eerst de beveiligde poort, en als die dichtzit de gewone met STARTTLS.
+    fouten = []
+    for poort in (465, 587):
+        try:
+            if poort == 465:
+                post = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30)
+            else:
+                post = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
+                post.starttls()
+            with post:
+                post.login(afzender, wachtwoord)
+                post.send_message(bericht)
+            print("Verstuurd via poort %d naar %s" % (poort, ", ".join(ontvangers)))
+            return
+        except smtplib.SMTPAuthenticationError as fout:
+            raise SystemExit(
+                "Gmail weigert het inloggen (%s). Controleer of MAIL_WACHTWOORD een "
+                "app-wachtwoord is van precies dit adres, en niet het gewone wachtwoord."
+                % fout.smtp_code)
+        except Exception as fout:
+            fouten.append("poort %d: %s" % (poort, fout))
+
+    raise SystemExit("Versturen lukte via geen van beide poorten.\n  " + "\n  ".join(fouten))
 
 
 def main():
