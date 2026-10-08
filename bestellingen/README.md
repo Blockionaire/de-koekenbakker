@@ -39,8 +39,24 @@ Bestaande bestellingen pas je aan met **Bewerken** — handig als iemand er nog 
 of als een adres verandert. Het baklimiet rekent automatisch mee: hoog je een bestelling op
 of verwijder je er een, dan verschuift de weekteller mee.
 
-Een bestelling loopt langs vier stappen: **nieuw → bevestigd → gebakken → afgerond**.
-Annuleren kan altijd; het aantal koekjes gaat dan automatisch weer van de weekteller af.
+Een bestelling loopt langs vijf stappen, met telkens één knop om hem een stap verder te
+zetten:
+
+**Nieuw → Nog bakken → Gebakken → Ingepakt → Opgehaald**
+
+*Nieuw* betekent: net binnengekomen en nog niet door jou bekeken — die staan met een
+oranje rand bovenaan. Zodra je 'm bevestigt staat hij op *Nog bakken* en weet je dat hij
+op de lijst voor vrijdag staat. Bij een bezorgbestelling heet de laatste stap vanzelf
+*Bezorgd* in plaats van *Opgehaald*. Een stap terug kan ook, en annuleren kan altijd — het
+aantal koekjes gaat dan automatisch weer van de weekteller af.
+
+### Zoeken en filteren
+Boven de lijst staat een zoekveld en een keuzelijst met kanalen. Zoeken kijkt naar naam,
+bestelnummer, telefoonnummer, adres, afhaalmoment, opmerking, kanaal én de smaken in de
+bestelling, en doet dat **over alle weken** — anders vind je die bestelling van vorige
+maand nooit meer terug. Bij een treffer uit een andere week staat het weeknummer erbij.
+Maak je het zoekveld leeg, dan zie je weer gewoon de week die je bekijkt. De statusknoppen
+eronder en het kanaalfilter werken op allebei.
 
 ### Instellingen
 Drie dingen:

@@ -117,6 +117,10 @@ main{padding:18px 0 80px;display:grid;gap:16px}
   border-top:2px solid var(--inkt);font-family:var(--kop);font-weight:800}
 
 /* ---------- bestellingen ---------- */
+.zoekbalk{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}
+.zoekbalk input,.zoekbalk select{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;
+  background:var(--papier);font-family:var(--tekst);font-size:.95rem;width:100%}
+.zoekstand{margin-top:10px;font-family:var(--kop);font-weight:700;font-size:.82rem;color:var(--zacht)}
 .filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
 .filter{font-family:var(--kop);font-weight:700;font-size:.8rem;padding:6px 12px;border:2px solid var(--lijn);
   border-radius:999px;background:var(--papier);color:var(--zacht)}
@@ -134,6 +138,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .chip--nieuw{background:var(--karamel);color:var(--room)}
 .chip--bevestigd{background:var(--zand)}
 .chip--gebakken{background:var(--klei)}
+.chip--ingepakt{background:var(--karamel);color:var(--room);border-color:var(--inkt)}
 .chip--afgerond{background:var(--groen);color:#F3F6EE;border-color:var(--groen)}
 .chip--geannuleerd{background:var(--papier);color:var(--zacht);border-color:var(--lijn);text-decoration:line-through}
 .details{border-top:2px dashed var(--lijn);padding:15px 17px;display:grid;gap:12px}
@@ -305,14 +310,20 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       <section id="vlakLijst" hidden>
         <button class="knop knop--vol" id="nieuweBestelling" type="button" style="margin-bottom:14px">
           + Bestelling toevoegen</button>
+        <div class="zoekbalk">
+          <input id="zoekVeld" type="search" placeholder="Zoek op naam, nummer, smaak of adres…" autocomplete="off">
+          <select id="kanaalFilter"><option value="alles">Alle kanalen</option></select>
+        </div>
         <div class="filters" id="filters">
           <button class="filter aan" data-filter="alles" type="button">Alles</button>
           <button class="filter" data-filter="nieuw" type="button">Nieuw</button>
-          <button class="filter" data-filter="bevestigd" type="button">Bevestigd</button>
+          <button class="filter" data-filter="bevestigd" type="button">Nog bakken</button>
           <button class="filter" data-filter="gebakken" type="button">Gebakken</button>
-          <button class="filter" data-filter="afgerond" type="button">Afgerond</button>
+          <button class="filter" data-filter="ingepakt" type="button">Ingepakt</button>
+          <button class="filter" data-filter="afgerond" type="button">Opgehaald</button>
           <button class="filter" data-filter="geannuleerd" type="button">Geannuleerd</button>
         </div>
+        <p class="zoekstand" id="zoekStand" hidden></p>
         <div id="bestelLijst" style="display:grid;gap:12px;margin-top:12px"></div>
       </section>
 
@@ -540,13 +551,26 @@ let db = null, auth = null, fx = null, fa = null;
 let huidigeWeek = weekCode(new Date());
 let bestellingen = [], weekDoc = null;
 let filter = "alles", tab = "overzicht";
+let zoek = "", kanaalFilter = "alles";
+let zoekRij = null;      // resultaten over alle weken, zolang er gezocht wordt
+let zoekKlok = null;
 let stopBestellingen = null, stopWeek = null;
 const opengeklapt = new Set();
 
+// De weg die een bestelling aflegt. De sleutels blijven zoals ze waren, zodat
+// bestaande bestellingen blijven kloppen; alleen "ingepakt" is nieuw.
 const STATUSSEN = {
-  nieuw: "Nieuw", bevestigd: "Bevestigd", gebakken: "Gebakken",
-  afgerond: "Afgerond", geannuleerd: "Geannuleerd"
+  nieuw: "Nieuw",
+  bevestigd: "Nog bakken",
+  gebakken: "Gebakken",
+  ingepakt: "Ingepakt",
+  afgerond: "Opgehaald",
+  geannuleerd: "Geannuleerd"
 };
+// Bij bezorgen heet de laatste stap natuurlijk anders.
+const statusNaam = b => (b.status === "afgerond" && b.levering === "Bezorgen")
+  ? "Bezorgd" : (STATUSSEN[b.status] || b.status);
+const VOLGENDE = {nieuw: "bevestigd", bevestigd: "gebakken", gebakken: "ingepakt", ingepakt: "afgerond"};
 
 /* ---------- opstarten ---------- */
 async function start(){
@@ -708,10 +732,63 @@ function contactLink(contact){
        + '<a class="knop knop--stil knop--klein" href="https://wa.me/' + veilig(wa) + '" target="_blank" rel="noopener">WhatsApp</a>';
 }
 
+// Alles waarin we zoeken, als één doorzoekbare regel tekst.
+function zoekTekst(b){
+  const regels = (b.regels || []).map(r => r.naam || "").join(" ");
+  return [b.naam, b.code, b.contact, b.adres, b.moment, b.notitie, kanaalVan(b), regels, statusNaam(b)]
+    .join(" ").toLowerCase();
+}
+
+// Zoeken gaat over álle weken, niet alleen de week die je bekijkt — anders vind
+// je een bestelling van vorige maand nooit terug.
+async function zoekUitvoeren(){
+  if (!zoek){ zoekRij = null; tekenLijst(); return; }
+  try {
+    const snap = await fx.getDocs(fx.query(
+      fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), fx.limit(400)));
+    zoekRij = snap.docs.map(d => Object.assign({id: d.id}, d.data()));
+    zoekRij.sort((a, b) => (b.gemaakt && b.gemaakt.seconds || 0) - (a.gemaakt && a.gemaakt.seconds || 0));
+  } catch (fout){
+    melden("Zoeken lukte niet: " + (fout.code || fout.message));
+    zoekRij = null;
+  }
+  tekenLijst();
+}
+
+function vulKanaalFilter(){
+  const gevonden = {};
+  (zoekRij || bestellingen).forEach(b => gevonden[kanaalVan(b)] = true);
+  const namen = Object.keys(gevonden).sort();
+  $("#kanaalFilter").innerHTML = '<option value="alles">Alle kanalen</option>'
+    + namen.map(k => '<option value="' + veilig(k) + '">' + veilig(k) + '</option>').join("");
+  $("#kanaalFilter").value = namen.indexOf(kanaalFilter) > -1 ? kanaalFilter : "alles";
+  if ($("#kanaalFilter").value === "alles") kanaalFilter = "alles";
+}
+
 function tekenLijst(){
-  const lijst = filter === "alles" ? bestellingen : bestellingen.filter(b => b.status === filter);
+  const bron = zoekRij || bestellingen;
+  vulKanaalFilter();
+  const woorden = zoek.toLowerCase().split(/\s+/).filter(Boolean);
+  const lijst = bron.filter(function(b){
+    if (filter !== "alles" && b.status !== filter) return false;
+    if (kanaalFilter !== "alles" && kanaalVan(b) !== kanaalFilter) return false;
+    if (woorden.length){
+      const tekst = zoekTekst(b);
+      if (!woorden.every(w => tekst.indexOf(w) > -1)) return false;
+    }
+    return true;
+  });
+
+  const stand = $("#zoekStand");
+  if (zoek){
+    stand.hidden = false;
+    stand.textContent = lijst.length + (lijst.length === 1 ? " bestelling" : " bestellingen")
+      + " gevonden in alle weken — tik het zoekveld leeg voor de week die je bekijkt.";
+  } else {
+    stand.hidden = true;
+  }
   $("#bestelLijst").innerHTML = lijst.length === 0
-    ? '<p class="leeg">Geen bestellingen in deze selectie.</p>'
+    ? '<p class="leeg">' + (zoek ? "Niets gevonden." : "Geen bestellingen in deze selectie.") + '</p>'
     : lijst.map(function(b){
         const open = opengeklapt.has(b.id);
         const regels = (b.regels || []).map(function(r){
@@ -720,10 +797,12 @@ function tekenLijst(){
         }).join("");
         return '<article class="bestelling' + (b.status === "nieuw" ? " is-nieuw" : "") + '">'
           + '<button class="bestelkop" data-klap="' + b.id + '" type="button">'
-          +   '<div><h4><span class="chip chip--' + b.status + '">' + (STATUSSEN[b.status] || b.status) + '</span>'
+          +   '<div><h4><span class="chip chip--' + b.status + '">' + statusNaam(b) + '</span>'
           +   veilig(b.naam) + '</h4>'
           +   '<div class="onder"><span class="kanaal">' + veilig(kanaalVan(b)) + '</span> '
-          +   veilig(b.code || "") + ' · ' + (b.koekjes || 0) + ' koekjes · ' + tijdKort(b.gemaakt) + '</div></div>'
+          +   veilig(b.code || "") + ' · ' + (b.koekjes || 0) + ' koekjes · ' + tijdKort(b.gemaakt)
+          +   (b.week && b.week !== huidigeWeek ? ' · week ' + veilig(String(b.week).split("-W")[1] || b.week) : "")
+          +   '</div></div>'
           +   '<span class="bedrag">' + euro(b.bedrag) + '<br><span class="etiket">' + (open ? "sluiten" : "openen") + '</span></span>'
           + '</button>'
           + (open
@@ -743,12 +822,15 @@ function tekenLijst(){
 function knoppenVoor(b){
   const k = (status, tekst, stil) => '<button class="knop ' + (stil ? "knop--stil " : "") + 'knop--klein" data-status="'
     + status + '" data-id="' + b.id + '" type="button">' + tekst + '</button>';
+  const VOLGENDENAAM = {
+    bevestigd: "Bevestigen", gebakken: "Gebakken", ingepakt: "Ingepakt",
+    afgerond: b.levering === "Bezorgen" ? "Bezorgd" : "Opgehaald"
+  };
   let uit = contactLink(b.contact);
   uit += '<button class="knop knop--stil knop--klein" data-bewerk="' + b.id + '" type="button">Bewerken</button>';
-  if (b.status === "nieuw") uit += k("bevestigd", "Bevestigen");
-  if (b.status === "bevestigd") uit += k("gebakken", "Gebakken");
-  if (b.status === "gebakken") uit += k("afgerond", "Afgerond");
-  if (b.status === "afgerond") uit += k("gebakken", "Terug naar gebakken", true);
+  const volgende = VOLGENDE[b.status];
+  if (volgende) uit += k(volgende, VOLGENDENAAM[volgende]);
+  if (b.status === "afgerond") uit += k("ingepakt", "Toch nog niet", true);
   if (b.status !== "geannuleerd") uit += k("geannuleerd", "Annuleren", true);
   else uit += k("nieuw", "Terugzetten", true);
   return uit;
@@ -944,7 +1026,7 @@ async function statusZetten(id, nieuw){
       await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
                       {besteld: fx.increment(verschil)}, {merge: true});
     }
-    melden(STATUSSEN[nieuw] + ".");
+    melden((nieuw === "afgerond" && b.levering === "Bezorgen" ? "Bezorgd" : STATUSSEN[nieuw]) + ".");
   } catch (fout){
     melden("Opslaan lukte niet: " + (fout.code || fout.message));
   }
@@ -1009,7 +1091,17 @@ async function weekOpslaan(velden){
 }
 
 /* ---------- klikken ---------- */
+document.addEventListener("change", function(e){
+  if (e.target.id === "kanaalFilter"){ kanaalFilter = e.target.value; tekenLijst(); }
+});
+
 document.addEventListener("input", function(e){
+  if (e.target.id === "zoekVeld"){
+    zoek = e.target.value.trim();
+    clearTimeout(zoekKlok);
+    zoekKlok = setTimeout(zoekUitvoeren, 300);   // even wachten tot het typen stopt
+    return;
+  }
   if (!formulier) return;
   if (e.target.id === "fGratisAantal"){
     formulier.gratisAantal = Math.max(0, parseInt(e.target.value, 10) || 0);
@@ -1040,6 +1132,7 @@ document.addEventListener("click", function(e){
     $("#vlakInstellingen").hidden = tab !== "instellingen";
     return;
   }
+  if (e.target.closest("#zoekWis")){ zoek = ""; $("#zoekVeld").value = ""; zoekUitvoeren(); return; }
   const f = e.target.closest("[data-filter]");
   if (f){
     filter = f.dataset.filter;

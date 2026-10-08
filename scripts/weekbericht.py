@@ -36,8 +36,8 @@ NAMEN = {
     "klassieker": "De Klassieker", "nachtdonker": "Nachtdonker", "wittewolk": "Witte Wolk",
     "karamelbom": "Karamelbom", "nootjenoir": "Nootje Noir",
 }
-STATUS = {"nieuw": "Nieuw", "bevestigd": "Bevestigd", "gebakken": "Gebakken",
-          "afgerond": "Afgerond", "geannuleerd": "Geannuleerd"}
+STATUS = {"nieuw": "Nieuw", "bevestigd": "Nog bakken", "gebakken": "Gebakken",
+          "ingepakt": "Ingepakt", "afgerond": "Opgehaald", "geannuleerd": "Geannuleerd"}
 
 
 def weekcode(vandaag):
