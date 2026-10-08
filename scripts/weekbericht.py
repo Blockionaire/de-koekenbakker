@@ -141,10 +141,11 @@ def bouw_bericht(bestellingen, weekdoc, vrijdag):
         blokken.append(
             "<div style='border:1px solid #DCCDB4;border-radius:12px;padding:14px;margin-bottom:10px'>"
             "<div style='font-weight:700;font-size:16px'>%s <span style='color:#8E5A3B'>%s</span></div>"
-            "<div style='color:#7E6950;font-size:14px;margin:2px 0 8px'>%s · %s · %s</div>"
+            "<div style='color:#7E6950;font-size:14px;margin:2px 0 8px'>%s · %s · %s · via %s</div>"
             "<div style='font-size:14px'>%s</div>"
             "%s</div>" % (
-                b.get("naam", "?"), STATUS.get(b.get("status"), ""), b.get("contact", ""), waar, euro(b.get("bedrag")),
+                b.get("naam", "?"), STATUS.get(b.get("status"), ""), b.get("contact", ""), waar,
+                euro(b.get("bedrag")), b.get("kanaal") or "Website",
                 inhoud,
                 ("<div style='margin-top:8px;padding:8px 10px;background:#F1E8D8;border-radius:8px;font-size:14px'>%s</div>"
                  % b["notitie"]) if b.get("notitie") else ""))
@@ -174,8 +175,9 @@ def bouw_bericht(bestellingen, weekdoc, vrijdag):
         plat.append("  Zelf uitkiezen: %d" % vrije_keuze)
     plat += ["", "BESTELLINGEN"]
     for b in lopend:
-        plat.append("  %s (%s) — %d koekjes — %s — %s" % (
-            b.get("naam", "?"), b.get("contact", ""), b.get("koekjes") or 0, euro(b.get("bedrag")),
+        plat.append("  %s (%s, via %s) — %d koekjes — %s — %s" % (
+            b.get("naam", "?"), b.get("contact", ""), b.get("kanaal") or "Website",
+            b.get("koekjes") or 0, euro(b.get("bedrag")),
             b.get("adres") or b.get("moment") or b.get("levering", "")))
     plat += ["", PORTAL]
     return onderwerp, html, "\n".join(plat)

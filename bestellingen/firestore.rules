@@ -18,6 +18,8 @@
      - Iedereen mag een bestelling plaatsen, maar er verder niets mee:
        niet lezen, niet wijzigen, niet verwijderen. Een klant kan dus
        nooit zien wat een ander besteld heeft.
+     - Jij mag zelf ook bestellingen toevoegen en bewerken in de portal,
+       bijvoorbeeld voor wat er mondeling of via Instagram binnenkomt.
      - Een bestelling moet er ook uitzien als een bestelling: een naam,
        een contactgegeven, hooguit 40 koekjes en status "nieuw".
      - Het weekoverzicht (hoeveel er al besteld is) mag iedereen lezen —
@@ -70,8 +72,11 @@ service cloud.firestore {
           && d.bedrag is number && d.bedrag >= 0 && d.bedrag <= 2000;
       }
 
-      /* Een klant mag bestellen. Meer niet. */
-      allow create: if geldigeBestelling();
+      /* Een klant mag bestellen, en wel precies zoals hierboven beschreven.
+         De bakker mag zelf ook een bestelling aanmaken — bijvoorbeeld eentje
+         die mondeling of via Instagram binnenkwam — en is daarbij niet aan
+         die vorm gebonden. */
+      allow create: if geldigeBestelling() || isBakker();
 
       /* Lezen, bijwerken en weggooien is alleen voor de bakker. */
       allow read, update, delete: if isBakker();

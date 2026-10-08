@@ -146,6 +146,36 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .acties{display:flex;flex-wrap:wrap;gap:8px}
 .leeg{text-align:center;color:var(--zacht);padding:26px 0}
 
+/* het venster waarin je een bestelling toevoegt of bewerkt */
+.venster{position:fixed;inset:0;z-index:60;background:rgba(46,34,23,.45);display:flex;align-items:flex-end;
+  justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.venster.aan{opacity:1;pointer-events:auto}
+.venster-in{background:var(--room);border:2px solid var(--inkt);border-bottom:0;border-radius:20px 20px 0 0;
+  width:min(100%,640px);height:min(94dvh,860px);display:flex;flex-direction:column;overflow:hidden;
+  transform:translateY(24px);transition:transform .25s}
+.venster.aan .venster-in{transform:none}
+.venster-kop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;
+  border-bottom:2px solid var(--inkt);background:var(--papier)}
+.venster-body{flex:1;min-height:0;overflow-y:auto;padding:18px;display:grid;gap:14px;align-content:start}
+.venster-voet{padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:2px solid var(--inkt);
+  display:grid;gap:10px;background:var(--papier)}
+.schakelaars{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.schakelaars button{padding:11px;border:2px solid var(--inkt);border-radius:12px;background:var(--papier);
+  font-family:var(--kop);font-weight:700;font-size:.9rem}
+.schakelaars button:hover{background:var(--zand)}
+.schakelaars button.aan{background:var(--inkt);color:var(--room)}
+.itemrij{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;padding:8px 0;
+  border-bottom:1px dashed var(--lijn)}
+.itemrij:last-child{border-bottom:0}
+.itemrij svg{width:38px}
+.itemrij .prijs{font-family:var(--mono,var(--kop));font-size:.8rem;color:var(--zacht)}
+.stapel{display:inline-flex;align-items:center;border:2px solid var(--inkt);border-radius:999px;overflow:hidden;background:var(--papier)}
+.stapel button{width:32px;height:32px;font-family:var(--kop);font-weight:800;line-height:1}
+.stapel button:hover{background:var(--zand)}
+.stapel span{min-width:30px;text-align:center;font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums}
+.kanaal{display:inline-block;font-family:var(--kop);font-weight:700;font-size:.66rem;letter-spacing:.08em;
+  text-transform:uppercase;border:1px solid var(--lijn);border-radius:99px;padding:2px 8px;color:var(--zacht)}
+.somrij{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--kop);font-weight:800;font-size:1.1rem}
 .melding{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);opacity:0;visibility:hidden;z-index:40;
   background:var(--inkt);color:var(--room);padding:12px 20px;border-radius:999px;font-family:var(--kop);font-weight:700;
   font-size:.9rem;transition:transform .3s,opacity .2s,visibility .2s;max-width:88vw;text-align:center}
@@ -156,6 +186,57 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 <body>
 
 <div class="melding" id="melding" role="status" aria-live="polite"></div>
+
+<div class="venster" id="formVenster" role="dialog" aria-modal="true" aria-label="Bestelling">
+  <div class="venster-in">
+    <div class="venster-kop">
+      <h3 id="formTitel">Nieuwe bestelling</h3>
+      <button class="dicht" id="formDicht" aria-label="Sluiten">&#10005;</button>
+    </div>
+    <div class="venster-body">
+      <div class="veld"><label for="fNaam">Naam</label><input id="fNaam" type="text" placeholder="Van wie is de bestelling?"></div>
+      <div class="tweeluik">
+        <div class="veld"><label for="fContact">Telefoon of e-mail</label><input id="fContact" type="text"></div>
+        <div class="veld"><label for="fKanaal">Hoe binnengekomen</label><select id="fKanaal"></select></div>
+      </div>
+      <div class="veld">
+        <label>Afhalen of bezorgen</label>
+        <div class="schakelaars" id="fLevering">
+          <button type="button" data-lev="Afhalen" class="aan">Afhalen</button>
+          <button type="button" data-lev="Bezorgen">Bezorgen</button>
+        </div>
+      </div>
+      <div class="veld" id="fMomentVeld"><label for="fMoment">Wanneer haalt diegene het op?</label>
+        <input id="fMoment" type="text" placeholder="Bijv. vrijdag 17:00 – 18:00"></div>
+      <div class="veld" id="fAdresVeld" hidden><label for="fAdres">Bezorgadres</label>
+        <input id="fAdres" type="text" placeholder="Straat, huisnummer en plaats"></div>
+
+      <div>
+        <span class="etiket">Koekjes</span>
+        <div id="formItems" style="margin-top:6px"></div>
+      </div>
+
+      <div class="tweeluik">
+        <div class="veld"><label for="fGratisSoort">Gratis erbij</label><select id="fGratisSoort"></select></div>
+        <div class="veld"><label for="fGratisAantal">Hoeveel gratis</label>
+          <input id="fGratisAantal" type="number" min="0" max="20" step="1" value="0"></div>
+      </div>
+
+      <div class="tweeluik">
+        <div class="veld"><label for="fStatus">Status</label><select id="fStatus"></select></div>
+        <div class="veld"><label for="fBedrag">Bedrag in euro</label>
+          <input id="fBedrag" type="number" min="0" step="0.05"></div>
+      </div>
+
+      <div class="veld"><label for="fNotitie">Opmerking</label><textarea id="fNotitie" rows="2"></textarea></div>
+      <button class="knop knop--stil knop--vol" id="formVerwijder" type="button" hidden>Bestelling verwijderen</button>
+    </div>
+    <div class="venster-voet">
+      <div class="somrij"><span id="formAantal">0 koekjes</span><span id="formTotaal">&euro; 0,00</span></div>
+      <button class="knop knop--vol" id="formOpslaan" type="button">Opslaan</button>
+    </div>
+  </div>
+</div>
 
 <section class="inlog" id="inlogScherm">
   <form class="inlog-kaart" id="inlogForm">
@@ -211,12 +292,19 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
 
         <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Waar vandaan</h3><span class="etiket">per kanaal</span></div>
+          <div id="kanaalLijst" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
           <div class="kaartkop"><h3>Afhalen en bezorgen</h3><span class="etiket">per moment</span></div>
           <div id="momentenLijst"></div>
         </div>
       </section>
 
       <section id="vlakLijst" hidden>
+        <button class="knop knop--vol" id="nieuweBestelling" type="button" style="margin-bottom:14px">
+          + Bestelling toevoegen</button>
         <div class="filters" id="filters">
           <button class="filter aan" data-filter="alles" type="button">Alles</button>
           <button class="filter" data-filter="nieuw" type="button">Nieuw</button>
@@ -416,6 +504,15 @@ const KOEKJES = {
   karamelbom:  {naam: "Karamelbom",    seed: 67, deeg: ["#E8B472", "#CF9450"], korst: "#9C6427", brokken: ["#C9721F", "#E39A3C", "#6B4423"]},
   nootjenoir:  {naam: "Nootje Noir",   seed: 89, deeg: ["#C99862", "#A97742"], korst: "#7A5024", brokken: ["#3A2318", "#8B5A2B", "#241611"]}
 };
+// Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
+const PRIJZEN = {klassieker: 2.75, nachtdonker: 3.00, wittewolk: 3.00, karamelbom: 3.25, nootjenoir: 3.25, box: 14.50};
+const STUKS = {box: 6};
+const SOORTEN = ["klassieker", "nachtdonker", "wittewolk", "karamelbom", "nootjenoir", "box"];
+const NAAMVAN = id => id === "box" ? "Verrassingsbox" : (KOEKJES[id] ? KOEKJES[id].naam : id);
+
+// Waar een bestelling vandaan komt. Van de webshop komt niets mee; dat is "Website".
+const KANALEN = ["Website", "Mondeling", "WhatsApp", "Instagram", "TikTok", "Telefoon", "E-mail", "Anders"];
+const kanaalVan = b => b.kanaal || "Website";
 
 /* ---------- weken ---------- */
 function weekCode(datum){
@@ -563,6 +660,14 @@ function tekenOverzicht(){
     ? rijen.join("") + '<div class="brief-totaal"><span>Totaal te bakken</span><span>' + totaal + ' koekjes</span></div>'
     : '<p class="leeg">Nog geen bestellingen voor deze week.</p>';
 
+  // waar de bestellingen vandaan kwamen
+  const perKanaal = {};
+  lopend().forEach(function(b){ const k = kanaalVan(b); perKanaal[k] = (perKanaal[k] || 0) + 1; });
+  const kanaalNamen = Object.keys(perKanaal).sort((a, b) => perKanaal[b] - perKanaal[a]);
+  $("#kanaalLijst").innerHTML = kanaalNamen.length === 0
+    ? '<span class="etiket">nog niets binnen</span>'
+    : kanaalNamen.map(k => '<span class="kanaal">' + veilig(k) + ' · ' + perKanaal[k] + '</span>').join(" ");
+
   // afhalen en bezorgen
   const momenten = {};
   lopend().forEach(function(b){
@@ -617,7 +722,8 @@ function tekenLijst(){
           + '<button class="bestelkop" data-klap="' + b.id + '" type="button">'
           +   '<div><h4><span class="chip chip--' + b.status + '">' + (STATUSSEN[b.status] || b.status) + '</span>'
           +   veilig(b.naam) + '</h4>'
-          +   '<div class="onder">' + veilig(b.code || "") + ' · ' + (b.koekjes || 0) + ' koekjes · ' + tijdKort(b.gemaakt) + '</div></div>'
+          +   '<div class="onder"><span class="kanaal">' + veilig(kanaalVan(b)) + '</span> '
+          +   veilig(b.code || "") + ' · ' + (b.koekjes || 0) + ' koekjes · ' + tijdKort(b.gemaakt) + '</div></div>'
           +   '<span class="bedrag">' + euro(b.bedrag) + '<br><span class="etiket">' + (open ? "sluiten" : "openen") + '</span></span>'
           + '</button>'
           + (open
@@ -638,6 +744,7 @@ function knoppenVoor(b){
   const k = (status, tekst, stil) => '<button class="knop ' + (stil ? "knop--stil " : "") + 'knop--klein" data-status="'
     + status + '" data-id="' + b.id + '" type="button">' + tekst + '</button>';
   let uit = contactLink(b.contact);
+  uit += '<button class="knop knop--stil knop--klein" data-bewerk="' + b.id + '" type="button">Bewerken</button>';
   if (b.status === "nieuw") uit += k("bevestigd", "Bevestigen");
   if (b.status === "bevestigd") uit += k("gebakken", "Gebakken");
   if (b.status === "gebakken") uit += k("afgerond", "Afgerond");
@@ -645,6 +752,183 @@ function knoppenVoor(b){
   if (b.status !== "geannuleerd") uit += k("geannuleerd", "Annuleren", true);
   else uit += k("nieuw", "Terugzetten", true);
   return uit;
+}
+
+/* ---------- bestelling toevoegen of bewerken ---------- */
+let formulier = null;   // null = het venster staat dicht
+
+function leegFormulier(){
+  const aantallen = {};
+  SOORTEN.forEach(id => aantallen[id] = 0);
+  return {id: null, levering: "Afhalen", aantallen: aantallen, gratisSoort: "klassieker", gratisAantal: 0};
+}
+
+function vulFormulierLijsten(){
+  $("#fKanaal").innerHTML = KANALEN.map(k => '<option value="' + k + '">' + k + '</option>').join("");
+  $("#fStatus").innerHTML = Object.keys(STATUSSEN)
+    .map(k => '<option value="' + k + '">' + STATUSSEN[k] + '</option>').join("");
+  $("#fGratisSoort").innerHTML = SOORTEN.filter(id => id !== "box")
+    .map(id => '<option value="' + id + '">' + NAAMVAN(id) + '</option>').join("");
+}
+
+// Wat de bestelling kost en hoeveel koekjes het zijn, uit de aantallen in het venster.
+function formulierSom(){
+  let bedrag = 0, koekjes = 0;
+  SOORTEN.forEach(function(id){
+    const n = formulier.aantallen[id] || 0;
+    bedrag += n * (PRIJZEN[id] || 0);
+    koekjes += n * (STUKS[id] || 1);
+  });
+  koekjes += formulier.gratisAantal || 0;
+  return {bedrag: Math.round(bedrag * 100) / 100, koekjes: koekjes};
+}
+
+function tekenFormulierItems(){
+  $("#formItems").innerHTML = SOORTEN.map(function(id){
+    const n = formulier.aantallen[id] || 0;
+    return '<div class="itemrij">'
+      + (id === "box" ? doosSVG() : koekSVG(KOEKJES[id]))
+      + '<div><div>' + NAAMVAN(id) + '</div>'
+      + '<div class="prijs">' + euro(PRIJZEN[id]) + (id === "box" ? " · 6 koekjes" : "") + '</div></div>'
+      + '<span class="stapel"><button type="button" data-min-item="' + id + '">&#8211;</button>'
+      + '<span>' + n + '</span>'
+      + '<button type="button" data-plus-item="' + id + '">+</button></span></div>';
+  }).join("");
+  const som = formulierSom();
+  $("#formAantal").textContent = som.koekjes + " koekje" + (som.koekjes === 1 ? "" : "s");
+  $("#formTotaal").textContent = euro(som.bedrag);
+  $("#fBedrag").value = som.bedrag.toFixed(2);
+}
+
+function openFormulier(id){
+  const bestaande = id ? bestellingen.filter(b => b.id === id)[0] : null;
+  formulier = leegFormulier();
+  vulFormulierLijsten();
+
+  if (bestaande){
+    formulier.id = bestaande.id;
+    formulier.levering = bestaande.levering === "Bezorgen" ? "Bezorgen" : "Afhalen";
+    (bestaande.regels || []).forEach(function(r){
+      if (r.gratis){
+        formulier.gratisAantal += (r.aantal || 1);
+        if (KOEKJES[r.id]) formulier.gratisSoort = r.id;
+      } else if (formulier.aantallen[r.id] !== undefined){
+        formulier.aantallen[r.id] += (r.aantal || 1);
+      }
+    });
+    $("#formTitel").textContent = "Bestelling bewerken";
+    $("#fNaam").value = bestaande.naam || "";
+    $("#fContact").value = bestaande.contact || "";
+    $("#fKanaal").value = kanaalVan(bestaande);
+    $("#fStatus").value = bestaande.status || "nieuw";
+    $("#fMoment").value = bestaande.moment || "";
+    $("#fAdres").value = bestaande.adres || "";
+    $("#fNotitie").value = bestaande.notitie || "";
+    $("#formVerwijder").hidden = false;
+  } else {
+    $("#formTitel").textContent = "Nieuwe bestelling";
+    ["#fNaam", "#fContact", "#fMoment", "#fAdres", "#fNotitie"].forEach(v => $(v).value = "");
+    $("#fKanaal").value = "Mondeling";       // via de website komt hij vanzelf binnen
+    $("#fStatus").value = "bevestigd";       // zelf opgeschreven betekent meestal: al afgesproken
+    $("#formVerwijder").hidden = true;
+  }
+
+  $("#fGratisSoort").value = formulier.gratisSoort;
+  $("#fGratisAantal").value = formulier.gratisAantal;
+  $$("#fLevering button").forEach(k => k.classList.toggle("aan", k.dataset.lev === formulier.levering));
+  $("#fMomentVeld").hidden = formulier.levering !== "Afhalen";
+  $("#fAdresVeld").hidden = formulier.levering !== "Bezorgen";
+  tekenFormulierItems();
+  $("#formVenster").classList.add("aan");
+  setTimeout(() => $("#fNaam").focus(), 80);
+}
+
+function sluitFormulier(){
+  $("#formVenster").classList.remove("aan");
+  formulier = null;
+}
+
+async function formulierOpslaan(){
+  const naam = $("#fNaam").value.trim();
+  if (!naam){ melden("Vul even een naam in."); $("#fNaam").focus(); return; }
+
+  formulier.gratisAantal = Math.max(0, parseInt($("#fGratisAantal").value, 10) || 0);
+  formulier.gratisSoort = $("#fGratisSoort").value;
+  const som = formulierSom();
+  if (som.koekjes === 0){ melden("Er zitten nog geen koekjes in deze bestelling."); return; }
+
+  const regels = SOORTEN.filter(id => (formulier.aantallen[id] || 0) > 0).map(function(id){
+    return {id: id, naam: NAAMVAN(id), aantal: formulier.aantallen[id], stuk: PRIJZEN[id] || 0, gratis: false};
+  });
+  if (formulier.gratisAantal > 0){
+    regels.push({id: formulier.gratisSoort, naam: NAAMVAN(formulier.gratisSoort),
+                 aantal: formulier.gratisAantal, stuk: 0, gratis: true});
+  }
+
+  const status = $("#fStatus").value;
+  const levering = formulier.levering;
+  const velden = {
+    naam: naam.slice(0, 120),
+    contact: $("#fContact").value.trim().slice(0, 120),
+    kanaal: $("#fKanaal").value,
+    status: status,
+    levering: levering,
+    moment: levering === "Afhalen" ? $("#fMoment").value.trim().slice(0, 120) : "",
+    adres: levering === "Bezorgen" ? $("#fAdres").value.trim().slice(0, 200) : "",
+    notitie: $("#fNotitie").value.trim().slice(0, 600),
+    regels: regels,
+    koekjes: som.koekjes,
+    bedrag: Math.round((parseFloat($("#fBedrag").value) || som.bedrag) * 100) / 100,
+    week: huidigeWeek
+  };
+
+  // Wat telt er mee voor het baklimiet? Een geannuleerde bestelling niet.
+  const oud = formulier.id ? bestellingen.filter(b => b.id === formulier.id)[0] : null;
+  const oudTelt = (oud && oud.status !== "geannuleerd") ? (oud.koekjes || 0) : 0;
+  const nieuwTelt = status !== "geannuleerd" ? som.koekjes : 0;
+
+  try {
+    if (formulier.id){
+      await fx.updateDoc(fx.doc(db, "koekenbakker", RUIMTE, "bestellingen", formulier.id), velden);
+    } else {
+      velden.code = bestelCode();
+      velden.gemaakt = fx.serverTimestamp();
+      await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), velden);
+    }
+    if (nieuwTelt !== oudTelt){
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
+                      {besteld: fx.increment(nieuwTelt - oudTelt)}, {merge: true});
+    }
+    melden(formulier.id ? "Bestelling bijgewerkt." : "Bestelling toegevoegd.");
+    sluitFormulier();
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+  }
+}
+
+// Een kort, uitspreekbaar bestelnummer — zelfde soort als de webshop maakt.
+function bestelCode(){
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c = "";
+  for (let i = 0; i < 4; i++) c += letters[Math.floor(Math.random() * letters.length)];
+  return c;
+}
+
+async function bestellingVerwijderen(){
+  const b = bestellingen.filter(x => x.id === formulier.id)[0];
+  if (!b) return;
+  if (!window.confirm("Deze bestelling van " + (b.naam || "?") + " definitief verwijderen?")) return;
+  try {
+    await fx.deleteDoc(fx.doc(db, "koekenbakker", RUIMTE, "bestellingen", b.id));
+    if (b.status !== "geannuleerd" && (b.koekjes || 0) > 0){
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
+                      {besteld: fx.increment(-(b.koekjes || 0))}, {merge: true});
+    }
+    melden("Bestelling verwijderd.");
+    sluitFormulier();
+  } catch (fout){
+    melden("Verwijderen lukte niet: " + (fout.code || fout.message));
+  }
 }
 
 /* ---------- wijzigen ---------- */
@@ -725,6 +1009,14 @@ async function weekOpslaan(velden){
 }
 
 /* ---------- klikken ---------- */
+document.addEventListener("input", function(e){
+  if (!formulier) return;
+  if (e.target.id === "fGratisAantal"){
+    formulier.gratisAantal = Math.max(0, parseInt(e.target.value, 10) || 0);
+    tekenFormulierItems();
+  }
+});
+
 $("#inlogForm").addEventListener("submit", async function(e){
   e.preventDefault();
   $("#inlogFout").hidden = true;
@@ -784,6 +1076,37 @@ document.addEventListener("click", function(e){
     return;
   }
   if (e.target.closest("#uitlogKnop")){ fa.signOut(auth); return; }
+
+  if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
+  const bewerk = e.target.closest("[data-bewerk]");
+  if (bewerk){ openFormulier(bewerk.dataset.bewerk); return; }
+  if (e.target.closest("#formDicht")){ sluitFormulier(); return; }
+  if (e.target.closest("#formOpslaan")){ formulierOpslaan(); return; }
+  if (e.target.closest("#formVerwijder")){ bestellingVerwijderen(); return; }
+  if (e.target === $("#formVenster")){ sluitFormulier(); return; }
+
+  const meerItem = e.target.closest("[data-plus-item]");
+  if (meerItem && formulier){
+    const id = meerItem.dataset.plusItem;
+    formulier.aantallen[id] = (formulier.aantallen[id] || 0) + 1;
+    tekenFormulierItems();
+    return;
+  }
+  const minItem = e.target.closest("[data-min-item]");
+  if (minItem && formulier){
+    const id = minItem.dataset.minItem;
+    formulier.aantallen[id] = Math.max(0, (formulier.aantallen[id] || 0) - 1);
+    tekenFormulierItems();
+    return;
+  }
+  const lev = e.target.closest("[data-lev]");
+  if (lev && formulier){
+    formulier.levering = lev.dataset.lev;
+    $$("#fLevering button").forEach(k => k.classList.toggle("aan", k === lev));
+    $("#fMomentVeld").hidden = formulier.levering !== "Afhalen";
+    $("#fAdresVeld").hidden = formulier.levering !== "Bezorgen";
+    return;
+  }
   if (e.target.closest("#meldKnop, #meldAanzetten")){ meldingenVragen(); return; }
   if (e.target.closest("#meldProef")){
     meldNieuweBestelling({naam: "Proefmelding", koekjes: 6, bedrag: 16.75, levering: "Afhalen", code: "PROEF"});

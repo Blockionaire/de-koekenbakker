@@ -27,6 +27,18 @@ Alle bestellingen van de week, nieuwste eerst, met een filter per status. Tik ee
 bestelling open en je ziet de regels, het contactgegeven (met knoppen om te bellen, te
 appen of te mailen), het afhaalmoment of adres en de opmerking.
 
+Bovenaan staat **+ Bestelling toevoegen**, voor alles wat buiten de webshop om binnenkomt:
+mondeling, via Instagram, een appje. Je vult een naam in, tikt de koekjes bij elkaar met de
+plusknoppen, en het bedrag rekent zichzelf uit — aanpassen mag, bijvoorbeeld als je een
+andere prijs hebt afgesproken. Elke bestelling heeft ook een **kanaal** (Website,
+Mondeling, WhatsApp, Instagram, …), zodat je ziet waar je klanten vandaan komen; op het
+overzicht staat dat per week bij elkaar geteld. Wat via de webshop binnenkomt heet
+vanzelf "Website".
+
+Bestaande bestellingen pas je aan met **Bewerken** — handig als iemand er nog twee bij wil,
+of als een adres verandert. Het baklimiet rekent automatisch mee: hoog je een bestelling op
+of verwijder je er een, dan verschuift de weekteller mee.
+
 Een bestelling loopt langs vier stappen: **nieuw → bevestigd → gebakken → afgerond**.
 Annuleren kan altijd; het aantal koekjes gaat dan automatisch weer van de weekteller af.
 
