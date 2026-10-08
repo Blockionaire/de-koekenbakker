@@ -41,8 +41,14 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   aantal koekjes eronder. Die prijs staat er al in, dus de combideal rekent alleen over de
   koekjes die je zelf uitkiest — anders zou de korting er dubbel afgaan.
 - **Bakdag** — een aftelklok naar de eerstvolgende bakdag (standaard vrijdag 16:00).
-- **Over Zara**, **reviews** (met een link terug naar het assortiment) en een
-  **vragenlijst**.
+- **Over Zara** — de tekst staat nog op een plaatshouder, en in de polaroid staat een Z met
+  een koekje. Zet een foto in de map met de naam **`foto-zara.jpg`** en die komt er vanzelf
+  in te staan; is er geen foto, dan blijft de Z staan. De tekst zelf staat gewoon in
+  `index.html`, met een commentaarregel erboven die aanwijst waar.
+- **Reviews** (met een link terug naar het assortiment) — de kaartjes zijn nog leeg. In
+  `index.html` staat een voorbeeldkaartje in commentaar klaar; haal dat uit het commentaar
+  en de plaatshoudertekst weg zodra de eerste reacties binnen zijn.
+- **Vragenlijst** met de veelgestelde vragen.
 - **Mandje** — schuift open vanaf de rechterkant, onthoudt zichzelf tussen bezoeken
   (localStorage) en zet de bestelling klaar als berichtje. Naam en telefoon/e-mail zijn
   verplicht; ontbreekt er iets, dan springt het veld in het rood en gaat de bestelling
@@ -71,9 +77,9 @@ const CONFIG = {
   bundelAantal: 4,               // bij zoveel koekjes geldt de deal
   bundelPrijs: 12.00,            // en dan betaal je dit voor die vier
   bakdag: 5,                     // 0 = zondag, 5 = vrijdag
-  bakuur: 16,
+  bakuur: 9,
   sluitdag: 4,                   // bestellen kan tot donderdag…
-  sluituur: 20,                  // …20:00; daarna schuift alles een week op
+  sluituur: 22,                  // …22:00; daarna schuift alles een week op
   toonRestVanaf: 10,             // pas zoveel koekjes over noem je het aantal
   boxen: [                       // de verrassingsbox: maat en prijs
     {koekjes: 4, prijs: 12.00},

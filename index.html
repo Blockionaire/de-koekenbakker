@@ -291,6 +291,8 @@ button{font:inherit;color:inherit}
 .polaroid-vlak{aspect-ratio:4/5;background:linear-gradient(160deg,var(--zand),#DFD0B6);border-radius:3px;
   display:grid;place-items:center;position:relative;overflow:hidden}
 .polaroid-vlak .monogram{font-family:var(--display);font-size:5.5rem;color:rgba(46,34,23,.16)}
+.polaroid-vlak img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.polaroid-vlak.met-foto .monogram,.polaroid-vlak.met-foto > span[id]{display:none}
 .polaroid-vlak svg{position:absolute;width:88px;bottom:12px;right:12px;transform:rotate(-12deg)}
 .polaroid figcaption{font-family:var(--kop);font-weight:600;font-size:.9rem;color:var(--zacht);
   margin-top:12px;text-align:center}
@@ -309,6 +311,8 @@ button{font:inherit;color:inherit}
 .briefjes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
 .briefje{background:var(--papier);border:2px solid var(--inkt);border-radius:var(--r);padding:22px;
   box-shadow:5px 5px 0 rgba(46,34,23,.16)}
+.nogleeg{grid-column:1 / -1;background:var(--papier);border:2px dashed var(--klei);border-radius:var(--r);
+  padding:26px;color:var(--zacht);font-size:1rem;max-width:60ch}
 .briefje:nth-child(1){transform:rotate(-1.4deg)}
 .briefje:nth-child(3){transform:rotate(1.4deg)}
 .briefje p{font-size:1.02rem}
@@ -520,8 +524,8 @@ button{font:inherit;color:inherit}
     <div class="wrap agenda">
       <div class="toon">
         <span class="eyebrow">Bakdag</span>
-        <h2 class="titel" id="bakdagKop">De oven gaat vrijdag om 16:00 aan.</h2>
-        <p class="lead" style="margin-top:14px">Ik bak één keer per week, in kleine batches naast school. <span id="bakdagUitleg">Bestel je vóór donderdag 20:00, dan zit je in de batch van vrijdag.</span></p>
+        <h2 class="titel" id="bakdagKop">De oven gaat vrijdag om 09:00 aan.</h2>
+        <p class="lead" style="margin-top:14px">Ik bak één keer per week, en heb een maximum aan koekjes. <span id="bakdagUitleg">Bestel je vóór donderdag 22:00, dan zit je in de batch van vrijdag en kun je de koekjes op zaterdag ophalen.</span></p>
         <div class="klok" id="klok" role="timer" aria-label="Tijd tot de volgende bakdag">
           <div><b id="kD">0</b><span>dagen</span></div>
           <div><b id="kU">0</b><span>uur</span></div>
@@ -532,7 +536,7 @@ button{font:inherit;color:inherit}
       <div class="stappen toon">
         <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, vrij te combineren. Vier stuks kost € 12.</p></div></div>
         <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
-        <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Je haalt ze op het moment op dat je zelf hebt gekozen — dezelfde dag nog uit de oven.</p></div></div>
+        <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Je haalt ze op het moment op dat je zelf hebt gekozen, vers uit de oven.</p></div></div>
       </div>
     </div>
   </section>
@@ -540,22 +544,24 @@ button{font:inherit;color:inherit}
   <section class="band band--papier" id="zara">
     <div class="wrap overzara">
       <figure class="polaroid toon">
-        <div class="polaroid-vlak">
+        <div class="polaroid-vlak" id="polaroidVlak">
+          <!-- Zet een foto in de map met de naam foto-zara.jpg en hij verschijnt hier
+               vanzelf. Zolang die er niet is, blijft de Z met het koekje staan. -->
+          <img id="zaraFoto" src="foto-zara.jpg" alt="Zara in de keuken" hidden>
           <span class="monogram">Z</span>
           <span id="polaroidKoek" aria-hidden="true"></span>
         </div>
-        <figcaption>Zaterdagochtend, batch nummer 63</figcaption>
+        <figcaption id="zaraBijschrift">Hier komt een foto van Zara</figcaption>
       </figure>
       <div class="toon">
         <span class="eyebrow">Over de bakker</span>
         <h2 class="titel">Hoi, ik ben Zara.</h2>
-        <p class="lead" style="margin-top:16px">Ik ben 16 en ik bak sinds mijn twaalfde. Wat begon als een zaterdag met mijn oma's mixer is uitgegroeid tot een oven die elke vrijdag drie keer achter elkaar aan moet. Ik draai elk bolletje met de hand, weeg alles op de gram en haal de koekjes er expres net iets te vroeg uit — dan blijft het midden zacht.</p>
-        <p class="lead" style="margin-top:14px">Geen bakmix, geen palmvet, geen doos die drie dagen in een magazijn heeft gestaan. Gewoon roomboter, Belgische chocolade en een oven die om vier uur aangaat.</p>
-        <blockquote class="citaat">"Als het koekje niet warm is als je 'm openbreekt, heb ik iets fout gedaan."</blockquote>
+        <!-- Hier komt het verhaal van Zara. Vervang de regel hieronder door je eigen
+             tekst; meerdere alinea's mogen, zet er dan nog een <p class="lead"> bij. -->
+        <p class="lead" style="margin-top:16px">Hier komt binnenkort mijn verhaal: wie ik ben, hoe ik begonnen ben en waarom de oven hier elke vrijdag aangaat.</p>
         <div class="cijfers">
           <div class="cijfer"><b>16</b><span>jaar</span></div>
           <div class="cijfer"><b>5</b><span>smaken</span></div>
-          <div class="cijfer"><b>48 u</b><span>gerijpt deeg</span></div>
           <div class="cijfer"><b>1×</b><span>bakdag per week</span></div>
         </div>
       </div>
@@ -572,21 +578,18 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="briefjes toon">
+        <!-- Zodra je de eerste reacties hebt: haal dit blok weg en zet er per reactie
+             zo'n kaartje neer. Drie naast elkaar past precies.
+
         <div class="briefje">
           <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Besteld voor een verjaardag, binnen tien minuten was de hele doos leeg. Die met Lotus Biscoff is echt gevaarlijk lekker."</p>
-          <footer>Fenna · buurvrouw en vaste klant</footer>
+          <p>"Hier de reactie van de klant."</p>
+          <footer>Naam · hoe je diegene kent</footer>
         </div>
-        <div class="briefje">
-          <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Vrijdag opgehaald en nog warm opgegeten. Dat is gewoon een ander koekje dan uit de supermarkt, sorry."</p>
-          <footer>Sem · uit de klas</footer>
-        </div>
-        <div class="briefje">
-          <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Wij halen elke vrijdag acht stuks voor kantoor. De Stroopwafel is hier het eerst op."</p>
-          <footer>Team Nieuwstraat</footer>
-        </div>
+
+        -->
+        <p class="nogleeg">De eerste reacties komen eraan — deze week gaan de eerste dozen de deur uit.
+          Heb je iets van mij geproefd? Laat het me weten, dan zet ik het hier neer.</p>
       </div>
     </div>
   </section>
@@ -601,11 +604,12 @@ button{font:inherit;color:inherit}
       </div>
       <div class="faq toon">
         <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen &mdash; vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
-        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdagmiddag. Bestel je v&oacute;&oacute;r donderdag 20:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
+        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
         <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Je kiest bij het bestellen zelf een moment: vrijdagavond tussen 17:00 en 19:00, of zaterdagochtend tussen 10:00 en 12:00. Past geen van beide? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
         <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt &mdash; er komt niets bij.</p></details>
         <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag.</p></details>
         <details><summary>Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p>Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
+        <details><summary>Hoeveel calorieën bevat 1 koekje?</summary><p>Ik laat mijn koekjes niet in een laboratorium doorrekenen, dus ik kan je geen etiket geven. Voor een koekje van 95 gram met roomboter en chocolade kom je ongeveer op <b>400 tot 450 kcal</b> uit — vergelijkbaar met een flinke plak cake. Het is geen tussendoortje voor elke dag, en dat is ook precies de bedoeling: eentje, maar dan wel een goeie.</p></details>
         <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel &mdash; tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden; laat ze daarna op kamertemperatuur ontdooien.</p></details>
         <details><summary>Allergenen</summary><p>Alle koekjes bevatten tarwe (gluten), ei, melk en soja. In de Oreo, Lotus Biscoff en Stroopwafel zit geen noot, maar ik bak in een gewone keuken waar ook noten liggen, dus kruisbesmetting kan ik niet uitsluiten. Heb je een allergie? Zet het bij je bestelling in het opmerkingenveld, dan kijk ik even met je mee.</p></details>
         <details><summary>Kan ik een grotere bestelling doen voor een feest?</summary><p>Zeker, maar niet via de knop: boven de 20 koekjes vraagt de site je om eerst even contact met me op te nemen. Ik bak naast school, dus dan plan ik het liever samen met je in. Stuur de datum en het aantal mee, dan laat ik snel weten of het past.</p></details>
@@ -707,9 +711,9 @@ const CONFIG = {
   bundelAantal: 4,                    // bij zoveel koekjes geldt de deal
   bundelPrijs: 12.00,                 // en dan betaal je dit voor die vier
   bakdag: 5,                          // 5 = vrijdag (zondag is 0)
-  bakuur: 16,
+  bakuur: 9,
   sluitdag: 4,                        // tot wanneer je kunt bestellen: 4 = donderdag
-  sluituur: 20,
+  sluituur: 22,
   toonRestVanaf: 10,                  // pas vanaf zoveel koekjes over zeg je hoeveel er nog kunnen
   boxen: [                            // de verrassingsbox: maat en prijs
     {koekjes: 4, prijs: 12.00},
@@ -1321,6 +1325,17 @@ function start(){
     $(sel).innerHTML = koekSVG(KOEKJES[i % KOEKJES.length]);
   });
   $("#cursor").innerHTML = koekSVG(KOEKJES[1]);
+
+  // Staat er een foto van Zara in de map? Dan komt die in de polaroid te staan.
+  // Hij kan al binnen zijn voordat dit draait, vandaar de check op complete.
+  const foto = $("#zaraFoto");
+  const fotoAan = function(){
+    if (!foto.naturalWidth) return;
+    foto.hidden = false;
+    $("#polaroidVlak").classList.add("met-foto");
+    $("#zaraBijschrift").textContent = "Zara in de keuken";
+  };
+  if (foto.complete) fotoAan(); else foto.addEventListener("load", fotoAan);
   $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
   $("#bedanktKoek").innerHTML = koekSVG(KOEKJES[3]);
 
@@ -1360,8 +1375,10 @@ function bakdagTonen(){
   const dag = DAGEN[instel("bakdag")], uur = uurTekst(instel("bakuur"));
   const sdag = DAGEN[instel("sluitdag")], suur = uurTekst(instel("sluituur"));
   $("#bakdagKop").textContent = "De oven gaat " + dag + " om " + uur + " aan.";
-  $("#bakdagUitleg").textContent = "Bestel je vóór " + sdag + " " + suur + ", dan zit je in de batch van " + dag + ".";
-  $("#faqBakdag").textContent = "Elke " + dag + "middag. Bestel je vóór " + sdag + " " + suur
+  const ophaaldag = DAGEN[(instel("bakdag") + 1) % 7];
+  $("#bakdagUitleg").textContent = "Bestel je vóór " + sdag + " " + suur + ", dan zit je in de batch van "
+    + dag + " en kun je de koekjes op " + ophaaldag + " ophalen.";
+  $("#faqBakdag").textContent = "Elke " + dag + ". Bestel je vóór " + sdag + " " + suur
     + ", dan zit je in de batch van diezelfde week.";
 }
 
