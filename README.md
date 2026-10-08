@@ -53,14 +53,21 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   (localStorage) en zet de bestelling klaar als berichtje. Naam en telefoon/e-mail zijn
   verplicht; ontbreekt er iets, dan springt het veld in het rood en gaat de bestelling
   niet weg.
-- **Afhaalmoment** — bestellen gaat altijd op afhalen; je kiest een dag en een tijdslot
-  (met de datum van de eerstvolgende bakdag erbij), of "maakt me niet uit". Bezorgen zit
-  er voorlopig niet in.
+- **Afhaalmoment** — bestellen gaat altijd op afhalen; je kiest een tijdslot op
+  zaterdagochtend (met de datum erbij), of "maakt me niet uit". Bezorgen zit er voorlopig
+  niet in. Wil je er een dag bij, zet die er dan bij in `afhaalmomenten`: `dagNr` 5 is
+  vrijdag, 6 is zaterdag.
 - **Bestelbalk onderaan** op de telefoon, zodat bestellen altijd één tik weg is.
 
-Alle koekjes zijn getekend in code (SVG), dus er zijn geen foto's nodig en de site laadt
-direct. Elk koekje heeft een eigen `seed`, waardoor de brokken chocolade er per smaak
+Een koekje is standaard getekend in code (SVG), dus er zijn geen foto's nodig en de site
+laadt direct. Elk koekje heeft een eigen `seed`, waardoor de brokken chocolade er per smaak
 anders uitzien maar altijd hetzelfde blijven.
+
+Heb je wel een echte foto? Zet die in de map en voeg bij dat koekje in `KOEKJES` een regel
+`foto: "koek-lotus.webp"` toe — dan komt de foto in de plaats van de tekening, op de kaart,
+in het mandje en overal waar dat koekje opduikt. De happen werken er gewoon op door: de
+foto gaat door hetzelfde masker heen als de tekening. Een foto werkt het mooist als het
+koekje vrijstaand is (geen achtergrond) en vierkant bijgesneden.
 
 ---
 
@@ -91,7 +98,6 @@ const CONFIG = {
   alBesteld: 0,                  // hoeveel er deze week al besteld zijn — zelf bijhouden
   afhaalKeuze: true,             // op false: geen vaste tijdsloten, je spreekt het zelf af
   afhaalmomenten: [
-    {dagNr: 5, tijden: ["17:00 – 18:00", "18:00 – 19:00"]},
     {dagNr: 6, tijden: ["10:00 – 11:00", "11:00 – 12:00"]}
   ]
 };

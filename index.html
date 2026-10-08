@@ -605,7 +605,7 @@ button{font:inherit;color:inherit}
       <div class="faq toon">
         <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen &mdash; vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
         <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
-        <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Je kiest bij het bestellen zelf een moment: vrijdagavond tussen 17:00 en 19:00, of zaterdagochtend tussen 10:00 en 12:00. Past geen van beide? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
+        <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Dat doe je op zaterdagochtend: je kiest bij het bestellen zelf tussen 10:00 en 11:00 of tussen 11:00 en 12:00. Komt dat niet uit? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
         <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt &mdash; er komt niets bij.</p></details>
         <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag.</p></details>
         <details><summary>Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p>Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
@@ -725,7 +725,6 @@ const CONFIG = {
   alBesteld: 0,                       // hoeveel er deze week al besteld zijn — zelf bijhouden
   afhaalKeuze: true,                  // op false: geen vaste afhaalmomenten, je spreekt het zelf af
   afhaalmomenten: [
-    {dagNr: 5, tijden: ["17:00 – 18:00", "18:00 – 19:00"]},
     {dagNr: 6, tijden: ["10:00 – 11:00", "11:00 – 12:00"]}
   ]
 };
@@ -810,10 +809,13 @@ function randPad(cx, cy, r, r2){
 }
 
 let uid = 0;
+// Een koekje is getekend in code, tenzij er een foto bij staat. Die foto gaat in
+// dezelfde vorm door dezelfde maskers heen, zodat de happen er ook op werken.
 function koekSVG(k, opties){
   opties = opties || {};
   const happen = opties.happen || [];
   const id = "k" + (++uid);
+  if (k.foto) return koekFotoSVG(k, happen, id);
   const r2 = rng(k.seed);
   const rand = rng(k.seed + 77);
   const deeg = k.deeg, korst = k.korst, brokken = k.brokken;
@@ -850,6 +852,20 @@ function koekSVG(k, opties){
 }
 
 
+// Dezelfde ronde vorm, maar dan met de foto erin.
+function koekFotoSVG(k, happen, id){
+  let s = '<svg viewBox="0 0 200 200" role="img" aria-label="Koekje ' + k.naam + '" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><mask id="m' + id + '"><rect x="0" y="0" width="200" height="200" fill="#fff"/>';
+  happen.forEach(function(a){
+    s += '<circle cx="' + (100 + Math.cos(a) * 88).toFixed(1) + '" cy="' + (100 + Math.sin(a) * 88).toFixed(1)
+       + '" r="30" fill="#000"/>';
+  });
+  s += '</mask></defs>';
+  s += '<image href="' + k.foto + '" x="2" y="2" width="196" height="196" '
+     + 'preserveAspectRatio="xMidYMid meet" mask="url(#m' + id + ')"/>';
+  return s + '</svg>';
+}
+
 /* ---------- het assortiment ---------- */
 const KOEKJES = [
   { id: "oreo", naam: "Oreo", prijs: 3.25, gram: 95,
@@ -864,7 +880,7 @@ const KOEKJES = [
     smaak: {Choco: 1, Zoet: 5, Krokant: 3},
     seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E",
     brokken: ["#B5762C", "#8A5420", "#E3AB5E"] },
-  { id: "lotus", naam: "Lotus Biscoff", prijs: 3.25, gram: 95,
+  { id: "lotus", naam: "Lotus Biscoff", prijs: 3.25, gram: 95, foto: "koek-lotus.webp",
     kort: "Speculoospasta door het deeg, kruimels van de koek erdoor en een hele Biscoff op de bovenkant.",
     tags: ["Biscoff", "Speculoos"],
     smaak: {Choco: 2, Zoet: 5, Krokant: 4},
