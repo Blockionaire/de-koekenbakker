@@ -59,15 +59,15 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   vrijdag, 6 is zaterdag.
 - **Bestelbalk onderaan** op de telefoon, zodat bestellen altijd één tik weg is.
 
-Een koekje is standaard getekend in code (SVG), dus er zijn geen foto's nodig en de site
-laadt direct. Elk koekje heeft een eigen `seed`, waardoor de brokken chocolade er per smaak
-anders uitzien maar altijd hetzelfde blijven.
+Alle vijf de koekjes staan er met een echte foto op: `koek-oreo.webp`,
+`koek-stroopwafel.webp`, `koek-lotus.webp`, `koek-kinder.webp` en `koek-chocchip.webp`.
+Die foto's zijn vrijgesneden (geen achtergrond) en vierkant, zodat ze op elke ondergrond
+werken. Welke foto bij welk koekje hoort staat in `KOEKJES` achter `foto:`.
 
-Heb je wel een echte foto? Zet die in de map en voeg bij dat koekje in `KOEKJES` een regel
-`foto: "koek-lotus.webp"` toe — dan komt de foto in de plaats van de tekening, op de kaart,
-in het mandje en overal waar dat koekje opduikt. De happen werken er gewoon op door: de
-foto gaat door hetzelfde masker heen als de tekening. Een foto werkt het mooist als het
-koekje vrijstaand is (geen achtergrond) en vierkant bijgesneden.
+Haal je die regel weg, dan valt dat koekje terug op de tekening in code (SVG) die er nog
+altijd onder zit: elk koekje heeft een eigen `seed`, waardoor de brokken chocolade er per
+smaak anders uitzien maar altijd hetzelfde blijven. Foto of tekening maakt verder niets
+uit — de happen werken op allebei, want de foto gaat door hetzelfde masker heen.
 
 ---
 
