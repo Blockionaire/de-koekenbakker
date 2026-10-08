@@ -257,6 +257,14 @@ button{font:inherit;color:inherit}
   padding:2px 8px;border-radius:99px}
 .gleuf.vol.gleuf--deal{animation:plop .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes plop{0%{transform:scale(.6) rotate(-20deg)}60%{transform:scale(1.15) rotate(8deg)}100%{transform:scale(1)}}
+.boxkeuze{margin-top:24px;background:var(--zand);border:2px dashed var(--karamel);border-radius:18px;padding:18px}
+.boxrij{display:flex;flex-wrap:wrap;gap:10px}
+.boxmaat{display:grid;gap:2px;justify-items:center;min-width:104px;flex:1 1 104px;cursor:pointer;
+  background:var(--papier);border:2px solid var(--inkt);border-radius:14px;padding:12px 10px;
+  box-shadow:3px 3px 0 rgba(46,34,23,.18);transition:transform .15s,box-shadow .15s,background .15s}
+.boxmaat:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(46,34,23,.2);background:var(--room)}
+.boxmaat b{font-family:var(--kop);font-weight:800;font-size:1.02rem}
+.boxmaat span{font-family:var(--kop);font-weight:700;font-size:.84rem;color:var(--zacht);font-variant-numeric:tabular-nums}
 @media(max-width:880px){.deal{grid-template-columns:1fr}}
 
 /* ---------- bakagenda ---------- */
@@ -486,11 +494,18 @@ button{font:inherit;color:inherit}
   <section class="band band--papier">
     <div class="wrap deal">
       <div class="toon">
-        <span class="eyebrow">De deal</span>
+        <span class="eyebrow">Combideal</span>
         <h2 class="titel">Vier in je mandje?<br>Dan betaal je &euro; 12.</h2>
-        <p class="lead" style="margin-top:14px">Los kost een koekje &euro; 3,25. Neem je er vier, dan reken ik &euro; 12 &mdash; en dat geldt bij elke volgende vier. Je mag de smaken vrij door elkaar kiezen.</p>
+        <p class="lead" style="margin-top:14px">Los kost een koekje &euro; 3,25. Neem je er vier, dan reken ik &euro; 12. Je kunt de smaken zelf kiezen of kiezen voor een verrassingsbox, dan kies ik ze voor je!</p>
         <div class="hero-acties" style="margin-top:26px">
           <button class="knop" id="dealKnop" type="button">Stel je box samen</button>
+          <button class="knop knop--stil" id="verrasKnop" type="button"
+                  aria-expanded="false" aria-controls="boxKeuze">Kies verrassingsbox</button>
+        </div>
+        <div class="boxkeuze" id="boxKeuze" hidden>
+          <p class="eyebrow" style="margin-bottom:12px">Hoeveel koekjes zitten erin?</p>
+          <div class="boxrij" id="boxRij"></div>
+          <p class="mini" style="text-align:left;margin-top:12px">Welke smaken erin gaan blijft een verrassing &mdash; ik kies wat die week het lekkerst uit de oven komt.</p>
         </div>
       </div>
       <div class="toon">
@@ -696,7 +711,7 @@ const CONFIG = {
   sluitdag: 4,                        // tot wanneer je kunt bestellen: 4 = donderdag
   sluituur: 20,
   toonRestVanaf: 10,                  // pas vanaf zoveel koekjes over zeg je hoeveel er nog kunnen
-  boxPrijs: 17.50,                    // verrassingsbox: zes koekjes, een euro onder de deal
+  boxMaten: [4, 5, 6],                // zoveel koekjes kan een verrassingsbox hebben
   maxPerBestelling: 20,               // daarboven eerst even overleggen
   weekLimiet: 100,                    // zoveel koekjes kun je in één week bakken
   alBesteld: 0,                       // hoeveel er deze week al besteld zijn — zelf bijhouden
@@ -860,14 +875,23 @@ const KOEKJES = [
     seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C",
     brokken: ["#6B4423", "#7C4F2A", "#5A3517"] }
 ];
-const BOX = {
-  id: "box", naam: "Verrassingsbox", koekjes: 6,
-  kort: "Zes koekjes, door mij uitgezocht — wat er die week het lekkerst uit de oven komt."
-};
-// De deal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
+// De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 const BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
-const bundelKorting = n => Math.floor(n / BUNDEL.aantal) * (BUNDEL.aantal * CONFIG.stukPrijs - BUNDEL.prijs);
-const vind = id => id === BOX.id ? Object.assign({prijs: CONFIG.boxPrijs}, BOX) : KOEKJES.filter(k => k.id === id)[0];
+const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
+  * (BUNDEL.aantal * CONFIG.stukPrijs - BUNDEL.prijs) * 100) / 100;
+// Wat zoveel koekjes samen kosten, met de deal er al in verwerkt.
+const dealPrijs = n => Math.round((n * CONFIG.stukPrijs - bundelKorting(n)) * 100) / 100;
+
+// De verrassingsbox in drie maten. Een box kost precies hetzelfde als diezelfde
+// koekjes zelf uitkiezen — het enige verschil is dat ik ze uitzoek.
+const isBox = id => id.indexOf("box") === 0;
+const BOXEN = CONFIG.boxMaten.map(function(n){
+  return {id: "box" + n, naam: "Verrassingsbox", koekjes: n,
+          prijs: Math.round(n * CONFIG.stukPrijs * 100) / 100,
+          kort: n + " koekjes, door mij uitgezocht — wat er die week het lekkerst uit de oven komt."};
+});
+const vind = id => isBox(id) ? BOXEN.filter(b => b.id === id)[0] : KOEKJES.filter(k => k.id === id)[0];
+const koekjesVan = id => isBox(id) ? vind(id).koekjes : 1;
 
 function doosSVG(){
   return '<svg viewBox="0 0 200 200" role="img" aria-label="Verrassingsbox" xmlns="http://www.w3.org/2000/svg">'
@@ -949,8 +973,9 @@ function tekenMomenten(){
   }).join("") + '<div class="moment-rij">' + knop("In overleg", "Maakt me niet uit") + '</div>';
 }
 
-const aantalBetaald = () => Object.keys(mandje).filter(id => id !== BOX.id).reduce((n, id) => n + mandje[id], 0);
-const aantalBoxen = () => mandje[BOX.id] || 0;
+// Koekjes uit een verrassingsbox tellen gewoon mee voor de deal: of je ze nu
+// zelf kiest of mij laat kiezen, vier koekjes kost vier koekjes.
+const aantalBoxen = () => Object.keys(mandje).filter(isBox).reduce((n, id) => n + mandje[id], 0);
 const weekLimiet = () => (weekStand && typeof weekStand.limiet === "number") ? weekStand.limiet : CONFIG.weekLimiet;
 // Zara kan de bakdag en het sluitmoment per week aanpassen in de portal.
 const instel = (naam) => (weekStand && typeof weekStand[naam] === "number") ? weekStand[naam] : CONFIG[naam];
@@ -978,9 +1003,9 @@ function grensTekst(){
     return "Meer dan " + CONFIG.maxPerBestelling + " koekjes? Neem even contact met me op, dan plan ik het samen met je in.";
   return "";
 }
-const koekjesTotaal = () => aantalBetaald() + aantalBoxen() * BOX.koekjes;
+const koekjesTotaal = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * koekjesVan(id), 0);
 const losseSom = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vind(id).prijs, 0);
-const korting = () => bundelKorting(aantalBetaald());
+const korting = () => bundelKorting(koekjesTotaal());
 const subtotaal = () => Math.round((losseSom() - korting()) * 100) / 100;
 
 function inMandje(id, aantal){
@@ -1004,20 +1029,19 @@ function ververs(){
       : "We spreken samen een ophaalmoment af.";
   }
 
-  const betaald = aantalBetaald(), sub = subtotaal(), kort = korting();
-  $("#mandjeTeller").textContent = koekjesTotaal();
+  const betaald = koekjesTotaal(), sub = subtotaal(), kort = korting();
+  $("#mandjeTeller").textContent = betaald;
   $("#balkTotaal").textContent = euro(sub);
   const boxen = aantalBoxen();
-  const losseTekst = betaald + " koekje" + (betaald === 1 ? "" : "s");
-  const boxTekst = boxen + " verrassingsbox" + (boxen === 1 ? "" : "en");
-  $("#balkTekst").textContent = betaald === 0 && boxen === 0 ? "Nog geen koekjes gekozen"
-    : betaald === 0 ? boxTekst : losseTekst + (boxen ? " + " + boxTekst : "");
+  $("#balkTekst").textContent = betaald === 0 ? "Nog geen koekjes gekozen"
+    : betaald + " koekje" + (betaald === 1 ? "" : "s")
+      + (boxen ? " · " + boxen + " verrassingsbox" + (boxen === 1 ? "" : "en") : "");
 
   // Hoeveel koekjes nog tot de volgende vier? Dat is wat de spaarbalk laat zien.
   const inRij = betaald % BUNDEL.aantal;
   const totDeal = betaald === 0 ? BUNDEL.aantal : (BUNDEL.aantal - inRij) % BUNDEL.aantal;
   const spaar = totDeal === 0 && betaald > 0
-    ? (betaald / BUNDEL.aantal) + "× de deal — je bespaart " + euro(kort) + "."
+    ? Math.floor(betaald / BUNDEL.aantal) + "× de combideal — je bespaart " + euro(kort) + "."
     : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " tot "
       + (kort > 0 ? "de volgende " : "") + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + ".";
   $("#spaarTekst").textContent = spaar;
@@ -1039,8 +1063,8 @@ function ververs(){
   } else {
     body.innerHTML = ids.map(function(id){
       const k = vind(id);
-      const onder = id === BOX.id
-        ? '<span style="display:block;font-size:.82rem;color:var(--zacht)">' + BOX.koekjes + ' koekjes · ik kies ze uit</span>'
+      const onder = isBox(id)
+        ? '<span style="display:block;font-size:.82rem;color:var(--zacht)">' + k.koekjes + ' koekjes · ik kies ze uit</span>'
         : '';
       return '<div class="regel"><span class="koek-plek" data-koek="' + id + '"></span>'
         + '<div><h4>' + k.naam + '</h4>' + onder
@@ -1057,7 +1081,7 @@ function ververs(){
       : "");
   }
   $$(".koek-plek", body).forEach(function(el){
-    el.innerHTML = el.dataset.koek === BOX.id ? doosSVG() : koekSVG(vind(el.dataset.koek));
+    el.innerHTML = isBox(el.dataset.koek) ? doosSVG() : koekSVG(vind(el.dataset.koek));
   });
 
   $("#totaalPrijs").textContent = euro(sub);
@@ -1073,6 +1097,12 @@ function ververs(){
   if (!$("#afhaalVeld").hidden) tekenMomenten();
 }
 
+// Het paneel met de drie boxmaten onder de combideal.
+function boxKeuzeTonen(open){
+  $("#boxKeuze").hidden = !open;
+  $("#verrasKnop").setAttribute("aria-expanded", open ? "true" : "false");
+}
+
 function openLade(open){
   $("#lade").classList.toggle("open", open);
   $("#sluier").classList.toggle("open", open);
@@ -1085,7 +1115,7 @@ function openLade(open){
 function bestelTekst(code){
   const regels = Object.keys(mandje).map(function(id){
     const k = vind(id);
-    const extra = id === BOX.id ? " (" + BOX.koekjes + " koekjes)" : "";
+    const extra = isBox(id) ? " (" + k.koekjes + " koekjes)" : "";
     return "• " + mandje[id] + "× " + k.naam + extra + " — " + euro(mandje[id] * k.prijs);
   });
   const kort = korting();
@@ -1118,7 +1148,8 @@ async function bewaarBestelling(code){
   });
   const kort = korting();
   if (kort > 0) regels.push({id: "bundel", naam: BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs),
-                             aantal: Math.floor(aantalBetaald() / BUNDEL.aantal), stuk: -kort / Math.floor(aantalBetaald() / BUNDEL.aantal), gratis: true});
+                             aantal: Math.floor(koekjesTotaal() / BUNDEL.aantal),
+                             stuk: CONFIG.bundelPrijs - BUNDEL.aantal * CONFIG.stukPrijs, gratis: true});
   try {
     await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), {
       code: code,
@@ -1200,7 +1231,7 @@ function overleggen(){
   const n = koekjesTotaal();
   const regels = Object.keys(mandje).map(function(id){
     const k = vind(id);
-    return "• " + mandje[id] + "× " + k.naam + (id === BOX.id ? " (" + BOX.koekjes + " koekjes)" : "");
+    return "• " + mandje[id] + "× " + k.naam + (isBox(id) ? " (" + k.koekjes + " koekjes)" : "");
   });
   let t = "Hoi Zara! Ik zou graag een grotere bestelling doen: " + n + " koekje" + (n === 1 ? "" : "s") + ".";
   if (regels.length) t += "\n\nWat ik in gedachten heb:\n" + regels.join("\n");
@@ -1284,6 +1315,12 @@ function start(){
   $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
   $("#bedanktKoek").innerHTML = koekSVG(KOEKJES[3]);
 
+  // de drie maten van de verrassingsbox
+  $("#boxRij").innerHTML = BOXEN.map(function(b){
+    return '<button class="boxmaat" type="button" data-add="' + b.id + '">'
+      + '<b>' + b.koekjes + ' koekjes</b><span>' + euro(dealPrijs(b.koekjes)) + '</span></button>';
+  }).join("");
+
   // de rij vakjes bij de deal: vier koekjes
   $("#dealRij").innerHTML = [0,1,2,3].map(function(i){
     return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">' + koekSVG(KOEKJES[i]) + '</div>';
@@ -1329,6 +1366,11 @@ document.addEventListener("click", function(e){
       add.textContent = "Toegevoegd";
       add.classList.add("gelukt");
       setTimeout(function(){ add.textContent = "In mandje"; add.classList.remove("gelukt"); }, 1100);
+    } else if (isBox(add.dataset.add)){
+      const b = vind(add.dataset.add);
+      boxKeuzeTonen(false);
+      openLade(true);
+      melding("Verrassingsbox toegevoegd — " + b.koekjes + " koekjes, ik kies ze uit.");
     } else {
       melding(vind(add.dataset.add).naam + " zit in je mandje.");
     }
@@ -1358,9 +1400,12 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#nogmaals")){ bevestigd = ""; ververs(); return; }
   if (e.target.closest("#cursorSchakel")){ cursorAan = !cursorAan; bewaar("kb-cursor", cursorAan); cursorInstellen(); return; }
   if (e.target.closest("#verrasMij")){
-    inMandje(BOX.id, 1);
-    openLade(true);
-    melding("Verrassingsbox toegevoegd — zes koekjes, ik kies ze uit.");
+    boxKeuzeTonen(true);
+    $("#boxKeuze").scrollIntoView({behavior: rustig ? "auto" : "smooth", block: "center"});
+    return;
+  }
+  if (e.target.closest("#verrasKnop")){
+    boxKeuzeTonen($("#boxKeuze").hidden);
     return;
   }
   const moment = e.target.closest("[data-moment]");

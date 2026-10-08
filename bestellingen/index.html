@@ -549,13 +549,19 @@ const KOEKJES = {
   chocchip:    {naam: "Chocolate chip",  seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]}
 };
 // Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
-const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25, box: 17.50};
-const STUKS = {box: 6};
-const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box"];
-// De deal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
+const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25,
+                 box4: 13.00, box5: 16.25, box6: 19.50};
+const STUKS = {box4: 4, box5: 5, box6: 6};
+const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box4", "box5", "box6"];
+const isBox = id => id.indexOf("box") === 0;
+// De combideal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
+// Koekjes uit een verrassingsbox tellen daarvoor net zo goed mee.
 const BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
-const bundelKorting = n => Math.floor(n / BUNDEL.aantal) * (BUNDEL.aantal * BUNDEL.stuk - BUNDEL.prijs);
-const NAAMVAN = id => id === "box" ? "Verrassingsbox" : (KOEKJES[id] ? KOEKJES[id].naam : id);
+const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
+  * (BUNDEL.aantal * BUNDEL.stuk - BUNDEL.prijs) * 100) / 100;
+const NAAMVAN = id => isBox(id)
+  ? "Verrassingsbox" + (STUKS[id] ? " (" + STUKS[id] + " koekjes)" : "")
+  : (KOEKJES[id] ? KOEKJES[id].naam : id);
 
 // Waar een bestelling vandaan komt. Van de webshop komt niets mee; dat is "Website".
 const KANALEN = ["Website", "Mondeling", "WhatsApp", "Instagram", "TikTok", "Telefoon", "E-mail", "Anders"];
@@ -700,7 +706,8 @@ function tekenOverzicht(){
   let vrijeKeuze = 0;
   lopend().forEach(function(b){
     (b.regels || []).forEach(function(r){
-      if (r.id === "box"){ vrijeKeuze += (r.aantal || 0) * 6; return; }
+      if (r.id === "bundel"){ return; }                       // de korting is geen koekje
+      if (isBox(r.id)){ vrijeKeuze += (r.aantal || 0) * (STUKS[r.id] || 6); return; }
       if (r.id === "verrassing"){ vrijeKeuze += (r.aantal || 0); return; }
       per[r.id] = (per[r.id] || 0) + (r.aantal || 0);
     });
@@ -886,7 +893,7 @@ function vulFormulierLijsten(){
   $("#fKanaal").innerHTML = KANALEN.map(k => '<option value="' + k + '">' + k + '</option>').join("");
   $("#fStatus").innerHTML = Object.keys(STATUSSEN)
     .map(k => '<option value="' + k + '">' + STATUSSEN[k] + '</option>').join("");
-  $("#fGratisSoort").innerHTML = SOORTEN.filter(id => id !== "box")
+  $("#fGratisSoort").innerHTML = SOORTEN.filter(id => !isBox(id))
     .map(id => '<option value="' + id + '">' + NAAMVAN(id) + '</option>').join("");
 }
 
@@ -897,10 +904,10 @@ function formulierSom(){
     const n = formulier.aantallen[id] || 0;
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
-    if (id !== "box") los += n;
+    los += n * (STUKS[id] || 1);
   });
   koekjes += formulier.gratisAantal || 0;
-  // Losse koekjes krijgen dezelfde deal als op de webshop: vier voor € 12.
+  // Dezelfde combideal als op de webshop: vier voor € 12, boxen tellen mee.
   const kort = bundelKorting(los);
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
@@ -909,9 +916,9 @@ function tekenFormulierItems(){
   $("#formItems").innerHTML = SOORTEN.map(function(id){
     const n = formulier.aantallen[id] || 0;
     return '<div class="itemrij">'
-      + (id === "box" ? doosSVG() : koekSVG(KOEKJES[id]))
+      + (isBox(id) ? doosSVG() : koekSVG(KOEKJES[id]))
       + '<div><div>' + NAAMVAN(id) + '</div>'
-      + '<div class="prijs">' + euro(PRIJZEN[id]) + (id === "box" ? " · 6 koekjes" : "") + '</div></div>'
+      + '<div class="prijs">' + euro(PRIJZEN[id]) + '</div></div>'
       + '<span class="stapel"><button type="button" data-min-item="' + id + '">&#8211;</button>'
       + '<span>' + n + '</span>'
       + '<button type="button" data-plus-item="' + id + '">+</button></span></div>';

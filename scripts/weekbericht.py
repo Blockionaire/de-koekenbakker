@@ -36,6 +36,8 @@ NAMEN = {
     "oreo": "Oreo", "stroopwafel": "Stroopwafel", "lotus": "Lotus Biscoff",
     "kinder": "Kinderchocolade", "chocchip": "Chocolate chip",
 }
+# Hoeveel koekjes er in een verrassingsbox gaan, per soort box.
+BOXMAAT = {"box4": 4, "box5": 5, "box6": 6, "box": 6}
 STATUS = {"nieuw": "Nieuw", "bevestigd": "Nog bakken", "gebakken": "Gebakken",
           "ingepakt": "Ingepakt", "afgerond": "Opgehaald", "geannuleerd": "Geannuleerd"}
 
@@ -107,8 +109,10 @@ def bouw_bericht(bestellingen, weekdoc, vrijdag):
     for b in lopend:
         for r in b.get("regels") or []:
             aantal = r.get("aantal") or 0
-            if r.get("id") == "box":
-                vrije_keuze += aantal * 6
+            if r.get("id") == "bundel":
+                continue                       # de combideal is korting, geen koekje
+            if str(r.get("id") or "").startswith("box"):
+                vrije_keuze += aantal * BOXMAAT.get(r.get("id"), 6)
             elif r.get("id") == "verrassing":
                 vrije_keuze += aantal
             else:

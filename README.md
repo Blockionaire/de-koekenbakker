@@ -30,12 +30,15 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   boven de kop.
 - **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter.
   Tik op een koekje en er gaat een hap uit (na drie happen krijg je een knipoog terug).
-- **De deal: 4 voor € 12** — vier gleuven die meelopen met je mandje. Los kost een koekje
+- **Combideal: 4 voor € 12** — vier gleuven die meelopen met je mandje. Los kost een koekje
   € 3,25; bij elke vier die erin liggen gaat er € 1 van het totaal af, zichtbaar als een
   eigen regel in het mandje. De smaken mogen vrij door elkaar.
-- **Verrassingsbox** — één knop in de hero legt een box van zes koekjes in je mandje.
-  Wat erin zit blijft een verrassing: in het mandje staat alleen *1× Verrassingsbox
-  (6 koekjes)*. De box telt niet mee voor de deal en heeft een eigen prijs.
+- **Verrassingsbox** — naast *Stel je box samen* staat *Kies verrassingsbox*: daar klapt een
+  paneeltje open met drie maten (4, 5 of 6 koekjes) en de prijs erbij. De knop in de hero
+  brengt je naar datzelfde paneeltje. Wat erin zit blijft een verrassing: in het mandje
+  staat alleen *1× Verrassingsbox* met het aantal koekjes eronder. Een box kost precies
+  hetzelfde als diezelfde koekjes zelf uitkiezen — ze tellen gewoon mee voor de combideal,
+  dus een box van vier is € 12.
 - **Bakdag** — een aftelklok naar de eerstvolgende bakdag (standaard vrijdag 16:00).
 - **Over Zara**, **reviews** (met een link terug naar het assortiment) en een
   **vragenlijst**.
@@ -71,7 +74,7 @@ const CONFIG = {
   sluitdag: 4,                   // bestellen kan tot donderdag…
   sluituur: 20,                  // …20:00; daarna schuift alles een week op
   toonRestVanaf: 10,             // pas zoveel koekjes over noem je het aantal
-  boxPrijs: 17.50,               // verrassingsbox: zes koekjes, onder de deal
+  boxMaten: [4, 5, 6],           // in welke maten de verrassingsbox te krijgen is
   maxPerBestelling: 20,          // daarboven eerst even overleggen
   weekLimiet: 100,               // zoveel koekjes kun je in één week bakken
   alBesteld: 0,                  // hoeveel er deze week al besteld zijn — zelf bijhouden
@@ -88,9 +91,10 @@ staat gaat voor op de waarden hierboven, die alleen nog het vangnet zijn. De afh
 rekenen zichzelf uit vanaf de eerstvolgende bakdag: `dagNr` 5 is
 vrijdag, 6 is zaterdag. Wil je geen tijdsloten aanbieden, zet dan `afhaalKeuze` op
 `false` — het hele blok verdwijnt dan uit het bestelformulier en je spreekt het
-moment af in je bevestiging. De prijs van de verrassingsbox staat los van de losse
-koekjes; met `boxPrijs` bepaal je die zelf. Verandert de deal, dan pas je `stukPrijs`,
-`bundelAantal` en `bundelPrijs` aan — alle teksten op de site rekenen daarmee mee.
+moment af in je bevestiging. Verandert de combideal, dan pas je `stukPrijs`,
+`bundelAantal` en `bundelPrijs` aan — alle teksten en bedragen op de site rekenen daarmee
+mee, de verrassingsboxen inbegrepen. Met `boxMaten` bepaal je welke maten je aanbiedt;
+een maat eruit halen of er eentje bij zetten mag.
 
 **Nog invullen voordat de site echt live gaat:**
 
