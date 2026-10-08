@@ -51,6 +51,8 @@ a{color:inherit}
 .knop--klein{padding:8px 13px;font-size:.84rem;box-shadow:2px 2px 0 rgba(46,34,23,.18)}
 .knop--vol{width:100%}
 .knop[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+.knop--weg{color:#8E3B2E;border-color:#8E3B2E}
+.knop--weg:hover{background:#8E3B2E;color:var(--room)}
 
 /* ---------- inloggen ---------- */
 .inlog{min-height:100dvh;display:grid;place-items:center;padding:24px}
@@ -833,6 +835,7 @@ function knoppenVoor(b){
   if (b.status === "afgerond") uit += k("ingepakt", "Toch nog niet", true);
   if (b.status !== "geannuleerd") uit += k("geannuleerd", "Annuleren", true);
   else uit += k("nieuw", "Terugzetten", true);
+  uit += '<button class="knop knop--stil knop--klein knop--weg" data-wis="' + b.id + '" type="button">Verwijderen</button>';
   return uit;
 }
 
@@ -996,18 +999,25 @@ function bestelCode(){
   return c;
 }
 
-async function bestellingVerwijderen(){
-  const b = bestellingen.filter(x => x.id === formulier.id)[0];
+async function bestellingVerwijderen(id){
+  const b = (zoekRij || bestellingen).filter(x => x.id === id)[0];
   if (!b) return;
-  if (!window.confirm("Deze bestelling van " + (b.naam || "?") + " definitief verwijderen?")) return;
+  const vraag = "Bestelling van " + (b.naam || "?") + " verwijderen?\n\n"
+    + (b.koekjes || 0) + " koekjes · " + euro(b.bedrag)
+    + (b.code ? " · nummer " + b.code : "")
+    + "\n\nDit kan niet ongedaan worden gemaakt. Wil je 'm alleen afzeggen, kies dan Annuleren "
+    + "in plaats hiervan — dan blijft hij staan.";
+  if (!window.confirm(vraag)) return;
   try {
     await fx.deleteDoc(fx.doc(db, "koekenbakker", RUIMTE, "bestellingen", b.id));
+    // De weekteller van de week waar hij in zat, niet per se de week die je bekijkt.
     if (b.status !== "geannuleerd" && (b.koekjes || 0) > 0){
-      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", b.week || huidigeWeek),
                       {besteld: fx.increment(-(b.koekjes || 0))}, {merge: true});
     }
     melden("Bestelling verwijderd.");
-    sluitFormulier();
+    if (zoekRij) zoekUitvoeren();
+    if (formulier) sluitFormulier();
   } catch (fout){
     melden("Verwijderen lukte niet: " + (fout.code || fout.message));
   }
@@ -1175,7 +1185,9 @@ document.addEventListener("click", function(e){
   if (bewerk){ openFormulier(bewerk.dataset.bewerk); return; }
   if (e.target.closest("#formDicht")){ sluitFormulier(); return; }
   if (e.target.closest("#formOpslaan")){ formulierOpslaan(); return; }
-  if (e.target.closest("#formVerwijder")){ bestellingVerwijderen(); return; }
+  if (e.target.closest("#formVerwijder")){ bestellingVerwijderen(formulier.id); return; }
+  const wis = e.target.closest("[data-wis]");
+  if (wis){ bestellingVerwijderen(wis.dataset.wis); return; }
   if (e.target === $("#formVenster")){ sluitFormulier(); return; }
 
   const meerItem = e.target.closest("[data-plus-item]");

@@ -36,8 +36,12 @@ overzicht staat dat per week bij elkaar geteld. Wat via de webshop binnenkomt he
 vanzelf "Website".
 
 Bestaande bestellingen pas je aan met **Bewerken** — handig als iemand er nog twee bij wil,
-of als een adres verandert. Het baklimiet rekent automatisch mee: hoog je een bestelling op
-of verwijder je er een, dan verschuift de weekteller mee.
+of als een adres verandert. Daarnaast staat er **Verwijderen**, met een vraag om bevestiging
+waarin nog even staat om wie het gaat en hoeveel koekjes het zijn. Verwijderen is definitief;
+wil je een bestelling alleen afzeggen maar wel kunnen terugvinden, gebruik dan *Annuleren*.
+Het baklimiet rekent in alle gevallen mee: hoog je een bestelling op, zeg je 'm af of
+verwijder je 'm, dan verschuift de weekteller vanzelf — ook als die bestelling in een andere
+week stond.
 
 Een bestelling loopt langs vijf stappen, met telkens één knop om hem een stap verder te
 zetten:
