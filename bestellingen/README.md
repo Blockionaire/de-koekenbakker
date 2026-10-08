@@ -30,8 +30,8 @@ appen of te mailen), het afhaalmoment of adres en de opmerking.
 Bovenaan staat **+ Bestelling toevoegen**, voor alles wat buiten de webshop om binnenkomt:
 mondeling, via Instagram, een appje. Je vult een naam in, tikt de koekjes bij elkaar met de
 plusknoppen, en het bedrag rekent zichzelf uit — inclusief de combideal van de webshop
-(vier koekjes voor € 12, bij elke volgende vier opnieuw; koekjes uit een verrassingsbox
-tellen daarvoor net zo goed mee). Aanpassen mag, bijvoorbeeld als je een
+(vier losse koekjes voor € 12, bij elke volgende vier opnieuw). De verrassingsboxen hebben
+hun eigen prijs: € 12, € 15 of € 18 voor 4, 5 of 6 koekjes. Aanpassen mag, bijvoorbeeld als je een
 andere prijs hebt afgesproken. Elke bestelling heeft ook een **kanaal** (Website,
 Mondeling, WhatsApp, Instagram, …), zodat je ziet waar je klanten vandaan komen; op het
 overzicht staat dat per week bij elkaar geteld. Wat via de webshop binnenkomt heet

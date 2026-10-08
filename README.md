@@ -34,11 +34,11 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   € 3,25; bij elke vier die erin liggen gaat er € 1 van het totaal af, zichtbaar als een
   eigen regel in het mandje. De smaken mogen vrij door elkaar.
 - **Verrassingsbox** — naast *Stel je box samen* staat *Kies verrassingsbox*: daar klapt een
-  paneeltje open met drie maten (4, 5 of 6 koekjes) en de prijs erbij. De knop in de hero
-  brengt je naar datzelfde paneeltje. Wat erin zit blijft een verrassing: in het mandje
-  staat alleen *1× Verrassingsbox* met het aantal koekjes eronder. Een box kost precies
-  hetzelfde als diezelfde koekjes zelf uitkiezen — ze tellen gewoon mee voor de combideal,
-  dus een box van vier is € 12.
+  paneeltje open met drie maten, elk met een eigen ronde prijs: 4 koekjes voor € 12,
+  5 voor € 15 en 6 voor € 18. De knop in de hero brengt je naar datzelfde paneeltje. Wat
+  erin zit blijft een verrassing: in het mandje staat alleen *1× Verrassingsbox* met het
+  aantal koekjes eronder. Die prijs staat er al in, dus de combideal rekent alleen over de
+  koekjes die je zelf uitkiest — anders zou de korting er dubbel afgaan.
 - **Bakdag** — een aftelklok naar de eerstvolgende bakdag (standaard vrijdag 16:00).
 - **Over Zara**, **reviews** (met een link terug naar het assortiment) en een
   **vragenlijst**.
@@ -74,7 +74,11 @@ const CONFIG = {
   sluitdag: 4,                   // bestellen kan tot donderdag…
   sluituur: 20,                  // …20:00; daarna schuift alles een week op
   toonRestVanaf: 10,             // pas zoveel koekjes over noem je het aantal
-  boxMaten: [4, 5, 6],           // in welke maten de verrassingsbox te krijgen is
+  boxen: [                       // de verrassingsbox: maat en prijs
+    {koekjes: 4, prijs: 12.00},
+    {koekjes: 5, prijs: 15.00},
+    {koekjes: 6, prijs: 18.00}
+  ],
   maxPerBestelling: 20,          // daarboven eerst even overleggen
   weekLimiet: 100,               // zoveel koekjes kun je in één week bakken
   alBesteld: 0,                  // hoeveel er deze week al besteld zijn — zelf bijhouden
@@ -93,7 +97,7 @@ vrijdag, 6 is zaterdag. Wil je geen tijdsloten aanbieden, zet dan `afhaalKeuze` 
 `false` — het hele blok verdwijnt dan uit het bestelformulier en je spreekt het
 moment af in je bevestiging. Verandert de combideal, dan pas je `stukPrijs`,
 `bundelAantal` en `bundelPrijs` aan — alle teksten en bedragen op de site rekenen daarmee
-mee, de verrassingsboxen inbegrepen. Met `boxMaten` bepaal je welke maten je aanbiedt;
+mee. In `boxen` zet je welke verrassingsboxen je aanbiedt, elk met zijn eigen prijs;
 een maat eruit halen of er eentje bij zetten mag.
 
 **Nog invullen voordat de site echt live gaat:**

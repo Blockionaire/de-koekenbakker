@@ -550,12 +550,12 @@ const KOEKJES = {
 };
 // Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
 const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25,
-                 box4: 13.00, box5: 16.25, box6: 19.50};
+                 box4: 12.00, box5: 15.00, box6: 18.00};
 const STUKS = {box4: 4, box5: 5, box6: 6};
 const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box4", "box5", "box6"];
 const isBox = id => id.indexOf("box") === 0;
 // De combideal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
-// Koekjes uit een verrassingsbox tellen daarvoor net zo goed mee.
+// Een verrassingsbox heeft een eigen prijs en telt daar dus niet in mee.
 const BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
 const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
   * (BUNDEL.aantal * BUNDEL.stuk - BUNDEL.prijs) * 100) / 100;
@@ -904,10 +904,10 @@ function formulierSom(){
     const n = formulier.aantallen[id] || 0;
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
-    los += n * (STUKS[id] || 1);
+    if (!isBox(id)) los += n;
   });
   koekjes += formulier.gratisAantal || 0;
-  // Dezelfde combideal als op de webshop: vier voor € 12, boxen tellen mee.
+  // Dezelfde combideal als op de webshop: vier losse koekjes voor € 12.
   const kort = bundelKorting(los);
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
