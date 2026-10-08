@@ -99,6 +99,25 @@ def haal_week(kop, week):
     return {k: waarde(v) for k, v in antwoord.json().get("fields", {}).items()}
 
 
+def al_verstuurd(kop, week):
+    """Staat er al een merkteken dat het bericht van deze week eruit is?"""
+    url = ("https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents"
+           "/koekenbakker/%s/weekbericht/%s" % (PROJECT, RUIMTE, week))
+    return requests.get(url, headers=kop, timeout=30).status_code == 200
+
+
+def merk_verstuurd(kop, week, nu):
+    """Zet dat merkteken neer. Lukt dat niet, dan is dat geen ramp: het bericht
+    is dan al de deur uit en hooguit krijgt Zara er volgende run eentje dubbel."""
+    url = ("https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents"
+           "/koekenbakker/%s/weekbericht?documentId=%s" % (PROJECT, RUIMTE, week))
+    body = {"fields": {"verstuurd": {"stringValue": nu.isoformat(timespec="seconds")}}}
+    try:
+        requests.post(url, headers=kop, json=body, timeout=30)
+    except Exception as fout:
+        print("Merkteken zetten lukte niet: %s" % fout)
+
+
 def euro(n):
     return ("€ %.2f" % (n or 0)).replace(".", ",")
 
@@ -232,16 +251,28 @@ def verstuur(onderwerp, html, plat):
 
 def main():
     nu = datetime.datetime.now(HIER)
-    if os.environ.get("FORCEER", "").lower() not in ("ja", "true", "1"):
-        if nu.weekday() != 3 or nu.hour != 20:
-            print("Het is nu %s in Nederland — niet donderdag 20:00, dus niets te doen." % nu.strftime("%A %H:%M"))
-            return
+    met_de_hand = os.environ.get("FORCEER", "").lower() in ("ja", "true", "1")
     week, vrijdag = weekcode(nu.date())
     kop = verbinding()
+
+    # GitHub start een geplande taak soms een half uur tot een uur te laat. Daarom
+    # draait deze taak meerdere keren op donderdagavond en kijkt hij hier zelf of
+    # het bericht van deze week al weg is. Zo komt hij altijd, en nooit dubbel.
+    if not met_de_hand:
+        if nu.weekday() != 3 or nu.hour < 20:
+            print("Het is nu %s in Nederland — nog geen donderdagavond, dus niets te doen."
+                  % nu.strftime("%A %H:%M"))
+            return
+        if al_verstuurd(kop, week):
+            print("Het bericht van week %s is al verstuurd." % week)
+            return
+
     bestellingen = haal_bestellingen(kop, week)
     weekdoc = haal_week(kop, week)
     print("Week %s: %d bestellingen gevonden." % (week, len(bestellingen)))
     verstuur(*bouw_bericht(bestellingen, weekdoc, vrijdag))
+    if not met_de_hand:
+        merk_verstuurd(kop, week, nu)
 
 
 if __name__ == "__main__":

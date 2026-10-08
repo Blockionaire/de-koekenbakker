@@ -285,17 +285,17 @@ button{font:inherit;color:inherit}
 @media(max-width:880px){.agenda{grid-template-columns:1fr}}
 
 /* ---------- Zara ---------- */
-.overzara{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(28px,5vw,64px);align-items:center}
+.overzara{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(28px,5vw,60px);align-items:center}
 .polaroid{background:var(--papier);border:2px solid var(--inkt);border-radius:6px;padding:16px 16px 22px;
-  transform:rotate(-3deg);box-shadow:10px 10px 0 rgba(46,34,23,.18);max-width:360px;margin-inline:auto}
+  transform:rotate(-2deg);box-shadow:12px 12px 0 rgba(46,34,23,.18);max-width:520px;width:100%;margin-inline:auto}
 .polaroid-vlak{aspect-ratio:4/5;background:linear-gradient(160deg,var(--zand),#DFD0B6);border-radius:3px;
   display:grid;place-items:center;position:relative;overflow:hidden}
 .polaroid-vlak .monogram{font-family:var(--display);font-size:5.5rem;color:rgba(46,34,23,.16)}
 .polaroid-vlak img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .polaroid-vlak.met-foto .monogram,.polaroid-vlak.met-foto > span[id]{display:none}
 .polaroid-vlak svg{position:absolute;width:88px;bottom:12px;right:12px;transform:rotate(-12deg)}
-.polaroid figcaption{font-family:var(--kop);font-weight:600;font-size:.9rem;color:var(--zacht);
-  margin-top:12px;text-align:center}
+.polaroid figcaption{font-family:var(--kop);font-weight:700;font-size:1.05rem;color:var(--inkt);
+  margin-top:16px;text-align:center;letter-spacing:.01em}
 .cijfers{display:flex;flex-wrap:wrap;gap:14px;margin-top:26px}
 .cijfer{border:2px solid var(--inkt);border-radius:14px;padding:12px 18px;background:var(--papier)}
 .cijfer b{display:block;font-family:var(--kop);font-weight:800;font-size:1.6rem;line-height:1;font-variant-numeric:tabular-nums}
@@ -551,7 +551,7 @@ button{font:inherit;color:inherit}
           <span class="monogram">Z</span>
           <span id="polaroidKoek" aria-hidden="true"></span>
         </div>
-        <figcaption id="zaraBijschrift">Hier komt een foto van Zara</figcaption>
+        <figcaption id="zaraBijschrift">Zara Prins</figcaption>
       </figure>
       <div class="toon">
         <span class="eyebrow">Over de bakker</span>
@@ -560,7 +560,7 @@ button{font:inherit;color:inherit}
              tekst; meerdere alinea's mogen, zet er dan nog een <p class="lead"> bij. -->
         <p class="lead" style="margin-top:16px">Hier komt binnenkort mijn verhaal: wie ik ben, hoe ik begonnen ben en waarom de oven hier elke vrijdag aangaat.</p>
         <div class="cijfers">
-          <div class="cijfer"><b>16</b><span>jaar</span></div>
+          <div class="cijfer"><b id="leeftijd">15</b><span>jaar</span></div>
           <div class="cijfer"><b>5</b><span>smaken</span></div>
           <div class="cijfer"><b>1×</b><span>bakdag per week</span></div>
         </div>
@@ -1272,6 +1272,17 @@ function overleggen(){
   stuur(t, "Grote bestelling De Koekenbakker", "Je berichtje staat klaar");
 }
 
+/* ---------- hoe oud Zara is ---------- */
+// Zo hoeft niemand eraan te denken: op 9 januari telt het getal zichzelf op.
+const JARIG = {dag: 9, maand: 1, jaar: 2011};
+function leeftijd(){
+  const nu = new Date();
+  let jaren = nu.getFullYear() - JARIG.jaar;
+  const verjaardag = new Date(nu.getFullYear(), JARIG.maand - 1, JARIG.dag);
+  if (nu < verjaardag) jaren--;
+  return jaren;
+}
+
 /* ---------- aftellen naar de bakdag ---------- */
 // De eerstvolgende bakdag waar je nog voor kunt bestellen. Is het sluitmoment
 // van die bakdag voorbij, dan schuift alles een week op.
@@ -1349,7 +1360,6 @@ function start(){
     if (!foto.naturalWidth) return;
     foto.hidden = false;
     $("#polaroidVlak").classList.add("met-foto");
-    $("#zaraBijschrift").textContent = "Zara in de keuken";
   };
   if (foto.complete) fotoAan(); else foto.addEventListener("load", fotoAan);
   $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
@@ -1373,6 +1383,7 @@ function start(){
   cursorInstellen();
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
+  $("#leeftijd").textContent = leeftijd();
   bakdagTonen();
 
   // in beeld schuiven

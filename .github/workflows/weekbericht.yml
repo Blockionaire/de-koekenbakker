@@ -1,14 +1,19 @@
 # Het weekoverzicht van de bestellingen, elke donderdagavond om 20:00.
 #
-# GitHub plant taken in UTC en houdt geen rekening met zomertijd. Daarom draait
-# deze taak twee keer (18:00 en 19:00 UTC) en kijkt het script zelf hoe laat het
-# in Nederland is; alleen om 20:00 Nederlandse tijd stuurt hij het bericht.
+# GitHub plant taken in UTC, houdt geen rekening met zomertijd en start ze soms
+# een half uur tot een uur te laat. Daarom draait deze taak donderdagavond een
+# paar keer achter elkaar. Het script kijkt zelf of het in Nederland al na 20:00
+# is en of het bericht van deze week al weg is, dus hij komt altijd en nooit
+# dubbel.
 name: Weekbericht
 
 on:
   schedule:
-    - cron: "0 18 * * 4"   # donderdag, zomertijd
-    - cron: "0 19 * * 4"   # donderdag, wintertijd
+    - cron: "0 18 * * 4"   # 20:00 in de zomertijd
+    - cron: "30 18 * * 4"
+    - cron: "0 19 * * 4"   # 20:00 in de wintertijd
+    - cron: "30 19 * * 4"
+    - cron: "0 20 * * 4"   # vangnet als GitHub laat is
   workflow_dispatch:        # met de hand draaien kan ook
     inputs:
       forceer:
