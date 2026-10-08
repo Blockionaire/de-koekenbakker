@@ -166,6 +166,19 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .venster-body{flex:1;min-height:0;overflow-y:auto;padding:18px;display:grid;gap:14px;align-content:start}
 .venster-voet{padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:2px solid var(--inkt);
   display:grid;gap:10px;background:var(--papier)}
+/* het vraagvenster: een scherm in de app in plaats van een browserpopup */
+.venster--vraag{z-index:70;align-items:center;background:rgba(46,34,23,.55)}
+.venster--vraag .venster-in{width:min(100% - 28px,420px);height:auto;border-bottom:2px solid var(--inkt);
+  border-radius:20px;box-shadow:6px 6px 0 rgba(46,34,23,.18);transform:translateY(14px) scale(.985)}
+.venster--vraag.aan .venster-in{transform:none}
+.venster--vraag .venster-voet{border-radius:0 0 18px 18px}
+.wisregels{display:grid;gap:3px;background:var(--zand);border-radius:14px;padding:12px 14px}
+.wisregels b{font-family:var(--kop);font-size:1.02rem}
+.wisregels span{font-size:.9rem;color:var(--zacht)}
+.waarschuw{font-size:.92rem;line-height:1.55}
+.knop--gevaar{background:#8E3B2E;border-color:#8E3B2E;color:var(--room)}
+.knop--gevaar:hover{background:#7A3227;color:var(--room)}
+
 .schakelaars{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .schakelaars button{padding:11px;border:2px solid var(--inkt);border-radius:12px;background:var(--papier);
   font-family:var(--kop);font-weight:700;font-size:.9rem}
@@ -241,6 +254,24 @@ main{padding:18px 0 80px;display:grid;gap:16px}
     <div class="venster-voet">
       <div class="somrij"><span id="formAantal">0 koekjes</span><span id="formTotaal">&euro; 0,00</span></div>
       <button class="knop knop--vol" id="formOpslaan" type="button">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<div class="venster venster--vraag" id="wisVenster" role="dialog" aria-modal="true" aria-labelledby="wisTitel">
+  <div class="venster-in">
+    <div class="venster-kop">
+      <h3 id="wisTitel">Weet je dit zeker?</h3>
+      <button class="dicht" id="wisDicht" aria-label="Sluiten">&#10005;</button>
+    </div>
+    <div class="venster-body">
+      <div class="wisregels" id="wisRegels"></div>
+      <p class="waarschuw">Deze bestelling verdwijnt helemaal uit de lijst en dat kan ik niet terugdraaien.
+        Wil je 'm alleen afzeggen? Kies dan <b>Annuleren</b> &mdash; dan blijft hij staan en telt hij niet meer mee.</p>
+    </div>
+    <div class="venster-voet">
+      <button class="knop knop--vol knop--gevaar" id="wisDoor" type="button">Ja, verwijderen</button>
+      <button class="knop knop--stil knop--vol" id="wisTerug" type="button">Nee, laat staan</button>
     </div>
   </div>
 </div>
@@ -999,15 +1030,44 @@ function bestelCode(){
   return c;
 }
 
-async function bestellingVerwijderen(id){
+// Verwijderen vraagt eerst om een bevestiging in een eigen schermpje,
+// niet via het popupvenster van de browser.
+let wisDoel = null;
+
+function wisVragen(id){
   const b = (zoekRij || bestellingen).filter(x => x.id === id)[0];
   if (!b) return;
-  const vraag = "Bestelling van " + (b.naam || "?") + " verwijderen?\n\n"
-    + (b.koekjes || 0) + " koekjes · " + euro(b.bedrag)
-    + (b.code ? " · nummer " + b.code : "")
-    + "\n\nDit kan niet ongedaan worden gemaakt. Wil je 'm alleen afzeggen, kies dan Annuleren "
-    + "in plaats hiervan — dan blijft hij staan.";
-  if (!window.confirm(vraag)) return;
+  wisDoel = b;
+  $("#wisRegels").innerHTML =
+      '<b>' + veilig(b.naam || "Zonder naam") + '</b>'
+    + '<span>' + (b.koekjes || 0) + ' koekjes \u00b7 ' + euro(b.bedrag)
+    + (b.code ? ' \u00b7 nummer ' + veilig(b.code) : '') + '</span>'
+    + '<span>' + veilig(b.levering || "Afhalen") + ' \u00b7 ' + veilig(statusNaam(b)) + '</span>';
+  const door = $("#wisDoor");
+  door.disabled = false;
+  door.textContent = "Ja, verwijderen";
+  $("#wisVenster").classList.add("aan");
+  setTimeout(() => door.focus(), 80);
+}
+
+function wisSluiten(){
+  $("#wisVenster").classList.remove("aan");
+  wisDoel = null;
+}
+
+async function wisDoorzetten(){
+  if (!wisDoel) return;
+  const door = $("#wisDoor");
+  door.disabled = true;
+  door.textContent = "Verwijderen\u2026";
+  const klaar = await bestellingVerwijderen(wisDoel.id);
+  if (klaar) wisSluiten();
+  else { door.disabled = false; door.textContent = "Ja, verwijderen"; }
+}
+
+async function bestellingVerwijderen(id){
+  const b = (zoekRij || bestellingen).filter(x => x.id === id)[0];
+  if (!b) return false;
   try {
     await fx.deleteDoc(fx.doc(db, "koekenbakker", RUIMTE, "bestellingen", b.id));
     // De weekteller van de week waar hij in zat, niet per se de week die je bekijkt.
@@ -1018,8 +1078,10 @@ async function bestellingVerwijderen(id){
     melden("Bestelling verwijderd.");
     if (zoekRij) zoekUitvoeren();
     if (formulier) sluitFormulier();
+    return true;
   } catch (fout){
     melden("Verwijderen lukte niet: " + (fout.code || fout.message));
+    return false;
   }
 }
 
@@ -1132,6 +1194,13 @@ $("#inlogForm").addEventListener("submit", async function(e){
   }
 });
 
+// Met Escape gaat eerst het vraagvenster dicht, daarna het formulier.
+document.addEventListener("keydown", function(e){
+  if (e.key !== "Escape") return;
+  if ($("#wisVenster").classList.contains("aan")){ wisSluiten(); return; }
+  if (formulier) sluitFormulier();
+});
+
 document.addEventListener("click", function(e){
   const tabKnop = e.target.closest("[data-tab]");
   if (tabKnop){
@@ -1185,9 +1254,12 @@ document.addEventListener("click", function(e){
   if (bewerk){ openFormulier(bewerk.dataset.bewerk); return; }
   if (e.target.closest("#formDicht")){ sluitFormulier(); return; }
   if (e.target.closest("#formOpslaan")){ formulierOpslaan(); return; }
-  if (e.target.closest("#formVerwijder")){ bestellingVerwijderen(formulier.id); return; }
+  if (e.target.closest("#formVerwijder")){ wisVragen(formulier.id); return; }
   const wis = e.target.closest("[data-wis]");
-  if (wis){ bestellingVerwijderen(wis.dataset.wis); return; }
+  if (wis){ wisVragen(wis.dataset.wis); return; }
+  if (e.target.closest("#wisDoor")){ wisDoorzetten(); return; }
+  if (e.target.closest("#wisTerug") || e.target.closest("#wisDicht")){ wisSluiten(); return; }
+  if (e.target === $("#wisVenster")){ wisSluiten(); return; }
   if (e.target === $("#formVenster")){ sluitFormulier(); return; }
 
   const meerItem = e.target.closest("[data-plus-item]");
