@@ -542,16 +542,19 @@ function doosSVG(){
 }
 
 const KOEKJES = {
-  klassieker:  {naam: "De Klassieker", seed: 11, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]},
-  nachtdonker: {naam: "Nachtdonker",   seed: 23, deeg: ["#5B3A2A", "#42281C"], korst: "#2C1A12", brokken: ["#1E1210", "#33201A", "#120B09"]},
-  wittewolk:   {naam: "Witte Wolk",    seed: 41, deeg: ["#F0DCB4", "#E2C795"], korst: "#C29A62", brokken: ["#FAF0DC", "#F3E4C6", "#E8D3AC"]},
-  karamelbom:  {naam: "Karamelbom",    seed: 67, deeg: ["#E8B472", "#CF9450"], korst: "#9C6427", brokken: ["#C9721F", "#E39A3C", "#6B4423"]},
-  nootjenoir:  {naam: "Nootje Noir",   seed: 89, deeg: ["#C99862", "#A97742"], korst: "#7A5024", brokken: ["#3A2318", "#8B5A2B", "#241611"]}
+  oreo:        {naam: "Oreo",            seed: 11, deeg: ["#EFE3CB", "#DCCAAD"], korst: "#B6A07B", brokken: ["#241F1E", "#15110F", "#F7F2E7"]},
+  stroopwafel: {naam: "Stroopwafel",     seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E", brokken: ["#B5762C", "#8A5420", "#E3AB5E"]},
+  lotus:       {naam: "Lotus Biscoff",   seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A", brokken: ["#C07F3C", "#995E26", "#F0DCC0"]},
+  kinder:      {naam: "Kinderchocolade", seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C", brokken: ["#8A5A33", "#FBF3E5", "#6E4524"]},
+  chocchip:    {naam: "Chocolate chip",  seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]}
 };
 // Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
-const PRIJZEN = {klassieker: 2.75, nachtdonker: 3.00, wittewolk: 3.00, karamelbom: 3.25, nootjenoir: 3.25, box: 14.50};
+const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25, box: 17.50};
 const STUKS = {box: 6};
-const SOORTEN = ["klassieker", "nachtdonker", "wittewolk", "karamelbom", "nootjenoir", "box"];
+const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box"];
+// De deal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
+const BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
+const bundelKorting = n => Math.floor(n / BUNDEL.aantal) * (BUNDEL.aantal * BUNDEL.stuk - BUNDEL.prijs);
 const NAAMVAN = id => id === "box" ? "Verrassingsbox" : (KOEKJES[id] ? KOEKJES[id].naam : id);
 
 // Waar een bestelling vandaan komt. Van de webshop komt niets mee; dat is "Website".
@@ -889,14 +892,17 @@ function vulFormulierLijsten(){
 
 // Wat de bestelling kost en hoeveel koekjes het zijn, uit de aantallen in het venster.
 function formulierSom(){
-  let bedrag = 0, koekjes = 0;
+  let bedrag = 0, koekjes = 0, los = 0;
   SOORTEN.forEach(function(id){
     const n = formulier.aantallen[id] || 0;
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
+    if (id !== "box") los += n;
   });
   koekjes += formulier.gratisAantal || 0;
-  return {bedrag: Math.round(bedrag * 100) / 100, koekjes: koekjes};
+  // Losse koekjes krijgen dezelfde deal als op de webshop: vier voor € 12.
+  const kort = bundelKorting(los);
+  return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
 
 function tekenFormulierItems(){
@@ -911,7 +917,8 @@ function tekenFormulierItems(){
       + '<button type="button" data-plus-item="' + id + '">+</button></span></div>';
   }).join("");
   const som = formulierSom();
-  $("#formAantal").textContent = som.koekjes + " koekje" + (som.koekjes === 1 ? "" : "s");
+  $("#formAantal").textContent = som.koekjes + " koekje" + (som.koekjes === 1 ? "" : "s")
+    + (som.korting > 0 ? " · − " + euro(som.korting) + " deal" : "");
   $("#formTotaal").textContent = euro(som.bedrag);
   $("#fBedrag").value = som.bedrag.toFixed(2);
 }
@@ -979,6 +986,10 @@ async function formulierOpslaan(){
   if (formulier.gratisAantal > 0){
     regels.push({id: formulier.gratisSoort, naam: NAAMVAN(formulier.gratisSoort),
                  aantal: formulier.gratisAantal, stuk: 0, gratis: true});
+  }
+  if (som.korting > 0){
+    regels.push({id: "bundel", naam: BUNDEL.aantal + " voor € " + BUNDEL.prijs,
+                 aantal: 1, stuk: -som.korting, gratis: false});
   }
 
   const status = $("#fStatus").value;

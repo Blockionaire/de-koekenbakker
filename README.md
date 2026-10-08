@@ -1,6 +1,6 @@
 # 🍪 De Koekenbakker
 
-De webshop van **Zara** — verse chocoladekoekjes, één bakdag per week.
+De webshop van **Zara** — verse koekjes, één bakdag per week.
 Speels van vorm, rustig van kleur: de hele site staat in vier beigetinten — papier, room,
 zand en een tint dieper voor de banden — met walnoot als enige accent.
 
@@ -25,26 +25,27 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
 - **Laadscherm** — een koekje dat in de oven ligt terwijl de pagina inlaadt.
 - **Koekjescursor** — op laptop en desktop volgt een koekje je muis en laat kruimels achter.
   Uit te zetten onderaan de pagina; de keuze wordt onthouden.
-- **Hero** — een oventje dat blijft doorbakken: een deegbol zweeft naar binnen, het
-  venster gloeit op, en het koekje komt eronder uit en draait daar rond. Daarna begint
-  het rondje opnieuw.
+- **Hero** — een groot koekje dat langzaam rondjes draait, met vijf kleintjes die er in
+  twee banen omheen cirkelen. Op de telefoon schaalt het hele tafereel mee en staat het
+  boven de kop.
 - **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter.
   Tik op een koekje en er gaat een hap uit (na drie happen krijg je een knipoog terug).
-- **Spaarregel 5 + 1** — zes gleuven die meelopen met je mandje. Bij elke vijf koekjes
-  verschijnt er automatisch een gratis koekje, waarvan je zelf de smaak kiest.
+- **De deal: 4 voor € 12** — vier gleuven die meelopen met je mandje. Los kost een koekje
+  € 3,25; bij elke vier die erin liggen gaat er € 1 van het totaal af, zichtbaar als een
+  eigen regel in het mandje. De smaken mogen vrij door elkaar.
 - **Verrassingsbox** — één knop in de hero legt een box van zes koekjes in je mandje.
   Wat erin zit blijft een verrassing: in het mandje staat alleen *1× Verrassingsbox
-  (6 koekjes)*. De box telt niet mee voor de spaarregel, want de zesde zit er al in.
+  (6 koekjes)*. De box telt niet mee voor de deal en heeft een eigen prijs.
 - **Bakdag** — een aftelklok naar de eerstvolgende bakdag (standaard vrijdag 16:00).
-- **Welk koekje ben jij?** — drie vragen, en het koekje dat eruit komt kun je direct
-  in je mandje leggen.
-- **Over Zara**, **reviews** en een **vragenlijst**.
+- **Over Zara**, **reviews** (met een link terug naar het assortiment) en een
+  **vragenlijst**.
 - **Mandje** — schuift open vanaf de rechterkant, onthoudt zichzelf tussen bezoeken
   (localStorage) en zet de bestelling klaar als berichtje. Naam en telefoon/e-mail zijn
   verplicht; ontbreekt er iets, dan springt het veld in het rood en gaat de bestelling
   niet weg.
-- **Afhaalmoment** — kies je afhalen, dan kies je een dag en een tijdslot (met de datum
-  van de eerstvolgende bakdag erbij), of "maakt me niet uit".
+- **Afhaalmoment** — bestellen gaat altijd op afhalen; je kiest een dag en een tijdslot
+  (met de datum van de eerstvolgende bakdag erbij), of "maakt me niet uit". Bezorgen zit
+  er voorlopig niet in.
 - **Bestelbalk onderaan** op de telefoon, zodat bestellen altijd één tik weg is.
 
 Alle koekjes zijn getekend in code (SVG), dus er zijn geen foto's nodig en de site laadt
@@ -61,15 +62,16 @@ Bovenaan het `<script>`-blok in `index.html` staat één instellingenblok:
 const CONFIG = {
   whatsapp: "",                  // bijv. "31612345678" — landcode, geen + of spaties
   email: "hoi@dekoekenbakker.nl",
-  stad: "de Hoeksche Waard",     // hier bezorg ik, en nergens anders
-  bezorgkosten: 2.50,
-  gratisBezorgenVanaf: 6,
+  stad: "de Hoeksche Waard",     // hier haal je de koekjes op
+  stukPrijs: 3.25,               // wat één los koekje kost
+  bundelAantal: 4,               // bij zoveel koekjes geldt de deal
+  bundelPrijs: 12.00,            // en dan betaal je dit voor die vier
   bakdag: 5,                     // 0 = zondag, 5 = vrijdag
   bakuur: 16,
   sluitdag: 4,                   // bestellen kan tot donderdag…
   sluituur: 20,                  // …20:00; daarna schuift alles een week op
   toonRestVanaf: 10,             // pas zoveel koekjes over noem je het aantal
-  boxPrijs: 14.50,               // verrassingsbox: zes koekjes, je betaalt er vijf
+  boxPrijs: 17.50,               // verrassingsbox: zes koekjes, onder de deal
   maxPerBestelling: 20,          // daarboven eerst even overleggen
   weekLimiet: 100,               // zoveel koekjes kun je in één week bakken
   alBesteld: 0,                  // hoeveel er deze week al besteld zijn — zelf bijhouden
@@ -87,7 +89,8 @@ rekenen zichzelf uit vanaf de eerstvolgende bakdag: `dagNr` 5 is
 vrijdag, 6 is zaterdag. Wil je geen tijdsloten aanbieden, zet dan `afhaalKeuze` op
 `false` — het hele blok verdwijnt dan uit het bestelformulier en je spreekt het
 moment af in je bevestiging. De prijs van de verrassingsbox staat los van de losse
-koekjes; met `boxPrijs` bepaal je die zelf.
+koekjes; met `boxPrijs` bepaal je die zelf. Verandert de deal, dan pas je `stukPrijs`,
+`bundelAantal` en `bundelPrijs` aan — alle teksten op de site rekenen daarmee mee.
 
 **Nog invullen voordat de site echt live gaat:**
 

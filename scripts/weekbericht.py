@@ -33,8 +33,8 @@ PORTAL = os.environ.get("PORTAL_URL", "https://dekoekenbakkerzara.nl/bestellinge
 HIER = ZoneInfo("Europe/Amsterdam")
 
 NAMEN = {
-    "klassieker": "De Klassieker", "nachtdonker": "Nachtdonker", "wittewolk": "Witte Wolk",
-    "karamelbom": "Karamelbom", "nootjenoir": "Nootje Noir",
+    "oreo": "Oreo", "stroopwafel": "Stroopwafel", "lotus": "Lotus Biscoff",
+    "kinder": "Kinderchocolade", "chocchip": "Chocolate chip",
 }
 STATUS = {"nieuw": "Nieuw", "bevestigd": "Nog bakken", "gebakken": "Gebakken",
           "ingepakt": "Ingepakt", "afgerond": "Opgehaald", "geannuleerd": "Geannuleerd"}

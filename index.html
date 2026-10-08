@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>De Koekenbakker</title>
-<meta name="description" content="Verse chocoladekoekjes die ik met de hand bak. Elke week een nieuwe batch. Koop er 5, krijg de 6e gratis.">
+<meta name="description" content="Verse koekjes die ik met de hand bak — Oreo, Stroopwafel, Lotus Biscoff, Kinderchocolade en Chocolate chip. Elke vrijdag een nieuwe batch. Vier koekjes voor € 12.">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo-180.png">
 <meta name="theme-color" content="#241710">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +19,7 @@
   --papier:#FFFDF8;       /* kaarten */
   --room:#FAF4EA;         /* de grond van de pagina */
   --zand:#F1E8D8;         /* panelen */
-  --diep:#E6D9C2;         /* de donkerste tint: hero, bakdag, loper, voet */
+  --diep:#E6D9C2;         /* de donkerste tint: hero, bakdag, voet */
 
   --lijn:#DCCDB4;         /* randen en scheidingen */
   --klei:#C9B291;         /* zachtste accenttint */
@@ -134,7 +136,8 @@ button{font:inherit;color:inherit}
   border-bottom:1px solid rgba(46,34,23,.14);color:var(--inkt)}
 .top-in{display:flex;align-items:center;gap:18px;padding:12px 0}
 .merk{font-family:var(--display);font-size:1.3rem;letter-spacing:.01em;text-decoration:none;display:flex;align-items:center;gap:10px}
-.merk svg{width:30px;height:30px}
+.merk img{width:40px;height:40px;border-radius:50%;display:block;
+  box-shadow:0 2px 6px rgba(46,34,23,.18)}
 .nav{display:flex;gap:22px;margin-left:auto;font-family:var(--kop);font-weight:600;font-size:.95rem}
 .nav a{text-decoration:none;opacity:.82;padding:4px 0;border-bottom:2px solid transparent}
 .nav a:hover{opacity:1;border-color:var(--karamel)}
@@ -145,17 +148,23 @@ button{font:inherit;color:inherit}
 .mandje-knop b{background:var(--room);color:var(--inkt);border-radius:99px;min-width:22px;
   text-align:center;font-size:.82rem;padding:1px 6px;font-variant-numeric:tabular-nums}
 @media(max-width:860px){.nav{display:none}}
+@media(max-width:420px){
+  .top-in{gap:10px}
+  .merk{font-size:1.08rem;gap:8px}
+  .merk img{width:33px;height:33px}
+  .mandje-knop{padding:8px 13px;font-size:.88rem;gap:7px}
+}
 
 /* ---------- hero ---------- */
 .hero{background:var(--diep);color:var(--inkt);position:relative;overflow:hidden;
+  border-bottom:2px solid var(--inkt);
   padding:clamp(48px,7vw,84px) 0 clamp(56px,8vw,96px)}
 .hero::after{content:"";position:absolute;inset:-25% -20% auto -20%;height:90%;
   background:radial-gradient(55% 70% at 68% 55%, rgba(255,253,248,.85), transparent 70%);pointer-events:none}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,56px);align-items:center;position:relative;z-index:1}
 .hero h1{font-size:clamp(2.9rem,7.6vw,5.4rem);letter-spacing:-.035em;margin:16px 0 0}
 .hero h1 .fat{font-family:var(--display);font-weight:400;color:var(--karamel);letter-spacing:0}
-.hero h1 .fat em{font-style:normal;display:inline-block;animation:wiebel 4s ease-in-out infinite}
-@keyframes wiebel{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.hero h1 .fat em{font-style:normal;display:inline-block}
 .hero-p{margin-top:20px;color:var(--zacht);max-width:44ch;font-size:1.1rem}
 .hero-acties{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
 
@@ -164,44 +173,24 @@ button{font:inherit;color:inherit}
   background:radial-gradient(circle at 50% 45%, rgba(255,253,248,.6), rgba(255,253,248,0) 64%)}
 @keyframes draai{to{transform:rotate(360deg)}}
 
-/* het oventje: deegbol erin, koekje eruit, en dat rondje opnieuw */
-.oven-scene{position:relative;width:min(100%,340px);aspect-ratio:1 / 1.16}
-.ovenmachine{position:absolute;top:0;left:50%;transform:translateX(-50%);width:82%;z-index:2;
-  filter:drop-shadow(0 16px 22px rgba(46,34,23,.16))}
-.deegbol{position:absolute;top:26%;left:41%;width:15%;z-index:3;opacity:0;
-  animation:deegErin 9s cubic-bezier(.4,.1,.5,1) infinite}
-.uitkoekje{position:absolute;bottom:0;left:50%;width:46%;z-index:1;transform:translate(-50%,0);
-  animation:koekjeEruit 9s cubic-bezier(.3,.6,.4,1) infinite;
-  filter:drop-shadow(0 12px 16px rgba(46,34,23,.2))}
-.uitkoekje-draai{animation:draai 7s linear infinite}
-@keyframes deegErin{
-  0%{opacity:0;transform:translate(-330%,120%) scale(.75)}
-  7%{opacity:1;transform:translate(-280%,95%) scale(1)}
-  17%{opacity:1;transform:translate(-150%,-25%) scale(1)}
-  25%{opacity:1;transform:translate(-8%,4%) scale(.95)}
-  31%{opacity:0;transform:translate(14%,10%) scale(.4)}
-  100%{opacity:0;transform:translate(14%,10%) scale(.4)}
-}
-@keyframes koekjeEruit{
-  0%,46%{opacity:0;transform:translate(-50%,-78%) scale(.32)}
-  56%{opacity:1;transform:translate(-50%,-16%) scale(.92)}
-  64%,88%{opacity:1;transform:translate(-50%,0) scale(1)}
-  97%,100%{opacity:0;transform:translate(-50%,14%) scale(.82)}
-}
-.oven-gloed{animation:ovenGloed 9s ease-in-out infinite}
-@keyframes ovenGloed{0%,24%{opacity:0}32%{opacity:.45}40%{opacity:.7}50%{opacity:.25}56%,100%{opacity:0}}
+/* het draaiende koekje in de hero, met drie kleintjes eromheen */
+.hoofdkoek{width:min(76%,320px);animation:draai 26s linear infinite;
+  filter:drop-shadow(0 20px 24px rgba(46,34,23,.18))}
+.baan{position:absolute;inset:6%;animation:draai 20s linear infinite;pointer-events:none}
+.baan--traag{inset:-2%;animation-duration:32s;animation-direction:reverse}
+.baan span{position:absolute;width:clamp(34px,9vw,58px);display:block;animation:draai 9s linear infinite reverse}
+.baan span svg{width:100%;display:block}
+.baan span:nth-child(1){top:0%;left:46%}
+.baan span:nth-child(2){bottom:4%;left:2%;width:clamp(26px,7vw,46px)}
+.baan span:nth-child(3){top:32%;right:-2%;width:clamp(22px,6vw,38px)}
+@media(prefers-reduced-motion:reduce){.hoofdkoek,.baan,.baan span{animation:none}}
 @media(max-width:860px){
-  .hero-grid{grid-template-columns:1fr;gap:8px}
-  .podium{order:-1;min-height:300px}
+  .hero-grid{grid-template-columns:1fr;gap:10px}
+  .podium{order:-1;min-height:0;aspect-ratio:1;width:min(78vw,330px);margin-inline:auto}
+  .podium-schijf{width:100%}
+  .hoofdkoek{width:72%}
 }
-
-/* ---------- marquee ---------- */
-.loper{background:var(--diep);border-block:2px solid var(--inkt);overflow:hidden;padding:12px 0}
-.loper-rij{display:flex;gap:34px;width:max-content;animation:schuif 26s linear infinite}
-.loper span{font-family:var(--kop);font-weight:800;text-transform:uppercase;letter-spacing:.06em;
-  font-size:1rem;white-space:nowrap;display:flex;align-items:center;gap:34px;color:var(--inkt)}
-.loper span::after{content:"";width:9px;height:9px;border-radius:50%;background:var(--karamel);display:block}
-@keyframes schuif{to{transform:translateX(-50%)}}
+@media(max-width:420px){.podium{width:min(74vw,280px)}}
 
 /* ---------- kop van sectie ---------- */
 .sectiekop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 40px;justify-content:space-between;margin-bottom:clamp(28px,4vw,46px)}
@@ -262,11 +251,11 @@ button{font:inherit;color:inherit}
 .gleuf svg{width:84%;opacity:0;transform:scale(.4);transition:opacity .3s, transform .35s cubic-bezier(.3,1.5,.5,1)}
 .gleuf.vol svg{opacity:1;transform:scale(1)}
 .gleuf.vol{border-style:solid;border-color:var(--inkt)}
-.gleuf--gratis{border-color:var(--karamel);background:rgba(142,90,59,.09)}
-.gleuf--gratis::after{content:"gratis";position:absolute;bottom:-11px;font-family:var(--kop);font-weight:800;
+.gleuf--deal{border-color:var(--karamel);background:rgba(142,90,59,.09)}
+.gleuf--deal::after{content:"\20AC 12";position:absolute;bottom:-11px;font-family:var(--kop);font-weight:800;
   font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;background:var(--karamel);color:var(--papier);
   padding:2px 8px;border-radius:99px}
-.gleuf.vol.gleuf--gratis{animation:plop .5s cubic-bezier(.3,1.6,.5,1)}
+.gleuf.vol.gleuf--deal{animation:plop .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes plop{0%{transform:scale(.6) rotate(-20deg)}60%{transform:scale(1.15) rotate(8deg)}100%{transform:scale(1)}}
 @media(max-width:880px){.deal{grid-template-columns:1fr}}
 
@@ -287,23 +276,6 @@ button{font:inherit;color:inherit}
 .stap p{color:var(--zacht);font-size:.95rem}
 @media(max-width:880px){.agenda{grid-template-columns:1fr}}
 
-/* ---------- quiz ---------- */
-.quiz{background:var(--diep);color:var(--inkt);border-radius:26px;padding:clamp(26px,4vw,46px);
-  border:2px solid var(--inkt);box-shadow:8px 8px 0 rgba(46,34,23,.22);position:relative;overflow:hidden}
-.quiz::before{content:"";position:absolute;top:-40%;right:-14%;width:52%;aspect-ratio:1;border-radius:50%;
-  background:radial-gradient(circle, rgba(255,253,248,.65), transparent 70%)}
-.quiz-in{position:relative;display:grid;gap:22px;max-width:640px}
-.quiz h3{font-size:clamp(1.5rem,3.4vw,2.1rem)}
-.opties{display:flex;flex-wrap:wrap;gap:12px}
-.optie{background:var(--papier);border:2px solid var(--inkt);color:var(--inkt);border-radius:999px;
-  padding:11px 20px;cursor:pointer;font-family:var(--kop);font-weight:600;transition:.16s}
-.optie:hover{background:var(--karamel);border-color:var(--karamel);color:var(--papier);transform:translateY(-2px)}
-.voortgang{height:5px;background:rgba(46,34,23,.14);border-radius:99px;overflow:hidden;max-width:260px}
-.voortgang i{display:block;height:100%;background:var(--karamel);transition:width .35s}
-.uitslag{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
-.uitslag svg{width:120px}
-@media(max-width:620px){.uitslag{grid-template-columns:1fr}}
-
 /* ---------- Zara ---------- */
 .overzara{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(28px,5vw,64px);align-items:center}
 .polaroid{background:var(--papier);border:2px solid var(--inkt);border-radius:6px;padding:16px 16px 22px;
@@ -323,6 +295,9 @@ button{font:inherit;color:inherit}
 @media(max-width:880px){.overzara{grid-template-columns:1fr}}
 
 /* ---------- reviews ---------- */
+.proef{font-family:var(--kop);font-weight:700;text-decoration:none;border-bottom:2px solid var(--karamel);
+  padding-bottom:2px;color:var(--karamel-diep)}
+.proef:hover{color:var(--inkt);border-color:var(--inkt)}
 .briefjes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
 .briefje{background:var(--papier);border:2px solid var(--inkt);border-radius:var(--r);padding:22px;
   box-shadow:5px 5px 0 rgba(46,34,23,.16)}
@@ -364,10 +339,8 @@ button{font:inherit;color:inherit}
 .aantal button{width:28px;height:28px;background:transparent;border:0;cursor:pointer;font-family:var(--kop);font-weight:800;line-height:1}
 .aantal button:hover{background:var(--zand)}
 .aantal span{min-width:26px;text-align:center;font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums;font-size:.95rem}
-.regel--gratis{background:rgba(142,90,59,.08);border:2px dashed var(--karamel);border-radius:14px;padding:12px;
-  grid-template-columns:54px 1fr}
-.regel--gratis select{width:100%;margin-top:6px;padding:7px 9px;border-radius:10px;border:2px solid var(--karamel);
-  background:var(--papier);font-family:var(--tekst);font-size:.9rem}
+.regel--gratis{background:rgba(142,90,59,.08);border:2px dashed var(--karamel);border-radius:14px;padding:12px}
+.regel--gratis .r-prijs{color:var(--karamel-diep)}
 .leeg{text-align:center;color:var(--zacht);display:grid;gap:16px;justify-items:center;padding:34px 0}
 .leeg svg{width:96px;opacity:.75}
 .bedankt{padding:28px 24px;display:grid;gap:14px;justify-items:center;text-align:center;align-content:start}
@@ -399,10 +372,6 @@ button{font:inherit;color:inherit}
 .veld input,.veld textarea,.veld select{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;
   background:var(--room);font-family:var(--tekst);font-size:.97rem;width:100%}
 .veld textarea{min-height:64px;resize:vertical}
-.keuzes{display:flex;gap:8px}
-.keuzes button{flex:1;padding:10px;border:2px solid var(--inkt);background:var(--room);border-radius:12px;cursor:pointer;
-  font-family:var(--kop);font-weight:700;font-size:.9rem}
-.keuzes button.aan{background:var(--inkt);color:var(--room)}
 .mini{font-size:.8rem;color:var(--zacht);text-align:center}
 .veldnoot{font-size:.78rem;color:var(--zacht)}
 .grens{font-size:.88rem;line-height:1.45;background:rgba(142,90,59,.09);border:2px dashed var(--karamel);
@@ -467,7 +436,7 @@ button{font:inherit;color:inherit}
 
 <header class="top">
   <div class="wrap top-in">
-    <a class="merk" href="#top"><span id="merkKoek" aria-hidden="true"></span> De Koekenbakker</a>
+    <a class="merk" href="#top"><img src="logo.png" alt="" width="40" height="40" loading="eager"> De Koekenbakker</a>
     <nav class="nav" aria-label="Hoofdmenu">
       <a href="#assortiment">Koekjes</a>
       <a href="#bakdag">Bakdag</a>
@@ -485,7 +454,7 @@ button{font:inherit;color:inherit}
       <div>
         <span class="eyebrow">Vers gebakken · elke vrijdag</span>
         <h1>Verse koekjes,<br><span class="fat"><em>rechtstreeks</em></span><br>uit mijn oven.</h1>
-        <p class="hero-p">Vijf chocoladekoekjes die ik met de hand draai, dezelfde dag bak en bij je thuis breng. Nog een beetje zacht vanbinnen — precies zoals het hoort.</p>
+        <p class="hero-p">Vijf koekjes die ik met de hand draai en dezelfde dag bak. Je haalt ze vers op, nog een beetje zacht vanbinnen — precies zoals het hoort.</p>
         <div class="hero-acties">
           <a class="knop" href="#assortiment">Bekijk de koekjes</a>
           <button class="knop knop--stil" id="verrasMij" type="button">Verras me met een box</button>
@@ -493,28 +462,22 @@ button{font:inherit;color:inherit}
       </div>
       <div class="podium">
         <div class="podium-schijf" aria-hidden="true"></div>
-        <div class="oven-scene" aria-hidden="true">
-          <div class="deegbol" id="deegbol"></div>
-          <div class="ovenmachine" id="ovenTekening"></div>
-          <div class="uitkoekje"><div class="uitkoekje-draai" id="uitKoekje"></div></div>
-        </div>
+        <div class="hoofdkoek" id="heroKoek" aria-hidden="true"></div>
+        <div class="baan" aria-hidden="true"><span id="orbit1"></span><span id="orbit2"></span><span id="orbit3"></span></div>
+        <div class="baan baan--traag" aria-hidden="true"><span id="orbit4"></span><span id="orbit5"></span></div>
       </div>
     </div>
   </section>
-
-  <div class="loper" aria-hidden="true">
-    <div class="loper-rij" id="loper"></div>
-  </div>
 
   <section class="band band--zand" id="assortiment">
     <div class="wrap">
       <div class="sectiekop toon">
         <div class="tekstkant">
           <span class="eyebrow">Het assortiment</span>
-          <h2 class="titel">Vijf keer chocolade,<br>vijf keer anders.</h2>
-          <p class="lead">Ik bak alles op bestelling — geen voorraad, geen dag-oude koekjes. Tik op een koekje om er een hap uit te nemen (niet opeten, hè).</p>
+          <h2 class="titel">Dit zijn de smaken.</h2>
+          <p class="lead">Om je vingers bij af te likken.</p>
         </div>
-        <span class="sticker sticker--karamel">Deze week vers</span>
+        <span class="sticker sticker--karamel">4 voor &euro; 12</span>
       </div>
       <div class="koekjes" id="koekjes"></div>
     </div>
@@ -523,9 +486,9 @@ button{font:inherit;color:inherit}
   <section class="band band--papier">
     <div class="wrap deal">
       <div class="toon">
-        <span class="eyebrow">De spaarregel</span>
-        <h2 class="titel">Vijf in je mandje?<br>De zesde krijg je van mij!</h2>
-        <p class="lead" style="margin-top:14px">Bij elke vijf koekjes doe ik er gratis eentje bij in de doos. Je kiest zelf welke smaak — of je laat je verrassen met wat er die dag het lekkerst uit de oven komt.</p>
+        <span class="eyebrow">De deal</span>
+        <h2 class="titel">Vier in je mandje?<br>Dan betaal je &euro; 12.</h2>
+        <p class="lead" style="margin-top:14px">Los kost een koekje &euro; 3,25. Neem je er vier, dan reken ik &euro; 12 &mdash; en dat geldt bij elke volgende vier. Je mag de smaken vrij door elkaar kiezen.</p>
         <div class="hero-acties" style="margin-top:26px">
           <button class="knop" id="dealKnop" type="button">Stel je box samen</button>
         </div>
@@ -533,7 +496,7 @@ button{font:inherit;color:inherit}
       <div class="toon">
         <p class="eyebrow">Zo telt het op</p>
         <div class="deal-rij" id="dealRij" aria-hidden="true"></div>
-        <p class="mini" style="text-align:left;margin-top:22px" id="dealTekst">Nog 5 koekjes tot je gratis koekje.</p>
+        <p class="mini" style="text-align:left;margin-top:22px" id="dealTekst">Nog 4 koekjes tot de deal van € 12.</p>
       </div>
     </div>
   </section>
@@ -552,17 +515,9 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="stappen toon">
-        <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, los te combineren. Vanaf 3 koekjes bestel je al.</p></div></div>
+        <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, vrij te combineren. Vier stuks kost € 12.</p></div></div>
         <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
-        <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Afhalen, of ik breng het langs in de Hoeksche Waard — dezelfde middag nog.</p></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="band band--zand">
-    <div class="wrap">
-      <div class="quiz toon" id="quiz">
-        <div class="quiz-in" id="quizIn"></div>
+        <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Je haalt ze op het moment op dat je zelf hebt gekozen — dezelfde dag nog uit de oven.</p></div></div>
       </div>
     </div>
   </section>
@@ -597,23 +552,24 @@ button{font:inherit;color:inherit}
       <div class="sectiekop toon">
         <div class="tekstkant">
           <span class="eyebrow">Van de klanten</span>
-          <h2 class="titel">Wat er terugkomt in de app.</h2>
+          <h2 class="titel">Wat klanten over mij zeggen.</h2>
+          <p class="lead"><a class="proef" href="#assortiment" id="proefZelf">Proef het zelf &rarr;</a></p>
         </div>
       </div>
       <div class="briefjes toon">
         <div class="briefje">
           <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Besteld voor een verjaardag, binnen tien minuten was de hele doos leeg. De Karamelbom is echt gevaarlijk lekker."</p>
+          <p>"Besteld voor een verjaardag, binnen tien minuten was de hele doos leeg. Die met Lotus Biscoff is echt gevaarlijk lekker."</p>
           <footer>Fenna · buurvrouw en vaste klant</footer>
         </div>
         <div class="briefje">
           <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Nog warm bezorgd op de fiets. Dat is gewoon een ander koekje dan uit de supermarkt, sorry."</p>
+          <p>"Vrijdag opgehaald en nog warm opgegeten. Dat is gewoon een ander koekje dan uit de supermarkt, sorry."</p>
           <footer>Sem · uit de klas</footer>
         </div>
         <div class="briefje">
           <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Wij nemen elke vrijdag zes stuks voor kantoor. De gratis zesde is inmiddels traditie."</p>
+          <p>"Wij halen elke vrijdag acht stuks voor kantoor. De Stroopwafel is hier het eerst op."</p>
           <footer>Team Nieuwstraat</footer>
         </div>
       </div>
@@ -629,12 +585,16 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="faq toon">
-        <details open><summary>Hoe werkt "koop er 5, krijg de 6e gratis"?</summary><p>Zodra er vijf koekjes in je mandje liggen, verschijnt er automatisch een gratis koekje. Bij tien krijg je er twee, en zo door. Je kiest zelf de smaak van elk gratis koekje, of je laat het aan mij over.</p></details>
-        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdagmiddag. Bestel je vóór donderdag 20:00, dan zit je in de batch van diezelfde week.</span> Daarna schuif je door naar de week erop.</p></details>
-        <details><summary>Bezorgen of afhalen?</summary><p>Afhalen kan vrijdagavond tussen 17:00 en 19:00 of zaterdagochtend tussen 10:00 en 12:00 — je kiest je moment bij het bestellen. Bezorgen doe ik zelf op de fiets, alleen binnen de Hoeksche Waard: gratis vanaf zes koekjes, daaronder reken ik € 2,50. Woon je er buiten, dan kun je altijd afhalen.</p></details>
-        <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel — tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden.</p></details>
-        <details><summary>Allergenen</summary><p>Alle koekjes bevatten tarwe (gluten), ei, melk en soja. De Nootje Noir en Witte Wolk bevatten noten, en alles wordt gebakken in een keuken waar noten aanwezig zijn. Laat het weten bij je bestelling als er iets speelt.</p></details>
-        <details><summary>Kan ik een grotere bestelling doen voor een feest?</summary><p>Ja. Vanaf 24 koekjes maak ik een aparte planning en kun je smaken laten mixen. Stuur de datum mee met je bestelling, dan laat ik je snel weten of het past.</p></details>
+        <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen &mdash; vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
+        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdagmiddag. Bestel je v&oacute;&oacute;r donderdag 20:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
+        <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Je kiest bij het bestellen zelf een moment: vrijdagavond tussen 17:00 en 19:00, of zaterdagochtend tussen 10:00 en 12:00. Past geen van beide? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
+        <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt &mdash; er komt niets bij.</p></details>
+        <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag.</p></details>
+        <details><summary>Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p>Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
+        <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel &mdash; tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden; laat ze daarna op kamertemperatuur ontdooien.</p></details>
+        <details><summary>Allergenen</summary><p>Alle koekjes bevatten tarwe (gluten), ei, melk en soja. In de Oreo, Lotus Biscoff en Stroopwafel zit geen noot, maar ik bak in een gewone keuken waar ook noten liggen, dus kruisbesmetting kan ik niet uitsluiten. Heb je een allergie? Zet het bij je bestelling in het opmerkingenveld, dan kijk ik even met je mee.</p></details>
+        <details><summary>Kan ik een grotere bestelling doen voor een feest?</summary><p>Zeker, maar niet via de knop: boven de 20 koekjes vraagt de site je om eerst even contact met me op te nemen. Ik bak naast school, dus dan plan ik het liever samen met je in. Stuur de datum en het aantal mee, dan laat ik snel weten of het past.</p></details>
+        <details><summary>Zit er een maximum aan wat je per week bakt?</summary><p>Ja. Ik bak één keer per week in kleine batches, dus op een gegeven moment is de oven vol. Zit je mandje tegen die grens aan, dan zegt de site dat meteen bij het bestellen en kijken we samen naar de week erna.</p></details>
       </div>
     </div>
   </section>
@@ -645,13 +605,13 @@ button{font:inherit;color:inherit}
     <div class="voet-grid">
       <div>
         <div class="voet-merk">De Koekenbakker</div>
-        <p class="lead" style="max-width:34ch;margin-top:10px">Verse chocoladekoekjes die ik met de hand bak. Eén bakdag per week, en dan is het op.</p>
+        <p class="lead" style="max-width:34ch;margin-top:10px">Verse koekjes die ik met de hand bak. Eén bakdag per week, en dan is het op.</p>
       </div>
       <div>
         <h4>Bestellen</h4>
         <ul>
           <li><a href="#assortiment">Het assortiment</a></li>
-          <li><a href="#bakdag">Bakdag en bezorging</a></li>
+          <li><a href="#bakdag">Bakdag en ophalen</a></li>
           <li><a href="#vragen">Veelgestelde vragen</a></li>
         </ul>
       </div>
@@ -699,21 +659,12 @@ button{font:inherit;color:inherit}
     <div class="lade-form">
     <div class="veld"><label for="vNaam">Je naam <em>verplicht</em></label><input id="vNaam" type="text" autocomplete="name" placeholder="Bijv. Joost" required aria-required="true"></div>
     <div class="veld"><label for="vContact">Telefoon of e-mail <em>verplicht</em></label><input id="vContact" type="text" autocomplete="tel" placeholder="06 – …" required aria-required="true"></div>
-    <div class="veld">
-      <label>Afhalen of bezorgen</label>
-      <div class="keuzes" id="keuzes">
-        <button type="button" data-lever="Afhalen" class="aan">Afhalen</button>
-        <button type="button" data-lever="Bezorgen">Bezorgen</button>
-      </div>
-    </div>
     <div class="veld" id="afhaalVeld" hidden>
       <label>Wanneer kom je het ophalen? <em>verplicht</em></label>
       <div class="momenten" id="momenten"></div>
+      <span class="veldnoot">Ophalen doe je bij mij thuis in de Hoeksche Waard — het adres krijg je bij de bevestiging.</span>
     </div>
-    <div class="veld" id="adresVeld" hidden><label for="vAdres">Bezorgadres <em>verplicht</em></label>
-      <input id="vAdres" type="text" autocomplete="street-address" placeholder="Straat, huisnummer en plaats">
-      <span class="veldnoot">Ik bezorg alleen in de Hoeksche Waard.</span></div>
-    <div class="veld"><label for="vNotitie">Iets doorgeven?</label><textarea id="vNotitie" placeholder="Allergieën, cadeauverpakking, ander bezorgmoment…"></textarea></div>
+    <div class="veld"><label for="vNotitie">Iets doorgeven?</label><textarea id="vNotitie" placeholder="Allergieën, cadeauverpakking, een ander ophaalmoment…"></textarea></div>
     </div>
   </div>
   <div class="lade-voet">
@@ -721,7 +672,7 @@ button{font:inherit;color:inherit}
     <p class="grens" id="grens" hidden></p>
     <button class="knop knop--vol" id="bestelKnop" type="button">Bestelling versturen</button>
     <button class="knop knop--stil knop--vol" id="overlegKnop" type="button" hidden>Stuur me een berichtje</button>
-    <p class="mini">Je bestelling komt meteen bij mij binnen. Betalen doe je bij het afhalen of bezorgen.</p>
+    <p class="mini">Je bestelling komt meteen bij mij binnen. Betalen doe je bij het ophalen.</p>
   </div>
 </aside>
 
@@ -736,15 +687,16 @@ button{font:inherit;color:inherit}
 const CONFIG = {
   whatsapp: "31620892147",            // landcode 31, zonder + en zonder de 0 ervoor
   email: "zaraprins08@gmail.com",   // hierheen gaat een bestelling als de verbinding wegvalt
-  stad: "de Hoeksche Waard",           // hier bezorg ik, en nergens anders
-  bezorgkosten: 2.50,
-  gratisBezorgenVanaf: 6,
+  stad: "de Hoeksche Waard",          // hier haal je de koekjes op
+  stukPrijs: 3.25,                    // wat één los koekje kost
+  bundelAantal: 4,                    // bij zoveel koekjes geldt de deal
+  bundelPrijs: 12.00,                 // en dan betaal je dit voor die vier
   bakdag: 5,                          // 5 = vrijdag (zondag is 0)
   bakuur: 16,
   sluitdag: 4,                        // tot wanneer je kunt bestellen: 4 = donderdag
   sluituur: 20,
   toonRestVanaf: 10,                  // pas vanaf zoveel koekjes over zeg je hoeveel er nog kunnen
-  boxPrijs: 14.50,                    // verrassingsbox: zes koekjes, je betaalt er vijf
+  boxPrijs: 17.50,                    // verrassingsbox: zes koekjes, een euro onder de deal
   maxPerBestelling: 20,               // daarboven eerst even overleggen
   weekLimiet: 100,                    // zoveel koekjes kun je in één week bakken
   alBesteld: 0,                       // hoeveel er deze week al besteld zijn — zelf bijhouden
@@ -767,6 +719,8 @@ let db = null, fx = null;
 const $ = (s, el) => (el || document).querySelector(s);
 const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
 const euro = n => "€ " + n.toLocaleString("nl-NL", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+// Ronde bedragen schrijf ik zonder centen: "€ 12" leest prettiger dan "€ 12,00".
+const euroNet = n => n % 1 === 0 ? "€ " + n : euro(n);
 const bewaar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const lees = (k, standaard) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : standaard; } catch (e) { return standaard; } };
 const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -872,75 +826,47 @@ function koekSVG(k, opties){
   return s;
 }
 
-function ovenSVG(){
-  return '<svg viewBox="0 0 200 178" xmlns="http://www.w3.org/2000/svg">'
-    + '<rect x="30" y="148" width="16" height="24" rx="5" fill="var(--inkt)"/>'
-    + '<rect x="154" y="148" width="16" height="24" rx="5" fill="var(--inkt)"/>'
-    + '<rect x="14" y="8" width="172" height="146" rx="18" fill="var(--zand)" stroke="var(--inkt)" stroke-width="5"/>'
-    + '<path d="M14 46 H186" stroke="var(--inkt)" stroke-width="4"/>'
-    + '<circle cx="44" cy="27" r="8" fill="var(--karamel)" stroke="var(--inkt)" stroke-width="4"/>'
-    + '<circle cx="73" cy="27" r="8" fill="var(--papier)" stroke="var(--inkt)" stroke-width="4"/>'
-    + '<rect x="104" y="20" width="62" height="14" rx="7" fill="var(--papier)" stroke="var(--inkt)" stroke-width="4"/>'
-    + '<rect x="30" y="58" width="140" height="82" rx="14" fill="var(--papier)" stroke="var(--inkt)" stroke-width="5"/>'
-    + '<rect class="oven-gloed" x="38" y="66" width="124" height="66" rx="10" fill="var(--karamel)" opacity="0"/>'
-    + '<path d="M40 114 H160" stroke="var(--inkt)" stroke-width="3" stroke-opacity=".3"/>'
-    + '<rect x="30" y="142" width="140" height="11" rx="6" fill="var(--karamel)" stroke="var(--inkt)" stroke-width="4"/>'
-    + '</svg>';
-}
-
-function deegSVG(){
-  const vorm = randPad(50, 50, 40, rng(9));
-  const rand = rng(23);
-  let s = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">'
-    + '<defs><radialGradient id="deeg" cx="38%" cy="32%" r="76%">'
-    + '<stop offset="0%" stop-color="#F3DDBA"/><stop offset="70%" stop-color="#E2C089"/>'
-    + '<stop offset="100%" stop-color="#BE9455"/></radialGradient></defs>'
-    + '<path d="' + vorm + '" fill="url(#deeg)"/>';
-  for (let i = 0; i < 5; i++){
-    const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * 26;
-    s += '<circle cx="' + (50 + Math.cos(a) * d).toFixed(1) + '" cy="' + (50 + Math.sin(a) * d).toFixed(1)
-       + '" r="' + (2.4 + rand() * 2).toFixed(1) + '" fill="#6B4A34" opacity=".8"/>';
-  }
-  return s + '</svg>';
-}
 
 /* ---------- het assortiment ---------- */
 const KOEKJES = [
-  { id: "klassieker", naam: "De Klassieker", prijs: 2.75, gram: 95,
-    kort: "Melkchocolade in grove brokken, roomboterdeeg dat 48 uur heeft gerust, en een vlokje zeezout er bovenop.",
+  { id: "oreo", naam: "Oreo", prijs: 3.25, gram: 95,
+    kort: "Deeg met witte chocolade en grove brokken Oreo erdoor, en een halve koek bovenop. Zwart-wit, lekker knapperig.",
+    tags: ["Witte chocolade", "Oreo"],
+    smaak: {Choco: 3, Zoet: 5, Krokant: 5},
+    seed: 11, deeg: ["#EFE3CB", "#DCCAAD"], korst: "#B6A07B",
+    brokken: ["#241F1E", "#15110F", "#F7F2E7"] },
+  { id: "stroopwafel", naam: "Stroopwafel", prijs: 3.25, gram: 95,
+    kort: "Karamel-kaneeldeeg met stukjes stroopwafel erdoor en een lintje stroop dat in de oven uitloopt.",
+    tags: ["Stroopwafel", "Karamel"],
+    smaak: {Choco: 1, Zoet: 5, Krokant: 3},
+    seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E",
+    brokken: ["#B5762C", "#8A5420", "#E3AB5E"] },
+  { id: "lotus", naam: "Lotus Biscoff", prijs: 3.25, gram: 95,
+    kort: "Speculoospasta door het deeg, kruimels van de koek erdoor en een hele Biscoff op de bovenkant.",
+    tags: ["Biscoff", "Speculoos"],
+    smaak: {Choco: 2, Zoet: 5, Krokant: 4},
+    seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A",
+    brokken: ["#C07F3C", "#995E26", "#F0DCC0"] },
+  { id: "kinder", naam: "Kinderchocolade", prijs: 3.25, gram: 95,
+    kort: "Melkchocoladedeeg met stukken Kinderchocolade die smelten tot een wit-bruine kern. De favoriet van iedereen onder de twaalf (en daarboven).",
+    tags: ["Kinderchocolade", "Melk"],
+    smaak: {Choco: 4, Zoet: 5, Krokant: 1},
+    seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C",
+    brokken: ["#8A5A33", "#FBF3E5", "#6E4524"] },
+  { id: "chocchip", naam: "Chocolate chip", prijs: 3.25, gram: 95,
+    kort: "De klassieker: roomboterdeeg dat 48 uur heeft gerust, grove brokken chocolade en een vlokje zeezout erbovenop.",
     tags: ["Melkchocolade", "Zeezout", "Bestseller"],
-    smaak: {Choco: 3, Zoet: 4, Zout: 2},
-    seed: 11, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C",
-    brokken: ["#6B4423", "#7C4F2A", "#5A3517"] },
-  { id: "nachtdonker", naam: "Nachtdonker", prijs: 3.00, gram: 95,
-    kort: "Cacaodeeg met 70% pure chocolade. Bijna zwart, nauwelijks zoet, van binnen nog vloeibaar.",
-    tags: ["70% puur", "Dubbel cacao"],
-    smaak: {Choco: 5, Zoet: 2, Zout: 2},
-    seed: 23, deeg: ["#5B3A2A", "#42281C"], korst: "#2C1A12",
-    brokken: ["#1E1210", "#33201A", "#120B09"] },
-  { id: "wittewolk", naam: "Witte Wolk", prijs: 3.00, gram: 95,
-    kort: "Witte chocolade met geroosterde macadamia. Zacht, romig en gevaarlijk makkelijk weg te eten.",
-    tags: ["Witte chocolade", "Macadamia", "Noten"],
-    smaak: {Choco: 2, Zoet: 5, Zout: 1},
-    seed: 41, deeg: ["#F0DCB4", "#E2C795"], korst: "#C29A62",
-    brokken: ["#FAF0DC", "#F3E4C6", "#E8D3AC"] },
-  { id: "karamelbom", naam: "Karamelbom", prijs: 3.25, gram: 110,
-    kort: "Een kern van zeezoutkaramel die eruit loopt zodra je 'm openbreekt, verpakt in melkchocoladedeeg. Warm eten.",
-    tags: ["Gevuld", "Zeezoutkaramel", "110 gram"],
-    smaak: {Choco: 3, Zoet: 5, Zout: 4},
-    seed: 67, deeg: ["#E8B472", "#CF9450"], korst: "#9C6427",
-    brokken: ["#C9721F", "#E39A3C", "#6B4423"] },
-  { id: "nootjenoir", naam: "Nootje Noir", prijs: 3.25, gram: 95,
-    kort: "Pure chocolade met een laag hazelnootcrunch, gebakken op een deeg met geroosterde hazelnoot.",
-    tags: ["Puur", "Hazelnoot", "Noten"],
-    smaak: {Choco: 4, Zoet: 3, Zout: 2},
-    seed: 89, deeg: ["#C99862", "#A97742"], korst: "#7A5024",
-    brokken: ["#3A2318", "#8B5A2B", "#241611"] }
+    smaak: {Choco: 4, Zoet: 4, Krokant: 2},
+    seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C",
+    brokken: ["#6B4423", "#7C4F2A", "#5A3517"] }
 ];
 const BOX = {
   id: "box", naam: "Verrassingsbox", koekjes: 6,
   kort: "Zes koekjes, door mij uitgezocht — wat er die week het lekkerst uit de oven komt."
 };
+// De deal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
+const BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
+const bundelKorting = n => Math.floor(n / BUNDEL.aantal) * (BUNDEL.aantal * CONFIG.stukPrijs - BUNDEL.prijs);
 const vind = id => id === BOX.id ? Object.assign({prijs: CONFIG.boxPrijs}, BOX) : KOEKJES.filter(k => k.id === id)[0];
 
 function doosSVG(){
@@ -1003,8 +929,9 @@ function neemHap(id, bron){
 
 /* ---------- het mandje ---------- */
 let mandje = lees("kb-mandje", {});
-let gratisKeuze = lees("kb-gratis", []);
-let lever = lees("kb-lever", "Afhalen");
+// Een mandje van voor de smaakwissel kan koekjes bevatten die niet meer bestaan.
+Object.keys(mandje).forEach(function(id){ if (!vind(id)) delete mandje[id]; });
+bewaar("kb-mandje", mandje);
 let bevestigd = "";   // het bestelnummer zodra een bestelling genoteerd is
 let afhaalmoment = lees("kb-afhaal", "");
 
@@ -1051,19 +978,16 @@ function grensTekst(){
     return "Meer dan " + CONFIG.maxPerBestelling + " koekjes? Neem even contact met me op, dan plan ik het samen met je in.";
   return "";
 }
-const koekjesTotaal = () => aantalBetaald() + aantalGratis() + aantalBoxen() * BOX.koekjes;
-const aantalGratis = () => Math.floor(aantalBetaald() / 5);
-const subtotaal = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vind(id).prijs, 0);
+const koekjesTotaal = () => aantalBetaald() + aantalBoxen() * BOX.koekjes;
+const losseSom = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vind(id).prijs, 0);
+const korting = () => bundelKorting(aantalBetaald());
+const subtotaal = () => Math.round((losseSom() - korting()) * 100) / 100;
 
 function inMandje(id, aantal){
   aantal = aantal || 1;
   mandje[id] = (mandje[id] || 0) + aantal;
   if (mandje[id] <= 0) delete mandje[id];
-  const gratis = aantalGratis();
-  while (gratisKeuze.length < gratis) gratisKeuze.push("verrassing");
-  gratisKeuze.length = gratis;
   bewaar("kb-mandje", mandje);
-  bewaar("kb-gratis", gratisKeuze);
   ververs();
 }
 
@@ -1075,41 +999,42 @@ function ververs(){
   $(".lade-voet").hidden = !!bevestigd;
   if (bevestigd){
     $("#bedanktCode").textContent = bevestigd;
-    $("#bedanktWanneer").textContent = lever === "Bezorgen"
-      ? "Ik breng ze vrijdagmiddag langs in " + CONFIG.stad + "."
-      : (afhaalmoment && afhaalmoment !== "In overleg"
-          ? "Ophalen: " + afhaalmoment + "."
-          : "We spreken samen een afhaalmoment af.");
+    $("#bedanktWanneer").textContent = (afhaalmoment && afhaalmoment !== "In overleg")
+      ? "Ophalen: " + afhaalmoment + "."
+      : "We spreken samen een ophaalmoment af.";
   }
 
-  const betaald = aantalBetaald(), gratis = aantalGratis(), sub = subtotaal();
+  const betaald = aantalBetaald(), sub = subtotaal(), kort = korting();
   $("#mandjeTeller").textContent = koekjesTotaal();
   $("#balkTotaal").textContent = euro(sub);
   const boxen = aantalBoxen();
-  const losseTekst = betaald + " koekje" + (betaald === 1 ? "" : "s") + (gratis ? " + " + gratis + " gratis" : "");
+  const losseTekst = betaald + " koekje" + (betaald === 1 ? "" : "s");
   const boxTekst = boxen + " verrassingsbox" + (boxen === 1 ? "" : "en");
   $("#balkTekst").textContent = betaald === 0 && boxen === 0 ? "Nog geen koekjes gekozen"
     : betaald === 0 ? boxTekst : losseTekst + (boxen ? " + " + boxTekst : "");
 
-  const tot5 = betaald === 0 ? 5 : (5 - (betaald % 5)) % 5;
-  const spaar = tot5 === 0 && betaald > 0
-    ? "Gratis koekje verdiend — kies je smaak hieronder."
-    : "Nog " + tot5 + " koekje" + (tot5 === 1 ? "" : "s") + " tot " + (gratis ? "het volgende" : "je") + " gratis koekje.";
+  // Hoeveel koekjes nog tot de volgende vier? Dat is wat de spaarbalk laat zien.
+  const inRij = betaald % BUNDEL.aantal;
+  const totDeal = betaald === 0 ? BUNDEL.aantal : (BUNDEL.aantal - inRij) % BUNDEL.aantal;
+  const spaar = totDeal === 0 && betaald > 0
+    ? (betaald / BUNDEL.aantal) + "× de deal — je bespaart " + euro(kort) + "."
+    : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " tot "
+      + (kort > 0 ? "de volgende " : "") + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + ".";
   $("#spaarTekst").textContent = spaar;
   $("#dealTekst").textContent = spaar;
-  $("#spaarBalk").style.width = (betaald === 0 ? 0 : ((betaald % 5 === 0 ? 5 : betaald % 5) / 5) * 100) + "%";
+  $("#spaarBalk").style.width = (betaald === 0 ? 0
+    : ((inRij === 0 ? BUNDEL.aantal : inRij) / BUNDEL.aantal) * 100) + "%";
 
   $$("#dealRij .gleuf").forEach(function(g, i){
-    const vol = i < 5 ? (betaald % 5 === 0 ? (betaald > 0 ? 5 : 0) : betaald % 5) > i : gratis > 0;
-    g.classList.toggle("vol", vol);
+    g.classList.toggle("vol", (inRij === 0 && betaald > 0 ? BUNDEL.aantal : inRij) > i);
   });
 
   // regels in de lade
   const body = $("#ladeBody");
   const ids = Object.keys(mandje);
   if (ids.length === 0){
-    body.innerHTML = '<div class="leeg"><span class="koek-plek" data-koek="klassieker"></span>'
-      + '<p>Je mandje is nog leeg. Vijf koekjes en de zesde krijg je erbij.</p>'
+    body.innerHTML = '<div class="leeg"><span class="koek-plek" data-koek="chocchip"></span>'
+      + '<p>Je mandje is nog leeg. ' + BUNDEL.aantal + ' koekjes kost ' + euroNet(BUNDEL.prijs) + '.</p>'
       + '<button class="knop" type="button" data-sluit-naar="#assortiment">Kies je koekjes</button></div>';
   } else {
     body.innerHTML = ids.map(function(id){
@@ -1123,31 +1048,28 @@ function ververs(){
         + '<span>' + mandje[id] + '</span>'
         + '<button type="button" data-plus="' + id + '" aria-label="Eén meer">+</button></div></div>'
         + '<span class="r-prijs">' + euro(mandje[id] * k.prijs) + '</span></div>';
-    }).join("") + gratisKeuze.map(function(keuze, i){
-      const opties = '<option value="verrassing"' + (keuze === "verrassing" ? " selected" : "") + '>Verras me (ik kies iets lekkers)</option>'
-        + KOEKJES.map(k => '<option value="' + k.id + '"' + (keuze === k.id ? " selected" : "") + '>' + k.naam + '</option>').join("");
-      return '<div class="regel regel--gratis"><span class="koek-plek" data-koek="' + (keuze === "verrassing" ? "karamelbom" : keuze) + '"></span>'
-        + '<div><h4>Gratis koekje ' + (gratisKeuze.length > 1 ? "#" + (i + 1) : "") + '</h4>'
-        + '<select data-gratis="' + i + '" aria-label="Smaak van je gratis koekje">' + opties + '</select></div></div>';
-    }).join("");
+    }).join("") + (kort > 0
+      ? '<div class="regel regel--gratis"><span class="koek-plek" data-koek="chocchip"></span>'
+        + '<div><h4>' + BUNDEL.aantal + ' voor ' + euroNet(BUNDEL.prijs) + '</h4>'
+        + '<span style="font-size:.84rem;color:var(--zacht)">'
+        + Math.floor(betaald / BUNDEL.aantal) + '× toegepast</span></div>'
+        + '<span class="r-prijs">− ' + euro(kort) + '</span></div>'
+      : "");
   }
   $$(".koek-plek", body).forEach(function(el){
     el.innerHTML = el.dataset.koek === BOX.id ? doosSVG() : koekSVG(vind(el.dataset.koek));
   });
 
-  const bezorgen = lever === "Bezorgen" && koekjesTotaal() < CONFIG.gratisBezorgenVanaf && koekjesTotaal() > 0;
-  const totaal = sub + (bezorgen ? CONFIG.bezorgkosten : 0);
-  $("#totaalPrijs").textContent = euro(totaal);
+  $("#totaalPrijs").textContent = euro(sub);
   $("#totaalUitleg").textContent = koekjesTotaal() === 0 ? ""
-    : (bezorgen ? "incl. " + euro(CONFIG.bezorgkosten) + " bezorging" : (lever === "Bezorgen" ? "gratis bezorgd" : "afhalen"));
+    : (kort > 0 ? euro(kort) + " voordeel · ophalen" : "ophalen");
   const grens = grensTekst();
   $("#grens").hidden = !grens;
   $("#grens").textContent = grens;
   $("#bestelKnop").disabled = !!grens;
   $("#overlegKnop").hidden = !grens;
 
-  $("#adresVeld").hidden = lever !== "Bezorgen";
-  $("#afhaalVeld").hidden = !(lever === "Afhalen" && CONFIG.afhaalKeuze);
+  $("#afhaalVeld").hidden = !CONFIG.afhaalKeuze;
   if (!$("#afhaalVeld").hidden) tekenMomenten();
 }
 
@@ -1166,17 +1088,14 @@ function bestelTekst(code){
     const extra = id === BOX.id ? " (" + BOX.koekjes + " koekjes)" : "";
     return "• " + mandje[id] + "× " + k.naam + extra + " — " + euro(mandje[id] * k.prijs);
   });
-  gratisKeuze.forEach(function(keuze){
-    regels.push("• 1× " + (keuze === "verrassing" ? "Gratis koekje (verrassing)" : "Gratis koekje: " + vind(keuze).naam) + " — gratis");
-  });
-  const bezorgen = lever === "Bezorgen" && koekjesTotaal() < CONFIG.gratisBezorgenVanaf;
-  const totaal = subtotaal() + (bezorgen ? CONFIG.bezorgkosten : 0);
+  const kort = korting();
+  if (kort > 0) regels.push("• " + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + " — − " + euro(kort));
   let t = "Hoi Zara! Ik wil graag bestellen bij De Koekenbakker:\n\n" + regels.join("\n");
   if (code) t = "Bestelling " + code + "\n\n" + t;
-  t += "\n\nTotaal: " + euro(totaal) + (bezorgen ? " (incl. bezorging)" : "");
-  t += "\n" + lever + (lever === "Bezorgen"
-    ? " — " + ($("#vAdres").value.trim() || "adres volgt")
-    : (CONFIG.afhaalKeuze ? " — " + (afhaalmoment === "In overleg" ? "moment nog af te spreken" : (afhaalmoment || "moment volgt")) : ""));
+  t += "\n\nTotaal: " + euro(subtotaal());
+  t += "\nOphalen" + (CONFIG.afhaalKeuze
+    ? " — " + (afhaalmoment === "In overleg" ? "moment nog af te spreken" : (afhaalmoment || "moment volgt"))
+    : "");
   t += "\n\nNaam: " + $("#vNaam").value.trim();
   t += "\nContact: " + $("#vContact").value.trim();
   const notitie = $("#vNotitie").value.trim();
@@ -1196,12 +1115,10 @@ async function bewaarBestelling(code){
   const regels = Object.keys(mandje).map(function(id){
     const k = vind(id);
     return {id: id, naam: k.naam, aantal: mandje[id], stuk: k.prijs, gratis: false};
-  }).concat(gratisKeuze.map(function(keuze){
-    const k = vind(keuze === "verrassing" ? "karamelbom" : keuze);
-    return {id: keuze, naam: keuze === "verrassing" ? "Gratis koekje (verrassing)" : k.naam,
-            aantal: 1, stuk: 0, gratis: true};
-  }));
-  const bezorgen = lever === "Bezorgen" && n < CONFIG.gratisBezorgenVanaf;
+  });
+  const kort = korting();
+  if (kort > 0) regels.push({id: "bundel", naam: BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs),
+                             aantal: Math.floor(aantalBetaald() / BUNDEL.aantal), stuk: -kort / Math.floor(aantalBetaald() / BUNDEL.aantal), gratis: true});
   try {
     await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), {
       code: code,
@@ -1211,12 +1128,12 @@ async function bewaarBestelling(code){
       naam: $("#vNaam").value.trim().slice(0, 120),
       contact: $("#vContact").value.trim().slice(0, 120),
       notitie: $("#vNotitie").value.trim().slice(0, 600),
-      levering: lever,
-      moment: lever === "Afhalen" ? String(afhaalmoment || "").slice(0, 120) : "",
-      adres: lever === "Bezorgen" ? $("#vAdres").value.trim().slice(0, 200) : "",
+      levering: "Afhalen",
+      moment: String(afhaalmoment || "").slice(0, 120),
+      adres: "",
       regels: regels,
       koekjes: n,
-      bedrag: Math.round((subtotaal() + (bezorgen ? CONFIG.bezorgkosten : 0)) * 100) / 100
+      bedrag: subtotaal()
     });
     const week_ref = fx.doc(db, "koekenbakker", RUIMTE, "weken", week);
     try {
@@ -1236,8 +1153,7 @@ async function versturen(){
   if (grensTekst()){ melding("Deze bestelling is te groot — stuur me even een berichtje."); return; }
   if (!$("#vNaam").value.trim()){ struikel($("#vNaam"), "Je naam is verplicht."); return; }
   if (!$("#vContact").value.trim()){ struikel($("#vContact"), "Een telefoonnummer of e-mailadres is verplicht."); return; }
-  if (lever === "Bezorgen" && !$("#vAdres").value.trim()){ struikel($("#vAdres"), "Vul je bezorgadres in."); return; }
-  if (lever === "Afhalen" && CONFIG.afhaalKeuze && !afhaalmoment){
+  if (CONFIG.afhaalKeuze && !afhaalmoment){
     $("#momenten").classList.add("fout");
     $("#momenten").scrollIntoView({block: "nearest"});
     melding("Kies even wanneer je het ophaalt.");
@@ -1255,9 +1171,7 @@ async function versturen(){
     if (gelukt){
       bevestigd = code;
       mandje = {};
-      gratisKeuze = [];
       bewaar("kb-mandje", mandje);
-      bewaar("kb-gratis", gratisKeuze);
       ververs();
       $(".lade-scroll").scrollTop = 0;
       return;
@@ -1296,49 +1210,6 @@ function overleggen(){
   const contact = $("#vContact").value.trim();
   if (contact) t += "\nContact: " + contact;
   stuur(t, "Grote bestelling De Koekenbakker", "Je berichtje staat klaar");
-}
-
-/* ---------- quiz: welk koekje ben jij? ---------- */
-const VRAGEN = [
-  { v: "Het is vrijdagmiddag. Wat staat er naast je?",
-    o: [ {t: "Zwarte koffie", p: {nachtdonker: 2, nootjenoir: 1}},
-         {t: "Thee met melk", p: {klassieker: 2, wittewolk: 1}},
-         {t: "Warme chocolademelk", p: {wittewolk: 2, karamelbom: 1}},
-         {t: "IJskoude cola", p: {karamelbom: 2, klassieker: 1}} ] },
-  { v: "Hoe donker mag chocolade van jou zijn?",
-    o: [ {t: "Hoe puurder hoe beter", p: {nachtdonker: 3, nootjenoir: 2}},
-         {t: "Gewoon melk, klaar", p: {klassieker: 3}},
-         {t: "Wit telt ook als chocolade", p: {wittewolk: 3}},
-         {t: "Als er maar iets uitloopt", p: {karamelbom: 3}} ] },
-  { v: "Wat is een koekje voor jou?",
-    o: [ {t: "Iets voor bij het leren", p: {klassieker: 2, nootjenoir: 2}},
-         {t: "Een dessert op zich", p: {karamelbom: 2, nachtdonker: 1}},
-         {t: "Iets om te delen", p: {wittewolk: 2, klassieker: 1}},
-         {t: "Een beloning na een lange dag", p: {nachtdonker: 2, karamelbom: 1}} ] }
-];
-let qIndex = 0, qScore = {};
-
-function tekenQuiz(){
-  const box = $("#quizIn");
-  if (qIndex < VRAGEN.length){
-    const vraag = VRAGEN[qIndex];
-    box.innerHTML = '<span class="eyebrow">Welk koekje ben jij?</span>'
-      + '<h3>' + vraag.v + '</h3>'
-      + '<div class="opties">' + vraag.o.map((o, i) => '<button class="optie" type="button" data-optie="' + i + '">' + o.t + '</button>').join("") + '</div>'
-      + '<div class="voortgang"><i style="width:' + ((qIndex / VRAGEN.length) * 100) + '%"></i></div>';
-  } else {
-    let beste = KOEKJES[0].id, hoog = -1;
-    KOEKJES.forEach(function(k){ const s = qScore[k.id] || 0; if (s > hoog){ hoog = s; beste = k.id; } });
-    const k = vind(beste);
-    box.innerHTML = '<span class="eyebrow">Jouw match</span>'
-      + '<div class="uitslag"><span class="koek-plek" data-koek="' + k.id + '"></span>'
-      + '<div><h3>' + k.naam + '</h3><p class="lead" style="margin-top:8px">' + k.kort + '</p>'
-      + '<div class="hero-acties" style="margin-top:20px">'
-      + '<button class="knop" type="button" data-add="' + k.id + '">Doe maar in mijn mandje</button>'
-      + '<button class="knop knop--stil" type="button" id="quizOpnieuw">Opnieuw</button>'
-      + '</div></div></div>';
-    $(".koek-plek", box).innerHTML = koekSVG(k);
-  }
 }
 
 /* ---------- aftellen naar de bakdag ---------- */
@@ -1404,27 +1275,21 @@ function kruimel(x, y){
 /* ---------- opstarten ---------- */
 function start(){
   // vaste koekjes tekenen
-  const klein = koekSVG(KOEKJES[0]);
-  $("#laadKoek").innerHTML = koekSVG(KOEKJES[3]);
-  $("#merkKoek").innerHTML = klein;
-  $("#ovenTekening").innerHTML = ovenSVG();
-  $("#deegbol").innerHTML = deegSVG();
-  $("#uitKoekje").innerHTML = koekSVG(KOEKJES[0]);
+  $("#laadKoek").innerHTML = koekSVG(KOEKJES[4]);
+  $("#heroKoek").innerHTML = koekSVG(KOEKJES[4]);
+  ["#orbit1", "#orbit2", "#orbit3", "#orbit4", "#orbit5"].forEach(function(sel, i){
+    $(sel).innerHTML = koekSVG(KOEKJES[i % KOEKJES.length]);
+  });
   $("#cursor").innerHTML = koekSVG(KOEKJES[1]);
   $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
   $("#bedanktKoek").innerHTML = koekSVG(KOEKJES[3]);
 
-  // loper
-  const woorden = ["Vers gebakken", "Koop er 5 · de 6e gratis", "Elke vrijdag een nieuwe batch", "48 uur gerijpt deeg", "Bezorgd in " + CONFIG.stad, "Zelf gebakken, ik ben 16"];
-  $("#loper").innerHTML = (woorden.concat(woorden)).map(w => "<span>" + w + "</span>").join("");
-
-  // spaarrij
-  $("#dealRij").innerHTML = [0,1,2,3,4,5].map(function(i){
-    return '<div class="gleuf' + (i === 5 ? " gleuf--gratis" : "") + '">' + koekSVG(KOEKJES[i % 5]) + '</div>';
+  // de rij vakjes bij de deal: vier koekjes
+  $("#dealRij").innerHTML = [0,1,2,3].map(function(i){
+    return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">' + koekSVG(KOEKJES[i]) + '</div>';
   }).join("");
 
   tekenKaarten();
-  tekenQuiz();
   ververs();
   tikTak();
   setInterval(tikTak, 1000);
@@ -1432,7 +1297,6 @@ function start(){
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
   bakdagTonen();
-  $$("#keuzes button").forEach(b => b.classList.toggle("aan", b.dataset.lever === lever));
 
   // in beeld schuiven
   if ("IntersectionObserver" in window && !rustig){
@@ -1478,23 +1342,6 @@ document.addEventListener("click", function(e){
   if (plus){ inMandje(plus.dataset.plus, 1); return; }
   const naar = e.target.closest("[data-sluit-naar]");
   if (naar){ openLade(false); document.querySelector(naar.dataset.sluitNaar).scrollIntoView({behavior: rustig ? "auto" : "smooth"}); return; }
-  const optie = e.target.closest("[data-optie]");
-  if (optie){
-    const punten = VRAGEN[qIndex].o[+optie.dataset.optie].p;
-    Object.keys(punten).forEach(id => qScore[id] = (qScore[id] || 0) + punten[id]);
-    qIndex++;
-    tekenQuiz();
-    return;
-  }
-  if (e.target.id === "quizOpnieuw"){ qIndex = 0; qScore = {}; tekenQuiz(); return; }
-  const lev = e.target.closest("[data-lever]");
-  if (lev){
-    lever = lev.dataset.lever;
-    bewaar("kb-lever", lever);
-    $$("#keuzes button").forEach(b => b.classList.toggle("aan", b === lev));
-    ververs();
-    return;
-  }
   const soc = e.target.closest("[data-social]");
   if (soc && soc.getAttribute("href") === "#"){
     e.preventDefault();
@@ -1502,7 +1349,11 @@ document.addEventListener("click", function(e){
     return;
   }
   if (e.target.closest("#mandjeKnop, #balkKnop")){ openLade(true); return; }
-  if (e.target.closest("#dealKnop")){ $("#assortiment").scrollIntoView({behavior: rustig ? "auto" : "smooth"}); return; }
+  if (e.target.closest("#dealKnop, #proefZelf")){
+    e.preventDefault();
+    $("#assortiment").scrollIntoView({behavior: rustig ? "auto" : "smooth"});
+    return;
+  }
   if (e.target.closest("#ladeDicht, #sluier")){ openLade(false); return; }
   if (e.target.closest("#nogmaals")){ bevestigd = ""; ververs(); return; }
   if (e.target.closest("#cursorSchakel")){ cursorAan = !cursorAan; bewaar("kb-cursor", cursorAan); cursorInstellen(); return; }
@@ -1525,11 +1376,6 @@ document.addEventListener("click", function(e){
 document.addEventListener("keydown", function(e){
   if (e.key === "Escape") openLade(false);
   if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-hap]")){ e.preventDefault(); neemHap(e.target.dataset.hap, e.target); }
-});
-
-document.addEventListener("change", function(e){
-  const g = e.target.closest("[data-gratis]");
-  if (g){ gratisKeuze[+g.dataset.gratis] = g.value; bewaar("kb-gratis", gratisKeuze); ververs(); }
 });
 
 $("#bestelKnop").addEventListener("click", versturen);

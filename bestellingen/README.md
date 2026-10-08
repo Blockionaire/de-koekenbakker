@@ -29,7 +29,8 @@ appen of te mailen), het afhaalmoment of adres en de opmerking.
 
 Bovenaan staat **+ Bestelling toevoegen**, voor alles wat buiten de webshop om binnenkomt:
 mondeling, via Instagram, een appje. Je vult een naam in, tikt de koekjes bij elkaar met de
-plusknoppen, en het bedrag rekent zichzelf uit — aanpassen mag, bijvoorbeeld als je een
+plusknoppen, en het bedrag rekent zichzelf uit — inclusief de deal van de webshop (vier
+koekjes voor € 12, bij elke volgende vier opnieuw). Aanpassen mag, bijvoorbeeld als je een
 andere prijs hebt afgesproken. Elke bestelling heeft ook een **kanaal** (Website,
 Mondeling, WhatsApp, Instagram, …), zodat je ziet waar je klanten vandaan komen; op het
 overzicht staat dat per week bij elkaar geteld. Wat via de webshop binnenkomt heet
@@ -145,4 +146,4 @@ leegtrekken of het limiet veranderen.
 - **Het weekbericht** komt elke donderdag om 20:00 per mail, met het bakbriefje en alle
   bestellingen van die week. Dat is de betrouwbare vangnet-melding: die komt binnen ook
   als de portal dicht is. Zie `.github/workflows/weekbericht.yml`.
-- **Betalen gaat buiten de site om**, bij het afhalen of bezorgen.
+- **Betalen gaat buiten de site om**, bij het ophalen.
