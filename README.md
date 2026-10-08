@@ -29,7 +29,8 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   twee banen omheen cirkelen. Op de telefoon schaalt het hele tafereel mee en staat het
   boven de kop.
 - **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter.
-  Tik op een koekje en er gaat een hap uit (na drie happen krijg je een knipoog terug).
+  Tik op een koekje en er gaat een hap uit. Na de tweede hap is het koekje op: je ziet
+  'm nog even zo liggen, en dan komt er een knipoog en ligt er weer een heel koekje.
 - **Combideal: 4 voor € 12** — vier gleuven die meelopen met je mandje. Los kost een koekje
   € 3,25; bij elke vier die erin liggen gaat er € 1 van het totaal af, zichtbaar als een
   eigen regel in het mandje. De smaken mogen vrij door elkaar.

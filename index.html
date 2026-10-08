@@ -939,17 +939,24 @@ function tekenKaarten(){
   });
 }
 
+const happenKlok = {};
+// Twee happen mag je nemen. Na de tweede is het koekje op: je ziet 'm nog
+// even zo liggen, en dan komt de knipoog en ligt er weer een heel koekje.
+const HAPPEN_MAX = 2;
 function neemHap(id, bron){
   const lijst = happenPer[id] || (happenPer[id] = []);
-  if (lijst.length >= 3){
-    lijst.length = 0;
-    melding("Hé! Niet opeten — bestel er gewoon een bij mij 😄");
-  } else {
-    lijst.push(Math.random() * Math.PI * 2);
-  }
-  const plek = $(".koek-plek", bron);
-  plek.innerHTML = koekSVG(vind(id), {happen: lijst});
+  if (lijst.length >= HAPPEN_MAX) return;        // de laatste hap loopt nog af
+  lijst.push(Math.random() * Math.PI * 2);
+  $(".koek-plek", bron).innerHTML = koekSVG(vind(id), {happen: lijst});
   kruimelBij(bron);
+  if (lijst.length < HAPPEN_MAX) return;
+  clearTimeout(happenKlok[id]);
+  happenKlok[id] = setTimeout(function(){
+    lijst.length = 0;
+    const plek = $('[data-hap="' + id + '"] .koek-plek');
+    if (plek) plek.innerHTML = koekSVG(vind(id), {happen: lijst});
+    melding("Hé! Niet opeten — bestel er gewoon een bij mij 😄");
+  }, 700);
 }
 
 /* ---------- het mandje ---------- */
