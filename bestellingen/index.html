@@ -179,6 +179,9 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .knop--gevaar{background:#8E3B2E;border-color:#8E3B2E;color:var(--room)}
 .knop--gevaar:hover{background:#7A3227;color:var(--room)}
 
+.knoprij{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.knoprij .knop{width:100%;padding:11px 10px;font-size:.88rem}
+@media(max-width:420px){.knoprij{grid-template-columns:1fr}}
 .proefrij{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;padding:9px 0;
   border-bottom:1px dashed var(--lijn);font-size:.94rem}
 .proefrij:last-child{border-bottom:0}
@@ -378,9 +381,10 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       </section>
 
       <section id="vlakLijst" hidden>
-        <button class="knop knop--stil knop--vol" id="lijstKnop" type="button" style="margin-bottom:10px">
-          Lijst invoeren
-        </button>
+        <div class="knoprij">
+          <button class="knop knop--stil" id="lijstKnop" type="button">Lijst invoeren</button>
+          <button class="knop knop--stil" id="bakmailKnop" type="button">Bakoverzicht mailen</button>
+        </div>
         <button class="knop knop--vol" id="nieuweBestelling" type="button" style="margin-bottom:14px">
           + Bestelling toevoegen</button>
         <div class="zoekbalk">
@@ -1149,6 +1153,74 @@ async function bestellingVerwijderen(id){
   }
 }
 
+/* ---------- het bakoverzicht als bericht ----------
+   Elke donderdagavond om 20:00 komt dit vanzelf per mail binnen; die taak
+   draait bij GitHub en heeft het wachtwoord van de mailbox. De knop hier
+   is voor tussendoor: hij zet precies hetzelfde overzicht klaar in je eigen
+   mail, zodat je het ook op een ander moment bij de hand hebt. */
+function bakoverzichtTekst(){
+  const open = lopend();
+  const per = {};
+  let vrij = 0;
+  open.forEach(function(b){
+    (b.regels || []).forEach(function(r){
+      if (r.id === "bundel") return;
+      if (isBox(r.id)){ vrij += (r.aantal || 0) * (STUKS[r.id] || 6); return; }
+      if (r.id === "verrassing"){ vrij += (r.aantal || 0); return; }
+      per[r.id] = (per[r.id] || 0) + (r.aantal || 0);
+    });
+  });
+  const koekjes = open.reduce((n, b) => n + (b.koekjes || 0), 0);
+  const omzet = open.reduce((n, b) => n + (b.bedrag || 0), 0);
+
+  let t = "BAKOVERZICHT \u2014 " + weekLabel(huidigeWeek) + "\n";
+  t += open.length + " bestelling" + (open.length === 1 ? "" : "en") + " \u00b7 "
+     + koekjes + " koekjes \u00b7 " + euro(omzet) + "\n\n";
+
+  t += "WAT ER GEBAKKEN MOET WORDEN\n";
+  const soorten = Object.keys(per).sort((a, b) => per[b] - per[a]);
+  if (!soorten.length && !vrij) t += "  nog niets\n";
+  soorten.forEach(function(id){ t += "  " + per[id] + "\u00d7 " + NAAMVAN(id) + "\n"; });
+  if (vrij > 0) t += "  " + vrij + "\u00d7 zelf uitkiezen (verrassingsboxen)\n";
+  t += "  ----\n  " + (soorten.reduce((n, id) => n + per[id], 0) + vrij) + " koekjes in totaal\n\n";
+
+  t += "DE BESTELLINGEN\n";
+  if (!open.length) t += "  nog geen bestellingen deze week\n";
+  open.slice().sort((a, b) => String(a.naam || "").localeCompare(String(b.naam || ""))).forEach(function(b){
+    t += "\n" + (b.naam || "zonder naam") + (b.code ? "  (" + b.code + ")" : "") + "\n";
+    t += "  " + (b.koekjes || 0) + " koekjes \u00b7 " + euro(b.bedrag) + " \u00b7 " + statusNaam(b)
+       + " \u00b7 " + kanaalVan(b) + "\n";
+    (b.regels || []).forEach(function(r){
+      if (r.id === "bundel") return;
+      t += "    " + (r.aantal || 1) + "\u00d7 " + (r.naam || r.id) + "\n";
+    });
+    if (b.moment) t += "    ophalen: " + b.moment + "\n";
+    if (b.contact) t += "    " + b.contact + "\n";
+    if (b.notitie) t += "    let op: " + b.notitie + "\n";
+  });
+
+  const geannuleerd = bestellingen.filter(b => b.status === "geannuleerd");
+  if (geannuleerd.length)
+    t += "\nAFGEZEGD: " + geannuleerd.map(b => b.naam || "?").join(", ") + "\n";
+
+  t += "\nDit overzicht komt ook elke donderdag om 20:00 vanzelf binnen.\n";
+  t += PORTAALLINK + "\n";
+  return t;
+}
+
+const PORTAALLINK = "https://dekoekenbakkerzara.nl/bestellingen/";
+
+function bakoverzichtMailen(){
+  const tekst = bakoverzichtTekst();
+  const naar = (auth && auth.currentUser && auth.currentUser.email) || "";
+  const onderwerp = "Bakoverzicht \u2014 " + weekLabel(huidigeWeek);
+  if (navigator.clipboard) navigator.clipboard.writeText(tekst).catch(function(){});
+  window.location.href = "mailto:" + encodeURIComponent(naar)
+    + "?subject=" + encodeURIComponent(onderwerp)
+    + "&body=" + encodeURIComponent(tekst);
+  melden("Bakoverzicht staat klaar in je mail \u2014 en is gekopieerd.");
+}
+
 /* ---------- een lijst in één keer invoeren ----------
    Het meeste komt binnen via een appje of mondeling. Dit leest zo'n lijstje
    en maakt er bestellingen van, met het juiste kanaal en de juiste week. */
@@ -1502,6 +1574,7 @@ document.addEventListener("click", function(e){
 
   if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
   if (e.target.closest("#lijstKnop")){ lijstOpenen(); return; }
+  if (e.target.closest("#bakmailKnop")){ bakoverzichtMailen(); return; }
   if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
   if (e.target.closest("#lijstMaken")){ lijstAanmaken(); return; }
   if (e.target.closest("#lijstDicht")){ lijstSluiten(); return; }

@@ -295,6 +295,14 @@ button{font:inherit;color:inherit}
   display:inline-flex;align-items:center;gap:8px;transition:background .15s,transform .15s}
 .toevoeg:hover{background:var(--karamel-diep);border-color:var(--karamel-diep);transform:translateY(-2px)}
 .toevoeg.gelukt{background:var(--gratis);border-color:var(--gratis);color:var(--inkt)}
+.teller{display:inline-flex;align-items:center;border:2px solid var(--inkt);border-radius:999px;
+  overflow:hidden;background:var(--papier);box-shadow:3px 3px 0 rgba(46,34,23,.2)}
+.teller button{width:40px;height:42px;background:transparent;border:0;cursor:pointer;
+  font-family:var(--kop);font-weight:800;font-size:1.2rem;line-height:1;color:var(--inkt)}
+.teller button:hover{background:var(--zand)}
+.teller button:active{background:var(--klei)}
+.teller b{min-width:36px;text-align:center;font-family:var(--kop);font-weight:800;font-size:1.05rem;
+  font-variant-numeric:tabular-nums}
 @media(max-width:880px){
   .koekjes{grid-template-columns:1fr}
   .kaart,.kaart:nth-child(4),.kaart:nth-child(5){grid-column:span 1}
@@ -1045,7 +1053,7 @@ function tekenKaarten(){
       + '</div>'
       + '<div class="kaart-voet">'
       +   '<span class="prijs">' + euro(k.prijs) + '<small>' + k.gram + ' g · Ø 10 cm</small></span>'
-      +   '<button class="toevoeg" type="button" data-add="' + k.id + '">In mandje</button>'
+      +   '<span class="kaartknop" data-knop="' + k.id + '"></span>'
       + '</div>'
       + '</article>';
   }).join("");
@@ -1059,6 +1067,25 @@ const happenKlok = {};
 // Twee happen mag je nemen. Na de tweede is het koekje op: je ziet 'm nog
 // even zo liggen, en dan komt de knipoog en ligt er weer een heel koekje.
 const HAPPEN_MAX = 2;
+// Op de kaart staat eerst "In mandje". Zit het koekje in je mandje, dan staat
+// er hoeveel je er hebt, met een min en een plus ernaast.
+const netBij = {};
+function kaartKnoppen(){
+  $$("[data-knop]").forEach(function(plek){
+    const id = plek.dataset.knop, n = mandje[id] || 0;
+    if (netBij[id]){
+      plek.innerHTML = '<button class="toevoeg gelukt" type="button" data-add="' + id + '">Toegevoegd</button>';
+    } else if (n > 0){
+      plek.innerHTML = '<span class="teller">'
+        + '<button type="button" data-min="' + id + '" aria-label="E\u00e9n minder">\u2013</button>'
+        + '<b>' + n + '</b>'
+        + '<button type="button" data-plus="' + id + '" aria-label="E\u00e9n meer">+</button></span>';
+    } else {
+      plek.innerHTML = '<button class="toevoeg" type="button" data-add="' + id + '">In mandje</button>';
+    }
+  });
+}
+
 function neemHap(id, bron){
   const lijst = happenPer[id] || (happenPer[id] = []);
   if (lijst.length >= HAPPEN_MAX) return;        // de laatste hap loopt nog af
@@ -1220,6 +1247,7 @@ function ververs(){
 
   $("#afhaalVeld").hidden = !CONFIG.afhaalKeuze;
   if (!$("#afhaalVeld").hidden) tekenMomenten();
+  kaartKnoppen();
 }
 
 // Het paneel met de drie boxmaten onder de combideal.
@@ -1696,19 +1724,28 @@ function bakdagTonen(){
 document.addEventListener("click", function(e){
   const add = e.target.closest("[data-add]");
   if (add){
-    inMandje(add.dataset.add, 1);
+    const id = add.dataset.add;
     kruimelBij(add);
     if (add.classList.contains("toevoeg")){
-      add.textContent = "Toegevoegd";
-      add.classList.add("gelukt");
-      setTimeout(function(){ add.textContent = "In mandje"; add.classList.remove("gelukt"); }, 1100);
-    } else if (isBox(add.dataset.add)){
-      const b = vind(add.dataset.add);
+      // Eerst even "Toegevoegd", en daarna de teller. Klik je meteen nog een
+      // keer, dan sla je dat kwartiertje over en zie je gelijk de 2 staan.
+      if (netBij[id]){
+        clearTimeout(netBij[id]);
+        delete netBij[id];
+      } else {
+        netBij[id] = setTimeout(function(){ delete netBij[id]; kaartKnoppen(); }, 900);
+      }
+      inMandje(id, 1);
+      return;
+    }
+    inMandje(id, 1);
+    if (isBox(id)){
+      const b = vind(id);
       boxKeuzeTonen(false);
       openLade(true);
       melding("Verrassingsbox toegevoegd — " + b.koekjes + " koekjes, ik kies ze uit.");
     } else {
-      melding(vind(add.dataset.add).naam + " zit in je mandje.");
+      melding(vind(id).naam + " zit in je mandje.");
     }
     return;
   }

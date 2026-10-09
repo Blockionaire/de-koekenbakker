@@ -165,4 +165,10 @@ leegtrekken of het limiet veranderen.
 - **Het weekbericht** komt elke donderdag om 20:00 per mail, met het bakbriefje en alle
   bestellingen van die week. Dat is de betrouwbare vangnet-melding: die komt binnen ook
   als de portal dicht is. Zie `.github/workflows/weekbericht.yml`.
+- **Bakoverzicht mailen** doet hetzelfde op een moment dat jou uitkomt. De knop staat boven
+  de bestellingen en zet het hele overzicht — wat er gebakken moet worden, en daarna per
+  klant wat hij besteld heeft — klaar in je eigen mailprogramma, met jouw adres er al in.
+  Versturen doe je zelf met één tik; een website mag niet ongevraagd mail de deur uit doen,
+  dus dat laatste zetje moet van jou komen. De tekst staat meteen ook op je klembord, handig
+  als je hem liever in een appje plakt.
 - **Betalen gaat buiten de site om**, bij het ophalen.

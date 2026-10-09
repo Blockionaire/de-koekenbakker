@@ -28,7 +28,9 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
 - **Hero** — een groot koekje dat langzaam rondjes draait, met vijf kleintjes die er in
   twee banen omheen cirkelen. Op de telefoon schaalt het hele tafereel mee en staat het
   boven de kop.
-- **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter.
+- **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter. Zodra
+  een koekje in je mandje ligt wordt de knop *In mandje* een telletje met een min en een
+  plus, zodat je op de kaart zelf ziet hoeveel je ervan neemt.
   Tik op een koekje en er gaat een hap uit. Na de tweede hap is het koekje op: je ziet
   'm nog even zo liggen, en dan komt er een knipoog en ligt er weer een heel koekje.
 - **Combideal: 4 voor € 12** — vier gleuven die meelopen met je mandje. Los kost een koekje
