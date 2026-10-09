@@ -2,7 +2,7 @@
    Hij doet twee dingen: de app mag op het beginscherm staan, en een melding
    die je aantikt opent de portal in plaats van een nieuw tabblad. */
 
-const BAK = "koekenbakker-portal-v1";
+const BAK = "koekenbakker-portal-v2";
 const SCHIL = ["./", "./index.html", "./manifest.json", "./icoon-512.png"];
 
 self.addEventListener("install", function (e) {
