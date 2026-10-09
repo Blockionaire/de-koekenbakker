@@ -85,6 +85,9 @@ a{color:inherit}
 .tab.aan{background:var(--inkt);color:var(--room)}
 .tab b{background:var(--karamel);color:var(--room);border-radius:99px;padding:0 6px;margin-left:6px;font-size:.78rem}
 .tab.aan b{background:var(--room);color:var(--inkt)}
+.tab b{background:var(--lijn);color:var(--inkt)}
+.tab b.nieuw{background:var(--karamel);color:var(--room)}
+.tab.aan b.nieuw{background:var(--room);color:var(--karamel-diep)}
 
 .weekbalk{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 0 0}
 .weekbalk b{font-family:var(--kop);font-weight:800;font-size:1.05rem}
@@ -205,6 +208,10 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .stapel button{width:32px;height:32px;font-family:var(--kop);font-weight:800;line-height:1}
 .stapel button:hover{background:var(--zand)}
 .stapel span{min-width:30px;text-align:center;font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums}
+.stapkiezer{border:2px solid var(--inkt);border-radius:999px;background:var(--papier);color:var(--inkt);
+  font-family:var(--kop);font-weight:700;font-size:.84rem;padding:8px 10px;cursor:pointer;
+  box-shadow:2px 2px 0 rgba(46,34,23,.18);max-width:11rem}
+.stapkiezer:hover{background:var(--zand)}
 .kanaal{display:inline-block;font-family:var(--kop);font-weight:700;font-size:.66rem;letter-spacing:.08em;
   text-transform:uppercase;border:1px solid var(--lijn);border-radius:99px;padding:2px 8px;color:var(--zacht)}
 .somrij{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--kop);font-weight:800;font-size:1.1rem}
@@ -279,7 +286,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
     <div class="venster-body">
       <div class="wisregels" id="wisRegels"></div>
       <p class="waarschuw">Deze bestelling verdwijnt helemaal uit de lijst en dat kan ik niet terugdraaien.
-        Wil je 'm alleen afzeggen? Kies dan <b>Annuleren</b> &mdash; dan blijft hij staan en telt hij niet meer mee.</p>
+        Wil je 'm alleen afzeggen? Zet hem dan in het stappenlijstje op <b>Geannuleerd</b> &mdash; dan blijft hij staan en telt hij niet meer mee.</p>
     </div>
     <div class="venster-voet">
       <button class="knop knop--vol knop--gevaar" id="wisDoor" type="button">Ja, verwijderen</button>
@@ -744,7 +751,10 @@ function tekenOverzicht(){
 
   const nieuw = bestellingen.filter(b => b.status === "nieuw").length;
   $("#cNieuw").textContent = nieuw;
-  $("#telNieuw").textContent = nieuw;
+  // Op het tabblad staat hoeveel bestellingen er deze week zijn; zit er iets
+  // nieuws bij, dan springt het getal eruit.
+  $("#telNieuw").textContent = lopend().length;
+  $("#telNieuw").classList.toggle("nieuw", nieuw > 0);
   titelBijwerken(nieuw);
   $("#cKoekjes").textContent = lopend().reduce((n, b) => n + (b.koekjes || 0), 0);
   $("#cOmzet").textContent = euro(lopend().reduce((n, b) => n + (b.bedrag || 0), 0));
@@ -922,9 +932,14 @@ function knoppenVoor(b){
   uit += '<button class="knop knop--stil knop--klein" data-bewerk="' + b.id + '" type="button">Bewerken</button>';
   const volgende = VOLGENDE[b.status];
   if (volgende) uit += k(volgende, VOLGENDENAAM[volgende]);
-  if (b.status === "afgerond") uit += k("ingepakt", "Toch nog niet", true);
-  if (b.status !== "geannuleerd") uit += k("geannuleerd", "Annuleren", true);
-  else uit += k("nieuw", "Terugzetten", true);
+  // De knop brengt je een stap verder; met de keuzelijst spring je naar elke
+  // stap, ook terug — handig als je te vroeg op gebakken hebt getikt.
+  uit += '<select class="stapkiezer" data-stap="' + b.id + '" aria-label="Stap van deze bestelling">'
+    + Object.keys(STATUSSEN).map(function(id){
+        const naam = (id === "afgerond" && b.levering === "Bezorgen") ? "Bezorgd" : STATUSSEN[id];
+        return '<option value="' + id + '"' + (id === b.status ? " selected" : "") + '>' + naam + '</option>';
+      }).join("")
+    + '</select>';
   uit += '<button class="knop knop--stil knop--klein knop--weg" data-wis="' + b.id + '" type="button">Verwijderen</button>';
   return uit;
 }
@@ -1409,7 +1424,8 @@ async function klantStatusWeg(code){
 
 /* ---------- wijzigen ---------- */
 async function statusZetten(id, nieuw){
-  const b = bestellingen.filter(x => x.id === id)[0];
+  // Ook een bestelling die je via het zoeken te pakken hebt, uit een andere week.
+  const b = (bestellingen.filter(x => x.id === id)[0]) || ((zoekRij || []).filter(x => x.id === id)[0]);
   if (!b) return;
   try {
     await fx.updateDoc(fx.doc(db, "koekenbakker", RUIMTE, "bestellingen", id), {status: nieuw});
@@ -1487,6 +1503,8 @@ async function weekOpslaan(velden){
 
 /* ---------- klikken ---------- */
 document.addEventListener("change", function(e){
+  const stap = e.target.closest("[data-stap]");
+  if (stap){ statusZetten(stap.dataset.stap, stap.value); return; }
   if (e.target.id === "kanaalFilter"){ kanaalFilter = e.target.value; tekenLijst(); }
 });
 

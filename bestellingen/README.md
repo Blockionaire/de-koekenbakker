@@ -59,13 +59,15 @@ Bestaande bestellingen pas je aan met **Bewerken** — handig als iemand er nog 
 of als een adres verandert. Daarnaast staat er **Verwijderen**. Daar schuift een
 eigen schermpje in beeld — geen browserpopup — waarin nog even staat om wie het gaat,
 hoeveel koekjes het zijn en wat de status is; pas na *Ja, verwijderen* gebeurt er iets. Verwijderen is definitief;
-wil je een bestelling alleen afzeggen maar wel kunnen terugvinden, gebruik dan *Annuleren*.
+wil je een bestelling alleen afzeggen maar wel kunnen terugvinden, zet hem dan op
+*Geannuleerd* in het stappenlijstje.
 Het baklimiet rekent in alle gevallen mee: hoog je een bestelling op, zeg je 'm af of
 verwijder je 'm, dan verschuift de weekteller vanzelf — ook als die bestelling in een andere
 week stond.
 
-Een bestelling loopt langs vijf stappen, met telkens één knop om hem een stap verder te
-zetten:
+Een bestelling loopt langs vijf stappen. De knop zet hem telkens één stap verder; met het
+keuzelijstje ernaast spring je naar elke stap, ook terug — handig als je te vroeg op
+*Gebakken* hebt getikt. Ook *Geannuleerd* zit in dat lijstje.
 
 **Nieuw → Nog bakken → Gebakken → Ingepakt → Opgehaald**
 
@@ -162,6 +164,9 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
+- **Het getal op het tabblad Bestellingen** is hoeveel bestellingen er deze week zijn,
+  zonder de afgezegde. Zit er iets nieuws bij dat je nog niet hebt bekeken, dan kleurt dat
+  getal op.
 - **Het weekbericht** komt elke donderdag om 20:00 per mail, met het bakbriefje en alle
   bestellingen van die week. Dat is de betrouwbare vangnet-melding: die komt binnen ook
   als de portal dicht is. Zie `.github/workflows/weekbericht.yml`.
