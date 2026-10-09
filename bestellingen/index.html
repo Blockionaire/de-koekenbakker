@@ -1037,6 +1037,7 @@ async function formulierOpslaan(){
       await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
                       {besteld: fx.increment(nieuwTelt - oudTelt)}, {merge: true});
     }
+    await klantStatus(Object.assign({code: velden.code || (oud && oud.code)}, velden), status);
     melden(formulier.id ? "Bestelling bijgewerkt." : "Bestelling toegevoegd.");
     sluitFormulier();
   } catch (fout){
@@ -1097,6 +1098,7 @@ async function bestellingVerwijderen(id){
       await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", b.week || huidigeWeek),
                       {besteld: fx.increment(-(b.koekjes || 0))}, {merge: true});
     }
+    await klantStatusWeg(b.code);
     melden("Bestelling verwijderd.");
     if (zoekRij) zoekUitvoeren();
     if (formulier) sluitFormulier();
@@ -1104,6 +1106,34 @@ async function bestellingVerwijderen(id){
   } catch (fout){
     melden("Verwijderen lukte niet: " + (fout.code || fout.message));
     return false;
+  }
+}
+
+/* ---------- de status die de klant op de website ziet ---------- */
+// Naast elke bestelling staat een los documentje op bestelnummer, met alleen
+// de stand erin. Dat is wat "Volg je bestelling" op de website laat zien.
+async function klantStatus(b, status){
+  if (!b || !b.code) return;
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "status", b.code), {
+      code: b.code,
+      week: b.week || huidigeWeek,
+      status: status || b.status || "nieuw",
+      koekjes: b.koekjes || 0,
+      moment: String(b.moment || "").slice(0, 120),
+      bijgewerkt: new Date()
+    }, {merge: true});
+  } catch (fout){
+    console.warn("Status voor de klant bijwerken lukte niet.", fout);
+  }
+}
+
+async function klantStatusWeg(code){
+  if (!code) return;
+  try {
+    await fx.deleteDoc(fx.doc(db, "koekenbakker", RUIMTE, "status", code));
+  } catch (fout){
+    console.warn("Status voor de klant opruimen lukte niet.", fout);
   }
 }
 
@@ -1120,6 +1150,7 @@ async function statusZetten(id, nieuw){
       await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
                       {besteld: fx.increment(verschil)}, {merge: true});
     }
+    await klantStatus(b, nieuw);
     melden((nieuw === "afgerond" && b.levering === "Bezorgen" ? "Bezorgd" : STATUSSEN[nieuw]) + ".");
   } catch (fout){
     melden("Opslaan lukte niet: " + (fout.code || fout.message));

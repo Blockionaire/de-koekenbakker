@@ -118,6 +118,41 @@ def merk_verstuurd(kop, week, nu):
         print("Merkteken zetten lukte niet: %s" % fout)
 
 
+def ruim_standen_op(kop, week):
+    """Gooit de volgstanden van afgelopen weken weg.
+
+    Bij elke bestelling hoort een documentje op bestelnummer waarmee de klant
+    op de website kan zien waar zijn koekjes zijn. Zodra een week voorbij is
+    heeft dat geen zin meer, dus ruimt deze taak ze eens per week op. Van de
+    week die nu gebakken wordt blijft alles staan.
+    """
+    basis = ("https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents"
+             "/koekenbakker/%s/status" % (PROJECT, RUIMTE))
+    weg, pagina = 0, None
+    try:
+        while True:
+            vraag = {"pageSize": 300}
+            if pagina:
+                vraag["pageToken"] = pagina
+            antwoord = requests.get(basis, headers=kop, params=vraag, timeout=60)
+            antwoord.raise_for_status()
+            blok = antwoord.json()
+            for doc in blok.get("documents", []):
+                velden = {k: waarde(v) for k, v in doc.get("fields", {}).items()}
+                if velden.get("week") == week:
+                    continue
+                requests.delete("https://firestore.googleapis.com/v1/" + doc["name"],
+                                headers=kop, timeout=30)
+                weg += 1
+            pagina = blok.get("nextPageToken")
+            if not pagina:
+                break
+    except Exception as fout:
+        print("Opruimen van oude volgstanden lukte niet: %s" % fout)
+        return
+    print("Oude volgstanden opgeruimd: %d." % weg)
+
+
 def euro(n):
     return ("€ %.2f" % (n or 0)).replace(".", ",")
 
@@ -273,6 +308,7 @@ def main():
     verstuur(*bouw_bericht(bestellingen, weekdoc, vrijdag))
     if not met_de_hand:
         merk_verstuurd(kop, week, nu)
+        ruim_standen_op(kop, week)
 
 
 if __name__ == "__main__":

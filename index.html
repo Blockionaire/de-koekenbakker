@@ -192,6 +192,67 @@ button{font:inherit;color:inherit}
 }
 @media(max-width:420px){.podium{width:min(74vw,280px)}}
 
+
+/* ---------- waar is mijn bestelling ---------- */
+.volgkaart{background:var(--papier);border:2px solid var(--inkt);border-radius:var(--r);
+  padding:clamp(20px,3vw,34px);box-shadow:6px 6px 0 rgba(46,34,23,.16)}
+.volgform{display:flex;flex-wrap:wrap;gap:12px}
+.volgform input{flex:1 1 220px;min-width:0;padding:13px 18px;border:2px solid var(--inkt);border-radius:14px;
+  background:var(--room);font-family:var(--kop);font-weight:800;font-size:1.15rem;letter-spacing:.24em;
+  text-transform:uppercase;width:100%}
+.volgform input::placeholder{letter-spacing:.12em;font-weight:600;color:var(--klei)}
+.volgform .knop{flex:0 0 auto}
+.volgnoot{margin-top:12px;font-size:.88rem;color:var(--zacht)}
+.volgfout{margin-top:16px;color:var(--karamel-diep);font-weight:600;font-size:.95rem}
+.volguitslag{display:grid;grid-template-columns:210px 1fr;gap:clamp(20px,3vw,38px);align-items:center;
+  margin-top:26px;padding-top:26px;border-top:2px dashed var(--lijn)}
+.volgtoneel{position:relative;aspect-ratio:1;display:grid;place-items:center;
+  background:var(--zand);border-radius:20px;overflow:hidden}
+.volgtoneel svg{width:72%;display:block}
+.volgtekst h3{font-size:clamp(1.35rem,3vw,1.9rem);letter-spacing:-.02em;margin-top:6px}
+.volgtekst .lead{margin-top:10px}
+.volgbaan{list-style:none;display:grid;gap:9px;margin-top:22px}
+.volgbaan li{display:flex;align-items:center;gap:12px;font-family:var(--kop);font-weight:700;
+  font-size:.9rem;color:var(--klei)}
+.volgbaan li::before{content:"";width:15px;height:15px;border-radius:50%;border:2px solid var(--lijn);
+  background:var(--room);flex:none;transition:background .3s,border-color .3s}
+.volgbaan li.klaar{color:var(--zacht)}
+.volgbaan li.klaar::before{background:var(--karamel);border-color:var(--karamel)}
+.volgbaan li.nu{color:var(--inkt);font-size:.98rem}
+.volgbaan li.nu::before{background:var(--inkt);border-color:var(--inkt);box-shadow:0 0 0 5px rgba(46,34,23,.13)}
+
+/* de tekeningetjes per stap */
+.toneel-koek{animation:wiebelkoek 2.4s ease-in-out infinite;transform-origin:50% 60%}
+@keyframes wiebelkoek{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(5deg)}}
+.toneel-ring{transform-origin:50% 50%;animation:pulsring 2.4s ease-out infinite}
+@keyframes pulsring{0%{transform:scale(.72);opacity:.55}70%{transform:scale(1.18);opacity:0}100%{opacity:0}}
+.toneel-oven .deeg{animation:deegerin 6s cubic-bezier(.4,.1,.5,1) infinite}
+@keyframes deegerin{0%{opacity:0;transform:translate(-56px,34px) scale(.8)}
+  12%{opacity:1;transform:translate(-44px,26px) scale(1)}
+  34%{opacity:1;transform:translate(-4px,2px) scale(.95)}
+  44%,100%{opacity:0;transform:translate(2px,4px) scale(.45)}}
+.toneel-oven .gloed{animation:ovengloed 6s ease-in-out infinite}
+@keyframes ovengloed{0%,38%{opacity:0}52%{opacity:.75}72%{opacity:.35}88%,100%{opacity:0}}
+.toneel-damp{animation:damp 2.8s ease-out infinite;transform-origin:50% 100%}
+.toneel-damp:nth-of-type(2){animation-delay:.7s}
+.toneel-damp:nth-of-type(3){animation-delay:1.4s}
+@keyframes damp{0%{opacity:0;transform:translateY(4px) scale(.7)}
+  25%{opacity:.7}100%{opacity:0;transform:translateY(-30px) scale(1.25)}}
+.toneel-doos{animation:dooswip 3s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes dooswip{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.toneel-strik{animation:strikpop 3s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes strikpop{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.toneel-kruimel{animation:kruimelval 3.2s ease-in-out infinite}
+.toneel-kruimel:nth-of-type(2){animation-delay:.5s}
+.toneel-kruimel:nth-of-type(3){animation-delay:1s}
+@keyframes kruimelval{0%,100%{transform:translateY(0);opacity:.85}50%{transform:translateY(-5px);opacity:1}}
+@media(prefers-reduced-motion:reduce){.volgtoneel *{animation:none !important}}
+@media(max-width:700px){
+  .volguitslag{grid-template-columns:1fr}
+  .volgtoneel{max-width:230px;margin-inline:auto}
+  .volgform .knop{width:100%}
+}
+
 /* ---------- kop van sectie ---------- */
 .sectiekop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 40px;justify-content:space-between;margin-bottom:clamp(28px,4vw,46px)}
 .sectiekop .tekstkant{display:grid;gap:14px;max-width:62ch}
@@ -453,6 +514,7 @@ button{font:inherit;color:inherit}
       <a href="#assortiment">Koekjes</a>
       <a href="#bakdag">Bakdag</a>
       <a href="#zara">Over mij</a>
+      <a href="#volgen">Mijn bestelling</a>
       <a href="#vragen">Vragen</a>
     </nav>
     <button class="mandje-knop" id="mandjeKnop" aria-haspopup="dialog">Mandje <b id="mandjeTeller">0</b></button>
@@ -594,6 +656,38 @@ button{font:inherit;color:inherit}
     </div>
   </section>
 
+  <section class="band band--zand" id="volgen">
+    <div class="wrap">
+      <div class="sectiekop toon">
+        <div class="tekstkant">
+          <span class="eyebrow">Waar zijn mijn koekjes?</span>
+          <h2 class="titel">Volg je bestelling.</h2>
+          <p class="lead">Vul je bestelnummer in &mdash; dat kreeg je toen je bestelde &mdash; en je ziet
+            precies hoe ver ik ben.</p>
+        </div>
+      </div>
+      <div class="volgkaart toon">
+        <form class="volgform" id="volgForm" autocomplete="off">
+          <input id="volgCode" type="text" maxlength="8" spellcheck="false" placeholder="Bijv. K7P2"
+                 aria-label="Je bestelnummer">
+          <button class="knop" type="submit" id="volgKnop">Zoek mijn bestelling</button>
+        </form>
+        <p class="volgnoot">Je bestelnummer bestaat uit vier tekens en staat in de bevestiging die je
+          van mij kreeg.</p>
+        <p class="volgfout" id="volgFout" hidden></p>
+        <div class="volguitslag" id="volgUitslag" hidden>
+          <div class="volgtoneel" id="volgToneel" aria-hidden="true"></div>
+          <div class="volgtekst">
+            <span class="eyebrow" id="volgNummer"></span>
+            <h3 id="volgKop"></h3>
+            <p class="lead" id="volgUitleg"></p>
+            <ol class="volgbaan" id="volgBaan"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="band band--papier" id="vragen">
     <div class="wrap">
       <div class="sectiekop toon">
@@ -607,7 +701,7 @@ button{font:inherit;color:inherit}
         <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
         <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Dat doe je op zaterdagochtend: je kiest bij het bestellen zelf tussen 10:00 en 11:00 of tussen 11:00 en 12:00. Komt dat niet uit? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
         <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt &mdash; er komt niets bij.</p></details>
-        <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag.</p></details>
+        <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag. Met dat nummer kun je bij <a href="#volgen">Volg je bestelling</a> altijd zien hoe ver ik ben: van bevestigd tot in de oven, ingepakt en opgehaald.</p></details>
         <details><summary>Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p>Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
         <details><summary>Hoeveel calorieën bevat 1 koekje?</summary><p>Ik laat mijn koekjes niet in een laboratorium doorrekenen, dus ik kan je geen etiket geven. Voor een koekje van 95 gram met roomboter en chocolade kom je ongeveer op <b>400 tot 450 kcal</b> uit — vergelijkbaar met een flinke plak cake. Het is geen tussendoortje voor elke dag, en dat is ook precies de bedoeling: eentje, maar dan wel een goeie.</p></details>
         <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel &mdash; tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden; laat ze daarna op kamertemperatuur ontdooien.</p></details>
@@ -631,6 +725,7 @@ button{font:inherit;color:inherit}
         <ul>
           <li><a href="#assortiment">Het assortiment</a></li>
           <li><a href="#bakdag">Bakdag en ophalen</a></li>
+          <li><a href="#volgen">Volg je bestelling</a></li>
           <li><a href="#vragen">Veelgestelde vragen</a></li>
         </ul>
       </div>
@@ -667,7 +762,8 @@ button{font:inherit;color:inherit}
     <p>Je bestelling staat op mijn lijst onder nummer <b id="bedanktCode">—</b>. Ik bevestig 'm
        persoonlijk, meestal nog dezelfde dag, via het contactgegeven dat je hebt ingevuld.</p>
     <p class="bedankt-klein" id="bedanktWanneer"></p>
-    <button class="knop knop--vol" id="nogmaals" type="button">Nog iets bestellen</button>
+    <button class="knop knop--vol" id="volgVanaf" type="button">Volg je bestelling</button>
+    <button class="knop knop--stil knop--vol" id="nogmaals" type="button">Nog iets bestellen</button>
   </section>
   <div class="spaarbalk">
     <p id="spaarTekst">Nog 5 koekjes tot een gratis koekje.</p>
@@ -1195,6 +1291,21 @@ async function bewaarBestelling(code){
       koekjes: n,
       bedrag: subtotaal()
     });
+    // Het losse statusdocument waar de klant zijn bestelling mee kan volgen.
+    // Hier staat alleen in hoe ver hij is, geen naam en geen contactgegeven.
+    try {
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "status", code), {
+        code: code,
+        week: week,
+        status: "nieuw",
+        koekjes: n,
+        moment: String(afhaalmoment || "").slice(0, 120),
+        bijgewerkt: fx.serverTimestamp()
+      });
+    } catch (nietErg){
+      console.warn("Status kon niet worden klaargezet; de bestelling staat er wel.", nietErg);
+    }
+
     const week_ref = fx.doc(db, "koekenbakker", RUIMTE, "weken", week);
     try {
       await fx.updateDoc(week_ref, {besteld: fx.increment(n)});
@@ -1281,6 +1392,171 @@ function leeftijd(){
   const verjaardag = new Date(nu.getFullYear(), JARIG.maand - 1, JARIG.dag);
   if (nu < verjaardag) jaren--;
   return jaren;
+}
+
+
+/* =====================================================================
+   Volg je bestelling
+   Bij elke bestelling hoort een los statusdocument op bestelnummer. Daar
+   staat alleen in hoe ver hij is — geen naam, geen contactgegeven — zodat
+   iedereen met zijn eigen nummer kan kijken zonder iets van een ander te
+   zien. Zara zet de status in de portal; die komt hier vanzelf terecht.
+   ===================================================================== */
+const STAPPEN = [
+  {id: "nieuw",     kort: "Binnengekomen",
+   kop: "Ik heb je bestelling binnen!",
+   uit: "Hij staat op mijn lijst en ik kijk er zo naar. Je hoort het van me zodra ik 'm bevestig, meestal nog dezelfde dag."},
+  {id: "bevestigd", kort: "Bevestigd · nog bakken",
+   kop: "Bevestigd — hij gaat mee in de batch.",
+   uit: "Je koekjes staan op de lijst voor de eerstvolgende bakdag. Het deeg mag eerst nog even rusten, dat maakt ze net wat lekkerder."},
+  {id: "gebakken",  kort: "Gebakken",
+   kop: "Gebakken!",
+   uit: "Ze zijn uit de oven en liggen af te koelen op het rooster. Zodra ze koud zijn gaan ze de doos in."},
+  {id: "ingepakt",  kort: "Klaar om op te halen",
+   kop: "Ingepakt en klaar voor je.",
+   uit: "Je doosje staat klaar. Tot zo!"},
+  {id: "afgerond",  kort: "Opgehaald",
+   kop: "Opgehaald — smakelijk!",
+   uit: "Ik hoop dat ze lekker waren. Zin in meer? De oven gaat volgende week gewoon weer aan."}
+];
+const stapNr = id => STAPPEN.map(x => x.id).indexOf(id);
+
+// De maandag van een weeknummer als 2026-W41, en de zaterdag die erbij hoort.
+function maandagVan(code){
+  const stukken = String(code).split("-W");
+  const jaar = parseInt(stukken[0], 10), nr = parseInt(stukken[1], 10);
+  if (!jaar || !nr) return null;
+  const d = new Date(jaar, 0, 4);                       // 4 januari zit altijd in week 1
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + (nr - 1) * 7);
+  return d;
+}
+// Een bestelling is te volgen tot en met de zaterdag van zijn eigen week, 23:59.
+function weekVoorbij(code){
+  const ma = maandagVan(code);
+  if (!ma) return false;
+  const eind = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + 5, 23, 59, 59, 999);
+  return new Date() > eind;
+}
+
+/* ---------- de tekeningetjes ---------- */
+function toneelVoor(id, k){
+  if (id === "nieuw")
+    return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+      + '<circle class="toneel-ring" cx="100" cy="104" r="62" fill="none" stroke="var(--karamel)" stroke-width="6"/>'
+      + '<g class="toneel-koek">' + koekSVG(k) + '</g></svg>';
+  if (id === "bevestigd")
+    return '<svg class="toneel-oven" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+      + '<rect x="24" y="28" width="152" height="130" rx="18" fill="var(--papier)" stroke="var(--inkt)" stroke-width="6"/>'
+      + '<path d="M24 66 H176" stroke="var(--inkt)" stroke-width="5"/>'
+      + '<circle cx="50" cy="47" r="7" fill="var(--karamel)" stroke="var(--inkt)" stroke-width="4"/>'
+      + '<rect x="76" y="40" width="88" height="14" rx="7" fill="var(--room)" stroke="var(--inkt)" stroke-width="4"/>'
+      + '<rect x="40" y="78" width="120" height="66" rx="12" fill="var(--room)" stroke="var(--inkt)" stroke-width="5"/>'
+      + '<rect class="gloed" x="47" y="85" width="106" height="52" rx="9" fill="var(--karamel)" opacity="0"/>'
+      + '<rect x="40" y="148" width="120" height="10" rx="5" fill="var(--karamel)" stroke="var(--inkt)" stroke-width="4"/>'
+      + '<rect x="36" y="158" width="14" height="18" rx="5" fill="var(--inkt)"/>'
+      + '<rect x="150" y="158" width="14" height="18" rx="5" fill="var(--inkt)"/>'
+      + '<g class="deeg" transform="translate(100 108)">'
+      + '<circle cx="0" cy="0" r="16" fill="#E6C491" stroke="#BE9455" stroke-width="3"/>'
+      + '<circle cx="-5" cy="-4" r="2.6" fill="#6B4A34"/><circle cx="5" cy="3" r="2.2" fill="#6B4A34"/>'
+      + '<circle cx="2" cy="-7" r="1.8" fill="#6B4A34"/></g></svg>';
+  if (id === "gebakken")
+    return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+      + '<path class="toneel-damp" d="M74 44 q-10 -11 0 -20 q10 -9 0 -18" fill="none" stroke="var(--klei)" stroke-width="6" stroke-linecap="round"/>'
+      + '<path class="toneel-damp" d="M100 40 q-10 -11 0 -20 q10 -9 0 -18" fill="none" stroke="var(--klei)" stroke-width="6" stroke-linecap="round"/>'
+      + '<path class="toneel-damp" d="M126 44 q-10 -11 0 -20 q10 -9 0 -18" fill="none" stroke="var(--klei)" stroke-width="6" stroke-linecap="round"/>'
+      + '<g transform="translate(45 60) scale(.55)">' + koekSVG(k) + '</g>'
+      + '<rect x="30" y="160" width="140" height="8" rx="4" fill="var(--inkt)"/>'
+      + '<path d="M46 160 V150 M78 160 V150 M110 160 V150 M142 160 V150" stroke="var(--inkt)" stroke-width="5" stroke-linecap="round"/>'
+      + '</svg>';
+  if (id === "ingepakt")
+    return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g class="toneel-doos">'
+      + '<rect x="34" y="78" width="132" height="92" rx="10" fill="var(--room)" stroke="var(--inkt)" stroke-width="6"/>'
+      + '<rect x="24" y="58" width="152" height="32" rx="9" fill="var(--papier)" stroke="var(--inkt)" stroke-width="6"/>'
+      + '<path d="M100 58 V170" stroke="var(--inkt)" stroke-width="5" stroke-opacity=".3"/>'
+      + '<g class="toneel-strik"><path d="M100 58 C100 36 78 28 70 40 C63 51 84 58 100 58 C116 58 137 51 130 40 C122 28 100 36 100 58Z" '
+      + 'fill="var(--karamel)" stroke="var(--inkt)" stroke-width="5"/></g>'
+      + '<path d="M62 124 h76" stroke="var(--klei)" stroke-width="5" stroke-linecap="round" stroke-opacity=".5"/>'
+      + '<path d="M62 142 h52" stroke="var(--klei)" stroke-width="5" stroke-linecap="round" stroke-opacity=".5"/>'
+      + '</g></svg>';
+  if (id === "afgerond")
+    return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+      + '<g transform="translate(34 30) scale(.66)">' + koekSVG(k, {happen: [0.5, 2.6, 4.4]}) + '</g>'
+      + '<circle class="toneel-kruimel" cx="62" cy="168" r="6" fill="var(--koffie)"/>'
+      + '<circle class="toneel-kruimel" cx="100" cy="176" r="4.5" fill="var(--karamel-diep)"/>'
+      + '<circle class="toneel-kruimel" cx="134" cy="166" r="5.5" fill="var(--koffie)"/>'
+      + '</svg>';
+  return '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'
+    + '<g class="toneel-koek">' + koekSVG(k) + '</g></svg>';
+}
+
+function volgTonen(gegevens){
+  const nr = stapNr(gegevens.status);
+  const stap = STAPPEN[nr < 0 ? 0 : nr];
+  const koekje = KOEKJES[Math.min(Math.max(nr, 0), KOEKJES.length - 1)];
+  $("#volgToneel").innerHTML = toneelVoor(stap.id, koekje);
+  $("#volgNummer").textContent = "Bestelling " + gegevens.code
+    + (gegevens.koekjes ? " · " + gegevens.koekjes + " koekje" + (gegevens.koekjes === 1 ? "" : "s") : "");
+  $("#volgKop").textContent = stap.kop;
+  let uitleg = stap.uit;
+  if (stap.id === "ingepakt" && gegevens.moment && gegevens.moment !== "In overleg")
+    uitleg = "Je doosje staat klaar. Ophalen kan " + gegevens.moment + ". Tot zo!";
+  $("#volgUitleg").textContent = uitleg;
+  $("#volgBaan").innerHTML = STAPPEN.map(function(x, i){
+    const klas = i < nr ? "klaar" : (i === nr ? "nu" : "");
+    return '<li class="' + klas + '">' + x.kort + '</li>';
+  }).join("");
+  $("#volgUitslag").hidden = false;
+  $("#volgFout").hidden = true;
+}
+
+function volgMis(tekst){
+  $("#volgUitslag").hidden = true;
+  $("#volgFout").textContent = tekst;
+  $("#volgFout").hidden = false;
+}
+
+let volgBezig = false;
+async function volgZoeken(code){
+  code = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!code){ volgMis("Vul even je bestelnummer in."); $("#volgCode").focus(); return; }
+  $("#volgCode").value = code;
+  if (!db){
+    volgMis("Ik krijg nu even geen verbinding. Probeer het zo nog eens, of stuur me een berichtje.");
+    return;
+  }
+  if (volgBezig) return;
+  volgBezig = true;
+  const knop = $("#volgKnop");
+  knop.disabled = true;
+  knop.textContent = "Even kijken…";
+  try {
+    const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "status", code));
+    if (!snap.exists()){
+      volgMis("Dat nummer ken ik niet. Kijk 'm even na — vier tekens, bijvoorbeeld K7P2. "
+        + "Blijft het misgaan, stuur me dan een berichtje.");
+    } else {
+      const d = snap.data();
+      if (d.status === "geannuleerd"){
+        volgMis("Deze bestelling is geannuleerd. Klopt dat niet? Stuur me even een berichtje, dan kijk ik ernaar.");
+      } else if (weekVoorbij(d.week)){
+        volgMis("Deze bestelling is van een week die al voorbij is, die houd ik niet langer online. "
+          + "Was er iets mee? Stuur me gerust een berichtje.");
+      } else {
+        volgTonen({code: code, status: d.status, koekjes: d.koekjes, moment: d.moment});
+      }
+    }
+  } catch (fout){
+    volgMis("Opzoeken lukte even niet. Probeer het zo nog eens.");
+  }
+  knop.disabled = false;
+  knop.textContent = "Zoek mijn bestelling";
+  volgBezig = false;
+}
+
+function naarVolgen(code){
+  if (code) $("#volgCode").value = code;
+  $("#volgen").scrollIntoView({behavior: rustig ? "auto" : "smooth"});
+  if (code) volgZoeken(code);
 }
 
 /* ---------- aftellen naar de bakdag ---------- */
@@ -1383,6 +1659,13 @@ function start(){
   cursorInstellen();
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
+
+  // Met een link als dekoekenbakkerzara.nl/?code=K7P2 kom je meteen bij je status uit.
+  const uitLink = (new URLSearchParams(location.search).get("code") || "").trim();
+  if (uitLink){
+    $("#volgCode").value = uitLink.toUpperCase();
+    setTimeout(function(){ naarVolgen(uitLink); }, 900);
+  }
   $("#leeftijd").textContent = leeftijd();
   bakdagTonen();
 
@@ -1451,6 +1734,14 @@ document.addEventListener("click", function(e){
   }
   if (e.target.closest("#ladeDicht, #sluier")){ openLade(false); return; }
   if (e.target.closest("#nogmaals")){ bevestigd = ""; ververs(); return; }
+  if (e.target.closest("#volgVanaf")){
+    const code = bevestigd;
+    openLade(false);
+    bevestigd = "";
+    ververs();
+    naarVolgen(code);
+    return;
+  }
   if (e.target.closest("#cursorSchakel")){ cursorAan = !cursorAan; bewaar("kb-cursor", cursorAan); cursorInstellen(); return; }
   if (e.target.closest("#verrasMij")){
     boxKeuzeTonen(true);
@@ -1476,6 +1767,7 @@ document.addEventListener("keydown", function(e){
   if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-hap]")){ e.preventDefault(); neemHap(e.target.dataset.hap, e.target); }
 });
 
+$("#volgForm").addEventListener("submit", function(e){ e.preventDefault(); volgZoeken($("#volgCode").value); });
 $("#bestelKnop").addEventListener("click", versturen);
 $("#overlegKnop").addEventListener("click", overleggen);
 document.addEventListener("input", function(e){ e.target.classList.remove("fout"); });

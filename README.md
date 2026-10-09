@@ -41,6 +41,12 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   aantal koekjes eronder. Die prijs staat er al in, dus de combideal rekent alleen over de
   koekjes die je zelf uitkiest — anders zou de korting er dubbel afgaan.
 - **Bakdag** — een aftelklok naar de eerstvolgende bakdag (standaard vrijdag 16:00).
+- **Volg je bestelling** — een klant vult zijn bestelnummer in en ziet waar zijn koekjes
+  zijn: binnengekomen, bevestigd, gebakken, ingepakt of opgehaald, met een tekening en een
+  animatie per stap. Die stand volgt rechtstreeks de status die jij in de portal zet. Je kunt
+  ook een directe link sturen: `dekoekenbakkerzara.nl/?code=K7P2` opent die bestelling meteen.
+  Na de zaterdag van zijn eigen week verdwijnt een bestelling uit de volgfunctie, en het
+  weekbericht ruimt de oude standen dan ook echt op.
 - **Over Zara** — de tekst staat nog op een plaatshouder, en in de polaroid staat een Z met
   een koekje. Zet een foto in de map met de naam **`foto-zara.jpg`** en die komt er vanzelf
   in te staan; is er geen foto, dan blijft de Z staan. De tekst zelf staat gewoon in
@@ -163,7 +169,8 @@ Vul je [`firebase-config.js`](firebase-config.js) in, dan gebeurt er drie dingen
    [`bestellingen/`](bestellingen/).
 
 Daar staat ook hoe je het project aanmaakt, in zes stappen, plus de beveiligingsregels die
-je één keer moet plakken. Zonder die invulling werkt de webshop precies zoals hiervoor:
+je één keer moet plakken. Let op: sinds "Volg je bestelling" erbij zit staat er een stukje
+bij in die regels, dus die moeten opnieuw gepubliceerd worden. Zonder die invulling werkt de webshop precies zoals hiervoor:
 bestellingen komen als berichtje binnen via WhatsApp of e-mail.
 
 ---

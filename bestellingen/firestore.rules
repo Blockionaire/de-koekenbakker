@@ -22,6 +22,9 @@
        bijvoorbeeld voor wat er mondeling of via Instagram binnenkomt.
      - Een bestelling moet er ook uitzien als een bestelling: een naam,
        een contactgegeven, hooguit 40 koekjes en status "nieuw".
+     - Bij elke bestelling hoort een los standje op bestelnummer, zodat
+       een klant met zijn eigen nummer kan zien waar zijn koekjes zijn.
+       Daar staat niets persoonlijks in: alleen de stap waar hij is.
      - Het weekoverzicht (hoeveel er al besteld is) mag iedereen lezen —
        de webshop heeft dat nodig om te weten of de week nog ruimte
        heeft. Wijzigen mag alleen in één richting: het aantal omhoog,
@@ -80,6 +83,33 @@ service cloud.firestore {
 
       /* Lezen, bijwerken en weggooien is alleen voor de bakker. */
       allow read, update, delete: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       De stand van een bestelling, op bestelnummer
+
+       Hier staat alleen in hoe ver een bestelling is — geen naam, geen
+       telefoonnummer, geen adres. Dat is met opzet: de website laat een
+       klant met zijn eigen nummer zien waar zijn koekjes zijn, en wie een
+       nummer raadt ziet dus niets persoonlijks. Aanmaken mag de webshop
+       (alleen als "nieuw", en alleen als het nummer nog vrij is);
+       veranderen en weggooien mag alleen jij.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/status/{nummer} {
+
+      function geldigeStand() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['code', 'week', 'status', 'koekjes', 'moment', 'bijgewerkt'])
+          && d.status == 'nieuw'
+          && d.code is string && d.code.size() > 0 && d.code.size() <= 8
+          && d.week is string && d.week.size() <= 10
+          && d.koekjes is int && d.koekjes > 0 && d.koekjes <= 40
+          && d.moment is string && d.moment.size() <= 120;
+      }
+
+      allow read: if true;
+      allow create: if geldigeStand() || isBakker();
+      allow update, delete: if isBakker();
     }
 
     /* ---------------------------------------------------------------
