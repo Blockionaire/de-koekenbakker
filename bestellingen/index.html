@@ -517,6 +517,7 @@ function randPad(r, wiebel){
 }
 let uid = 0;
 function koekSVG(k){
+  if (!k) return '<span></span>';          // onbekende smaak: gewoon niets tekenen
   const id = "k" + (++uid), r2 = rng(k.seed), rand = rng(k.seed + 77);
   let s = '<svg viewBox="0 0 200 200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
     + '<defs><radialGradient id="g' + id + '" cx="42%" cy="36%" r="72%">'
@@ -616,8 +617,11 @@ const VOLGENDE = {nieuw: "bevestigd", bevestigd: "gebakken", gebakken: "ingepakt
 
 /* ---------- opstarten ---------- */
 async function start(){
-  $("#merkKoek").innerHTML = koekSVG(KOEKJES.klassieker);
-  $("#merkKoek2").innerHTML = koekSVG(KOEKJES.karamelbom);
+  // Twee koekjes als versiering. Via SOORTEN, zodat een andere smaaknaam
+  // dit nooit meer onderuit kan halen.
+  const versiering = SOORTEN.filter(id => !isBox(id));
+  $("#merkKoek").innerHTML = koekSVG(KOEKJES[versiering[0]]);
+  $("#merkKoek2").innerHTML = koekSVG(KOEKJES[versiering[versiering.length - 1]]);
 
   if (!INST.firebase){
     $("#inlogUitleg").textContent = "Er is nog geen verbinding ingesteld. Vul firebase-config.js in — de stappen staan in README.md.";
