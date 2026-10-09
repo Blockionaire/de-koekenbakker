@@ -27,6 +27,24 @@ Alle bestellingen van de week, nieuwste eerst, met een filter per status. Tik ee
 bestelling open en je ziet de regels, het contactgegeven (met knoppen om te bellen, te
 appen of te mailen), het afhaalmoment of adres en de opmerking.
 
+Komt er een hele reeks tegelijk binnen — een groepsapp, een lijstje uit je hoofd — dan is
+**Lijst invoeren** sneller. Je plakt de tekst er in de vorm die je toch al gebruikt in:
+
+```
+Merel Dank:
+2x chocolate chip 3x stroopwafel 1x oreo
+
+Joze Keus:
+2x stroopwafel 1x lotus 1x chocolate chip
+```
+
+Een naam met een dubbele punt begint een nieuwe bestelling; de koekjes mogen erachter of
+eronder staan. De namen van de smaken mag je schrijven zoals je ze zegt (*kinder chocolade*,
+*biscoff*, *choco chip*), en regels als "4 verschillende" slaat hij gewoon over. Met
+**Nakijken** zie je eerst per persoon wat hij ervan maakt, wat het kost en wat hij niet
+begreep; pas daarna maak je ze aan. Kanaal en status kies je één keer voor de hele lijst, en
+de weekteller gaat in één keer omhoog.
+
 Bovenaan staat **+ Bestelling toevoegen**, voor alles wat buiten de webshop om binnenkomt:
 mondeling, via Instagram, een appje. Je vult een naam in, tikt de koekjes bij elkaar met de
 plusknoppen, en het bedrag rekent zichzelf uit — inclusief de combideal van de webshop

@@ -179,6 +179,14 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .knop--gevaar{background:#8E3B2E;border-color:#8E3B2E;color:var(--room)}
 .knop--gevaar:hover{background:#7A3227;color:var(--room)}
 
+.proefrij{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;padding:9px 0;
+  border-bottom:1px dashed var(--lijn);font-size:.94rem}
+.proefrij:last-child{border-bottom:0}
+.proefrij b{font-family:var(--kop);font-weight:700}
+.proefrij span{color:var(--zacht);font-size:.86rem;display:block}
+.proefrij .geld{font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums;color:var(--inkt)}
+.proefwaarschuwing{background:#F6E9E4;border:2px solid #8E3B2E;border-radius:12px;padding:10px 12px;
+  font-size:.88rem;color:#8E3B2E;margin-top:10px}
 .schakelaars{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .schakelaars button{padding:11px;border:2px solid var(--inkt);border-radius:12px;background:var(--papier);
   font-family:var(--kop);font-weight:700;font-size:.9rem}
@@ -276,6 +284,35 @@ main{padding:18px 0 80px;display:grid;gap:16px}
   </div>
 </div>
 
+<div class="venster" id="lijstVenster" role="dialog" aria-modal="true" aria-label="Lijst invoeren">
+  <div class="venster-in">
+    <div class="venster-kop">
+      <h3>Lijst invoeren</h3>
+      <button class="dicht" id="lijstDicht" aria-label="Sluiten">&#10005;</button>
+    </div>
+    <div class="venster-body">
+      <p class="uitleg" style="margin:0">Plak hier wat er binnenkwam. E&eacute;n naam per blok, met een
+        dubbele punt erachter, en daaronder of erachter de koekjes als <b>2x stroopwafel</b>.
+        Regels die ik niet herken laat ik staan.</p>
+      <div class="veld">
+        <label for="lijstTekst">De lijst</label>
+        <textarea id="lijstTekst" rows="9" spellcheck="false"
+          placeholder="Merel Dank:&#10;2x chocolate chip 3x stroopwafel 1x oreo&#10;&#10;Joze Keus:&#10;2x stroopwafel 1x lotus 1x chocolate chip"></textarea>
+      </div>
+      <div class="tweeluik">
+        <div class="veld"><label for="lijstKanaal">Hoe binnengekomen</label><select id="lijstKanaal"></select></div>
+        <div class="veld"><label for="lijstStatus">Status</label><select id="lijstStatus"></select></div>
+      </div>
+      <button class="knop knop--stil knop--vol" id="lijstNakijken" type="button">Nakijken</button>
+      <div id="lijstProef"></div>
+    </div>
+    <div class="venster-voet">
+      <div class="somrij"><span id="lijstSom">Nog niets nagekeken</span><span id="lijstTotaal">&euro; 0,00</span></div>
+      <button class="knop knop--vol" id="lijstMaken" type="button" disabled>Bestellingen aanmaken</button>
+    </div>
+  </div>
+</div>
+
 <section class="inlog" id="inlogScherm">
   <form class="inlog-kaart" id="inlogForm">
     <div class="merk"><span id="merkKoek" aria-hidden="true"></span> Bestellingen</div>
@@ -341,6 +378,9 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       </section>
 
       <section id="vlakLijst" hidden>
+        <button class="knop knop--stil knop--vol" id="lijstKnop" type="button" style="margin-bottom:10px">
+          Lijst invoeren
+        </button>
         <button class="knop knop--vol" id="nieuweBestelling" type="button" style="margin-bottom:14px">
           + Bestelling toevoegen</button>
         <div class="zoekbalk">
@@ -1109,6 +1149,163 @@ async function bestellingVerwijderen(id){
   }
 }
 
+/* ---------- een lijst in één keer invoeren ----------
+   Het meeste komt binnen via een appje of mondeling. Dit leest zo'n lijstje
+   en maakt er bestellingen van, met het juiste kanaal en de juiste week. */
+const SMAAKWOORDEN = [
+  {id: "chocchip",    woorden: ["chocolate chip", "chocolatechip", "choco chip", "chocchip", "chocolade chip", "chocoladechip"]},
+  {id: "stroopwafel", woorden: ["stroopwafel"]},
+  {id: "oreo",        woorden: ["oreo"]},
+  {id: "lotus",       woorden: ["lotus biscoff", "biscoff", "lotus", "speculoos"]},
+  {id: "kinder",      woorden: ["kinderchocolade", "kinder chocolade", "kinder"]},
+  {id: "box4",        woorden: ["verrassingsbox 4", "box 4"]},
+  {id: "box5",        woorden: ["verrassingsbox 5", "box 5"]},
+  {id: "box6",        woorden: ["verrassingsbox 6", "box 6", "verrassingsbox"]}
+];
+// langste woorden eerst, anders vangt "kinder" ook "kinderchocolade" af
+const WOORDENLIJST = SMAAKWOORDEN
+  .reduce((uit, s) => uit.concat(s.woorden.map(w => ({woord: w, id: s.id}))), [])
+  .sort((a, b) => b.woord.length - a.woord.length);
+
+function smaakUit(tekst){
+  const t = " " + tekst.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ") + " ";
+  for (const w of WOORDENLIJST) if (t.indexOf(w.woord) > -1) return w.id;
+  return null;
+}
+
+function lijstLezen(tekst){
+  const orders = [], onbekend = [];
+  let nu = null;
+  String(tekst || "").split(/\r?\n/).forEach(function(regel){
+    const kaal = regel.trim();
+    if (!kaal) return;
+    const dp = kaal.indexOf(":");
+    let rest = kaal;
+    if (dp > 0 && !/^\d+\s*[x\u00d7]/i.test(kaal)){
+      nu = {naam: kaal.slice(0, dp).trim(), aantallen: {}};
+      orders.push(nu);
+      rest = kaal.slice(dp + 1);
+    }
+    if (!nu || !rest.trim()) return;
+    let gevonden = false;
+    const zoek = /(\d+)\s*[x\u00d7]\s*([^\d]*)/gi;
+    let tref;
+    while ((tref = zoek.exec(rest)) !== null){
+      const n = parseInt(tref[1], 10);
+      const id = smaakUit(tref[2]);
+      if (!id || !n){ onbekend.push(tref[0].trim() + "  (bij " + nu.naam + ")"); continue; }
+      nu.aantallen[id] = (nu.aantallen[id] || 0) + n;
+      gevonden = true;
+    }
+    if (!gevonden && !/^\d+\s/.test(rest.trim()) && rest.trim().length > 2 && dp < 0)
+      onbekend.push(rest.trim() + "  (bij " + nu.naam + ")");
+  });
+  return {orders: orders.filter(o => Object.keys(o.aantallen).length > 0), onbekend: onbekend};
+}
+
+function lijstSom(aantallen){
+  let bedrag = 0, koekjes = 0, los = 0;
+  Object.keys(aantallen).forEach(function(id){
+    const n = aantallen[id];
+    bedrag += n * (PRIJZEN[id] || 0);
+    koekjes += n * (STUKS[id] || 1);
+    los += n * (STUKS[id] || 1);
+  });
+  const kort = bundelKorting(los);
+  return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
+}
+
+let lijstKlaar = null;
+function lijstNakijken(){
+  const uitslag = lijstLezen($("#lijstTekst").value);
+  lijstKlaar = uitslag.orders;
+  let koekjes = 0, bedrag = 0;
+  const rijen = uitslag.orders.map(function(o){
+    const som = lijstSom(o.aantallen);
+    koekjes += som.koekjes;
+    bedrag += som.bedrag;
+    const wat = Object.keys(o.aantallen)
+      .map(id => o.aantallen[id] + "\u00d7 " + NAAMVAN(id)).join(", ");
+    return '<div class="proefrij"><div><b>' + veilig(o.naam) + '</b><span>' + veilig(wat)
+      + " \u00b7 " + som.koekjes + ' koekjes</span></div>'
+      + '<span class="geld">' + euro(som.bedrag) + '</span></div>';
+  }).join("");
+  $("#lijstProef").innerHTML = (rijen || '<p class="uitleg">Nog niets gevonden in deze tekst.</p>')
+    + (uitslag.onbekend.length
+        ? '<div class="proefwaarschuwing"><b>Dit snapte ik niet:</b><br>'
+          + uitslag.onbekend.map(veilig).join("<br>") + '</div>'
+        : "");
+  $("#lijstSom").textContent = uitslag.orders.length + " bestelling"
+    + (uitslag.orders.length === 1 ? "" : "en") + " \u00b7 " + koekjes + " koekjes";
+  $("#lijstTotaal").textContent = euro(Math.round(bedrag * 100) / 100);
+  $("#lijstMaken").disabled = uitslag.orders.length === 0;
+}
+
+async function lijstAanmaken(){
+  if (!lijstKlaar || !lijstKlaar.length) return;
+  const knop = $("#lijstMaken");
+  knop.disabled = true;
+  const kanaal = $("#lijstKanaal").value, status = $("#lijstStatus").value;
+  let gelukt = 0, koekjes = 0;
+  for (const o of lijstKlaar){
+    knop.textContent = "Bezig\u2026 " + (gelukt + 1) + " van " + lijstKlaar.length;
+    const som = lijstSom(o.aantallen);
+    const regels = SOORTEN.filter(id => (o.aantallen[id] || 0) > 0).map(function(id){
+      return {id: id, naam: NAAMVAN(id), aantal: o.aantallen[id], stuk: PRIJZEN[id] || 0, gratis: false};
+    });
+    if (som.korting > 0){
+      regels.push({id: "bundel", naam: BUNDEL.aantal + " voor \u20ac " + BUNDEL.prijs,
+                   aantal: 1, stuk: -som.korting, gratis: false});
+    }
+    const velden = {
+      naam: o.naam.slice(0, 120), contact: "", kanaal: kanaal, status: status,
+      levering: "Afhalen", moment: "", adres: "", notitie: "",
+      regels: regels, koekjes: som.koekjes, bedrag: som.bedrag,
+      week: huidigeWeek, code: bestelCode(), gemaakt: fx.serverTimestamp()
+    };
+    try {
+      await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), velden);
+      await klantStatus(velden, status);
+      gelukt++;
+      if (status !== "geannuleerd") koekjes += som.koekjes;
+    } catch (fout){
+      melden("Bij " + o.naam + " ging het mis: " + (fout.code || fout.message));
+      break;
+    }
+  }
+  if (koekjes > 0){
+    try {
+      await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
+                      {besteld: fx.increment(koekjes)}, {merge: true});
+    } catch (fout){
+      melden("De weekteller bijwerken lukte niet: " + (fout.code || fout.message));
+    }
+  }
+  knop.textContent = "Bestellingen aanmaken";
+  knop.disabled = false;
+  melden(gelukt + " bestelling" + (gelukt === 1 ? "" : "en") + " aangemaakt.");
+  if (gelukt === lijstKlaar.length) lijstSluiten();
+}
+
+function lijstOpenen(){
+  $("#lijstKanaal").innerHTML = KANALEN.map(k =>
+    '<option value="' + k + '"' + (k === "WhatsApp" ? " selected" : "") + '>' + k + '</option>').join("");
+  $("#lijstStatus").innerHTML = Object.keys(STATUSSEN).map(k =>
+    '<option value="' + k + '"' + (k === "bevestigd" ? " selected" : "") + '>' + STATUSSEN[k] + '</option>').join("");
+  $("#lijstProef").innerHTML = "";
+  $("#lijstSom").textContent = "Nog niets nagekeken";
+  $("#lijstTotaal").textContent = euro(0);
+  $("#lijstMaken").disabled = true;
+  lijstKlaar = null;
+  $("#lijstVenster").classList.add("aan");
+  setTimeout(() => $("#lijstTekst").focus(), 80);
+}
+
+function lijstSluiten(){
+  $("#lijstVenster").classList.remove("aan");
+  lijstKlaar = null;
+}
+
 /* ---------- de status die de klant op de website ziet ---------- */
 // Naast elke bestelling staat een los documentje op bestelnummer, met alleen
 // de stand erin. Dat is wat "Volg je bestelling" op de website laat zien.
@@ -1251,6 +1448,7 @@ $("#inlogForm").addEventListener("submit", async function(e){
 document.addEventListener("keydown", function(e){
   if (e.key !== "Escape") return;
   if ($("#wisVenster").classList.contains("aan")){ wisSluiten(); return; }
+  if ($("#lijstVenster").classList.contains("aan")){ lijstSluiten(); return; }
   if (formulier) sluitFormulier();
 });
 
@@ -1303,6 +1501,11 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#uitlogKnop")){ fa.signOut(auth); return; }
 
   if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
+  if (e.target.closest("#lijstKnop")){ lijstOpenen(); return; }
+  if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
+  if (e.target.closest("#lijstMaken")){ lijstAanmaken(); return; }
+  if (e.target.closest("#lijstDicht")){ lijstSluiten(); return; }
+  if (e.target === $("#lijstVenster")){ lijstSluiten(); return; }
   const bewerk = e.target.closest("[data-bewerk]");
   if (bewerk){ openFormulier(bewerk.dataset.bewerk); return; }
   if (e.target.closest("#formDicht")){ sluitFormulier(); return; }
