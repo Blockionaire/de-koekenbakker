@@ -164,6 +164,10 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
+- **Bellen, WhatsApp en Mailen** bij een bestelling zetten meteen een bevestiging klaar:
+  hoi met de voornaam, het bestelnummer, wat erin zit, wanneer het opgehaald kan worden en
+  de link waarmee diegene zelf kan volgen hoe ver zijn koekjes zijn. Zo heeft een klant zijn
+  bestelnummer in zijn eigen gesprek staan en raakt hij het niet kwijt.
 - **Het getal op het tabblad Bestellingen** is hoeveel bestellingen er deze week zijn,
   zonder de afgezegde. Zit er iets nieuws bij dat je nog niet hebt bekeken, dan kleurt dat
   getal op.

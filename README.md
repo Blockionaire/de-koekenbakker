@@ -47,8 +47,13 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
   zijn: binnengekomen, bevestigd, gebakken, ingepakt of opgehaald, met een tekening en een
   animatie per stap. Die stand volgt rechtstreeks de status die jij in de portal zet. Je kunt
   ook een directe link sturen: `dekoekenbakkerzara.nl/?code=K7P2` opent die bestelling meteen.
-  Na de zaterdag van zijn eigen week verdwijnt een bestelling uit de volgfunctie, en het
-  weekbericht ruimt de oude standen dan ook echt op.
+  De klant wordt bij naam gegroet en ziet wanneer hij kan ophalen. Na de zaterdag van zijn
+  eigen week verdwijnt een bestelling uit de volgfunctie, en het weekbericht ruimt de oude
+  standen dan ook echt op.
+
+  Een bestelnummer raak je zo niet kwijt: op het apparaat waarmee besteld is staat het de
+  volgende keer vanzelf ingevuld, in het bedankje zit een knop die de volglink kopieert, en
+  het berichtje dat Zara vanuit de portal stuurt heeft het nummer en die link erin.
 - **Over Zara** — de tekst staat nog op een plaatshouder, en in de polaroid staat een Z met
   een koekje. Zet een foto in de map met de naam **`foto-zara.jpg`** en die komt er vanzelf
   in te staan; is er geen foto, dan blijft de Z staan. De tekst zelf staat gewoon in

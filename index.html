@@ -209,7 +209,11 @@ button{font:inherit;color:inherit}
 .volgtoneel{position:relative;aspect-ratio:1;display:grid;place-items:center;
   background:var(--zand);border-radius:20px;overflow:hidden}
 .volgtoneel svg{width:72%;display:block}
+.volghoi{font-family:var(--display);font-size:clamp(1.15rem,2.4vw,1.5rem);color:var(--karamel);margin-bottom:8px}
 .volgtekst h3{font-size:clamp(1.35rem,3vw,1.9rem);letter-spacing:-.02em;margin-top:6px}
+.volgophalen{margin-top:16px;background:var(--zand);border:2px solid var(--klei);border-radius:14px;
+  padding:12px 16px;font-size:.95rem}
+.volgophalen b{font-family:var(--kop);font-weight:800;display:block;margin-top:2px;font-size:1.02rem}
 .volgtekst .lead{margin-top:10px}
 .volgbaan{list-style:none;display:grid;gap:9px;margin-top:22px}
 .volgbaan li{display:flex;align-items:center;gap:12px;font-family:var(--kop);font-weight:700;
@@ -681,14 +685,19 @@ button{font:inherit;color:inherit}
           <button class="knop" type="submit" id="volgKnop">Zoek mijn bestelling</button>
         </form>
         <p class="volgnoot">Je bestelnummer bestaat uit vier tekens en staat in de bevestiging die je
-          van mij kreeg.</p>
+          van mij kreeg. Bestelde je op dit apparaat, dan heb ik 'm voor je onthouden.</p>
+        <p class="volgnoot" id="volgOnthouden" hidden>Je laatste bestelling bij mij was
+          <b id="volgOnthoudenCode"></b> &mdash; die staat hierboven al ingevuld.</p>
         <p class="volgfout" id="volgFout" hidden></p>
         <div class="volguitslag" id="volgUitslag" hidden>
           <div class="volgtoneel" id="volgToneel" aria-hidden="true"></div>
           <div class="volgtekst">
+            <p class="volghoi" id="volgHoi" hidden></p>
             <span class="eyebrow" id="volgNummer"></span>
             <h3 id="volgKop"></h3>
             <p class="lead" id="volgUitleg"></p>
+            <p class="volgophalen" id="volgOphalen" hidden>Ophalen:
+              <b id="volgOphaalTijd"></b></p>
             <ol class="volgbaan" id="volgBaan"></ol>
           </div>
         </div>
@@ -770,7 +779,10 @@ button{font:inherit;color:inherit}
     <p>Je bestelling staat op mijn lijst onder nummer <b id="bedanktCode">—</b>. Ik bevestig 'm
        persoonlijk, meestal nog dezelfde dag, via het contactgegeven dat je hebt ingevuld.</p>
     <p class="bedankt-klein" id="bedanktWanneer"></p>
+    <p class="bedankt-klein">Bewaar je nummer even &mdash; daarmee zie je bij
+       <b>Volg je bestelling</b> hoe ver ik ben. Op dit apparaat onthoud ik 'm voor je.</p>
     <button class="knop knop--vol" id="volgVanaf" type="button">Volg je bestelling</button>
+    <button class="knop knop--stil knop--vol" id="codeKopie" type="button">Kopieer mijn volglink</button>
     <button class="knop knop--stil knop--vol" id="nogmaals" type="button">Nog iets bestellen</button>
   </section>
   <div class="spaarbalk">
@@ -1327,6 +1339,7 @@ async function bewaarBestelling(code){
         week: week,
         status: "nieuw",
         koekjes: n,
+        voornaam: voornaamUit($("#vNaam").value),
         moment: String(afhaalmoment || "").slice(0, 120),
         bijgewerkt: fx.serverTimestamp()
       });
@@ -1369,6 +1382,7 @@ async function versturen(){
     knop.disabled = false;
     if (gelukt){
       bevestigd = code;
+      bewaar("kb-code", code);          // zodat je 'm later niet kwijt bent
       mandje = {};
       bewaar("kb-mandje", mandje);
       ververs();
@@ -1422,6 +1436,13 @@ function leeftijd(){
   return jaren;
 }
 
+
+// Alleen de voornaam gaat mee naar de volgstand — genoeg om iemand gedag te
+// zeggen, en te weinig om er iemand mee te herkennen.
+function voornaamUit(naam){
+  const eerste = String(naam || "").trim().split(/\s+/)[0] || "";
+  return (eerste.charAt(0).toUpperCase() + eerste.slice(1)).slice(0, 40);
+}
 
 /* =====================================================================
    Volg je bestelling
@@ -1517,18 +1538,35 @@ function toneelVoor(id, k){
     + '<g class="toneel-koek">' + koekSVG(k) + '</g></svg>';
 }
 
+// Wanneer je je koekjes kunt ophalen. Staat er een tijdslot bij de bestelling,
+// dan dat; anders de zaterdag van de week waarin gebakken wordt.
+function ophaalTekst(g){
+  if (g.moment && g.moment !== "In overleg") return g.moment;
+  const ma = maandagVan(g.week);
+  if (!ma) return "";
+  const za = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + 5);
+  return za.toLocaleDateString("nl-NL", {weekday: "long", day: "numeric", month: "long"})
+    + " — het tijdstip spreken we samen af";
+}
+
 function volgTonen(gegevens){
   const nr = stapNr(gegevens.status);
   const stap = STAPPEN[nr < 0 ? 0 : nr];
   const koekje = KOEKJES[Math.min(Math.max(nr, 0), KOEKJES.length - 1)];
   $("#volgToneel").innerHTML = toneelVoor(stap.id, koekje);
+  $("#volgHoi").textContent = gegevens.voornaam ? "Hoi " + gegevens.voornaam + "!" : "";
+  $("#volgHoi").hidden = !gegevens.voornaam;
   $("#volgNummer").textContent = "Bestelling " + gegevens.code
     + (gegevens.koekjes ? " · " + gegevens.koekjes + " koekje" + (gegevens.koekjes === 1 ? "" : "s") : "");
   $("#volgKop").textContent = stap.kop;
   let uitleg = stap.uit;
   if (stap.id === "ingepakt" && gegevens.moment && gegevens.moment !== "In overleg")
-    uitleg = "Je doosje staat klaar. Ophalen kan " + gegevens.moment + ". Tot zo!";
+    uitleg = "Je doosje staat klaar. Tot zo!";
   $("#volgUitleg").textContent = uitleg;
+
+  const ophalen = ophaalTekst(gegevens);
+  $("#volgOphalen").hidden = !ophalen || stap.id === "afgerond";
+  $("#volgOphaalTijd").textContent = ophalen;
   $("#volgBaan").innerHTML = STAPPEN.map(function(x, i){
     const klas = i < nr ? "klaar" : (i === nr ? "nu" : "");
     return '<li class="' + klas + '">' + x.kort + '</li>';
@@ -1570,7 +1608,8 @@ async function volgZoeken(code){
         volgMis("Deze bestelling is van een week die al voorbij is, die houd ik niet langer online. "
           + "Was er iets mee? Stuur me gerust een berichtje.");
       } else {
-        volgTonen({code: code, status: d.status, koekjes: d.koekjes, moment: d.moment});
+        volgTonen({code: code, status: d.status, koekjes: d.koekjes,
+                   moment: d.moment, week: d.week, voornaam: d.voornaam});
       }
     }
   } catch (fout){
@@ -1690,9 +1729,15 @@ function start(){
 
   // Met een link als dekoekenbakkerzara.nl/?code=K7P2 kom je meteen bij je status uit.
   const uitLink = (new URLSearchParams(location.search).get("code") || "").trim();
+  const laatste = lees("kb-code", "");
   if (uitLink){
     $("#volgCode").value = uitLink.toUpperCase();
     setTimeout(function(){ naarVolgen(uitLink); }, 900);
+  } else if (laatste){
+    // Je eigen bestelnummer staat al ingevuld, ook als je het briefje kwijt bent.
+    $("#volgCode").value = laatste;
+    $("#volgOnthouden").hidden = false;
+    $("#volgOnthoudenCode").textContent = laatste;
   }
   $("#leeftijd").textContent = leeftijd();
   bakdagTonen();
@@ -1771,6 +1816,12 @@ document.addEventListener("click", function(e){
   }
   if (e.target.closest("#ladeDicht, #sluier")){ openLade(false); return; }
   if (e.target.closest("#nogmaals")){ bevestigd = ""; ververs(); return; }
+  if (e.target.closest("#codeKopie")){
+    const link = location.origin + location.pathname + "?code=" + bevestigd;
+    if (navigator.clipboard) navigator.clipboard.writeText(link).catch(function(){});
+    melding("Je volglink is gekopieerd — plak 'm ergens waar je 'm terugvindt.");
+    return;
+  }
   if (e.target.closest("#volgVanaf")){
     const code = bevestigd;
     openLade(false);

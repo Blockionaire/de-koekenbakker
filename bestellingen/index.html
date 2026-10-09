@@ -824,15 +824,42 @@ function tijdKort(ts){
   return new Date(ts.seconds * 1000).toLocaleString("nl-NL", {weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
 }
 
-function contactLink(contact){
-  const c = String(contact || "").trim();
+// Het berichtje dat je aan een klant stuurt. Het bestelnummer staat erin, en
+// de link waarmee diegene zelf kan volgen hoe ver zijn koekjes zijn — zo raakt
+// niemand dat nummer meer kwijt: het staat gewoon in zijn eigen gesprek.
+function bevestigTekst(b){
+  const voornaam = String(b.naam || "").trim().split(/\s+/)[0];
+  let t = "Hoi" + (voornaam ? " " + voornaam : "") + "! Je bestelling bij De Koekenbakker staat genoteerd.\n\n";
+  t += "Bestelnummer: " + (b.code || "—") + "\n";
+  t += (b.koekjes || 0) + " koekjes — " + euro(b.bedrag) + "\n";
+  (b.regels || []).forEach(function(r){
+    if (r.id === "bundel") return;
+    t += "  " + (r.aantal || 1) + "\u00d7 " + (r.naam || r.id) + "\n";
+  });
+  if (b.levering === "Bezorgen") t += "\nIk breng ze langs" + (b.adres ? ": " + b.adres : "") + ".\n";
+  else t += "\nOphalen: " + (b.moment || "we spreken samen een moment af") + "\n";
+  t += "\nWaar je bestelling is, zie je hier: " + VOLGLINK + (b.code || "") + "\n";
+  t += "Tot snel! Zara";
+  return t;
+}
+
+function contactLink(b){
+  const c = String((b && b.contact) || "").trim();
   if (!c) return "";
-  if (c.indexOf("@") > -1) return '<a class="knop knop--stil knop--klein" href="mailto:' + veilig(c) + '">Mailen</a>';
+  const tekst = encodeURIComponent(bevestigTekst(b));
+  if (c.indexOf("@") > -1){
+    return '<a class="knop knop--stil knop--klein" href="mailto:' + veilig(c)
+      + '?subject=' + encodeURIComponent("Je bestelling bij De Koekenbakker (" + (b.code || "") + ")")
+      + '&body=' + tekst + '">Mailen</a>';
+  }
   const nummer = c.replace(/[^0-9+]/g, "");
   const wa = nummer.replace(/^0/, "31").replace(/\+/g, "");
   return '<a class="knop knop--stil knop--klein" href="tel:' + veilig(nummer) + '">Bellen</a>'
-       + '<a class="knop knop--stil knop--klein" href="https://wa.me/' + veilig(wa) + '" target="_blank" rel="noopener">WhatsApp</a>';
+       + '<a class="knop knop--stil knop--klein" href="https://wa.me/' + veilig(wa)
+       + '?text=' + tekst + '" target="_blank" rel="noopener">WhatsApp</a>';
 }
+
+const VOLGLINK = "https://dekoekenbakkerzara.nl/?code=";
 
 // Alles waarin we zoeken, als één doorzoekbare regel tekst.
 function zoekTekst(b){
@@ -928,7 +955,7 @@ function knoppenVoor(b){
     bevestigd: "Bevestigen", gebakken: "Gebakken", ingepakt: "Ingepakt",
     afgerond: b.levering === "Bezorgen" ? "Bezorgd" : "Opgehaald"
   };
-  let uit = contactLink(b.contact);
+  let uit = contactLink(b);
   uit += '<button class="knop knop--stil knop--klein" data-bewerk="' + b.id + '" type="button">Bewerken</button>';
   const volgende = VOLGENDE[b.status];
   if (volgende) uit += k(volgende, VOLGENDENAAM[volgende]);
@@ -1405,6 +1432,7 @@ async function klantStatus(b, status){
       week: b.week || huidigeWeek,
       status: status || b.status || "nieuw",
       koekjes: b.koekjes || 0,
+      voornaam: String(b.naam || "").trim().split(/\s+/)[0].slice(0, 40),
       moment: String(b.moment || "").slice(0, 120),
       bijgewerkt: new Date()
     }, {merge: true});
