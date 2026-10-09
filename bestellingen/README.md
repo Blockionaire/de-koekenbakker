@@ -164,6 +164,10 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
+- **Volgstanden gelijkzetten** staat bij *Instellingen*. Normaal hoef je daar nooit te
+  komen: de stand die de klant ziet loopt vanzelf mee met de stap die je zet. Alleen voor
+  bestellingen van vóór een verandering — toen de voornaam er nog niet bij ging,
+  bijvoorbeeld — zet één tik op die knop alles van de week die je bekijkt weer gelijk.
 - **Bellen, WhatsApp en Mailen** bij een bestelling zetten meteen een bevestiging klaar:
   hoi met de voornaam, het bestelnummer, wat erin zit, wanneer het opgehaald kan worden en
   de link waarmee diegene zelf kan volgen hoe ver zijn koekjes zijn. Zo heeft een klant zijn

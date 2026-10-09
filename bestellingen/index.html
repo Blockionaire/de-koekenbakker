@@ -444,6 +444,17 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
 
         <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Volgen door de klant</h3><span class="etiket">deze week</span></div>
+          <p class="uitleg">Elke bestelling heeft een eigen standje waarmee de klant op de website
+            kan volgen hoe ver zijn koekjes zijn. Dat loopt vanzelf mee met de stap die je hier
+            zet. Klopt er iets niet, of mist er een naam bij een bestelling van voor een
+            verandering, zet ze dan in één keer gelijk.</p>
+          <button class="knop knop--stil knop--vol" id="sStandenKnop" type="button" style="margin-top:12px">
+            Volgstanden gelijkzetten
+          </button>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
           <div class="kaartkop"><h3>Bakdag en bestellen</h3><span class="etiket">deze week</span></div>
           <p class="uitleg">Wat je hier zet, gebruikt de webshop meteen: de aftelklok, de teksten
             over bakken en bestellen, en het moment waarop bestellingen doorschuiven naar de
@@ -1441,6 +1452,24 @@ async function klantStatus(b, status){
   }
 }
 
+// Alle bestellingen van de week die je bekijkt opnieuw naar hun standje schrijven.
+// Handig na een verandering: dan krijgen bestellingen van voor die tijd 'm ook.
+async function standenGelijkzetten(){
+  const knop = $("#sStandenKnop");
+  const rij = bestellingen.filter(b => b.code);
+  if (!rij.length){ melden("Geen bestellingen om gelijk te zetten."); return; }
+  knop.disabled = true;
+  let klaar = 0;
+  for (const b of rij){
+    knop.textContent = "Bezig\u2026 " + (klaar + 1) + " van " + rij.length;
+    await klantStatus(b, b.status);
+    klaar++;
+  }
+  knop.disabled = false;
+  knop.textContent = "Volgstanden gelijkzetten";
+  melden(klaar + " bestelling" + (klaar === 1 ? "" : "en") + " gelijkgezet.");
+}
+
 async function klantStatusWeg(code){
   if (!code) return;
   try {
@@ -1613,6 +1642,7 @@ document.addEventListener("click", function(e){
     return;
   }
   if (e.target.closest("#sTijdenOpslaan")){ tijdenOpslaan(); return; }
+  if (e.target.closest("#sStandenKnop")){ standenGelijkzetten(); return; }
   if (e.target.closest("#sTellerOpslaan")){
     weekOpslaan({besteld: Math.max(0, parseInt($("#sBesteld").value, 10) || 0)});
     return;
