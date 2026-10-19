@@ -164,7 +164,10 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
-- **Een actie** zet je aan in `ACTIE` bovenin dit bestand, bij de prijzen. Dat blokje moet
+- **Een actie** zet je aan in `ACTIE` bovenin dit bestand, bij de prijzen. Loopt er een,
+  dan staat er bovenin de portal een strookje met de actieprijs en tot wanneer hij geldt,
+  en staat bij elk koekje in het bestelformulier de gewone prijs doorgestreept met de
+  actieprijs ernaast. Dat blokje moet
   hetzelfde staan als dat op de website, anders komt een bestelling die je hier invoert op
   een ander bedrag uit dan wat de klant zag. Op `aan: false` is alles weer gewoon, en met
   `tot` stopt hij vanzelf na die dag.
