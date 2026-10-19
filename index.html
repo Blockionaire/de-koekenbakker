@@ -134,6 +134,7 @@ button{font:inherit;color:inherit}
 /* ---------- header ---------- */
 .top{position:sticky;top:0;z-index:50;background:rgba(230,217,194,.92);backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(46,34,23,.14);color:var(--inkt)}
+.top.met-actie{border-bottom:0}
 .top-in{display:flex;align-items:center;gap:18px;padding:12px 0}
 .merk{font-family:var(--display);font-size:1.3rem;letter-spacing:.01em;text-decoration:none;display:flex;align-items:center;gap:10px}
 .merk img{width:40px;height:40px;border-radius:50%;display:block;
@@ -165,6 +166,12 @@ button{font:inherit;color:inherit}
 .actiebalk-blad:last-child{animation-delay:1.1s}
 @keyframes bladwiegen{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
 @media(prefers-reduced-motion:reduce){.actiebalk-blad{animation:none}}
+/* op een telefoon blijft de balk mee omhoog staan, dus houden we 'm compact */
+@media(max-width:560px){
+  .actiebalk{padding:8px 0}
+  .actiebalk-in{gap:8px;font-size:.88rem;line-height:1.25;letter-spacing:.01em}
+  .actiebalk-blad{display:none}
+}
 
 /* ---------- hero ---------- */
 .hero{background:var(--diep);color:var(--inkt);position:relative;overflow:hidden;
@@ -546,15 +553,15 @@ button{font:inherit;color:inherit}
     </nav>
     <button class="mandje-knop" id="mandjeKnop" aria-haspopup="dialog">Mandje <b id="mandjeTeller">0</b></button>
   </div>
-</header>
 
-<div class="actiebalk" id="actieBalk" hidden>
-  <div class="wrap actiebalk-in">
-    <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
-    <span id="actieBalkTekst"></span>
-    <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
+  <div class="actiebalk" id="actieBalk" hidden>
+    <div class="wrap actiebalk-in">
+      <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
+      <span id="actieBalkTekst"></span>
+      <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
+    </div>
   </div>
-</div>
+</header>
 
 <main id="top">
 
@@ -1837,6 +1844,7 @@ function actieTonen(){
   if (!ACTIE.aan) return;
   $("#actieBalkTekst").textContent = ACTIE.banner;
   $("#actieBalk").hidden = false;
+  $(".top").classList.add("met-actie");
   $("#dealEyebrow").textContent = ACTIE.naam;
   $("#dealKop").innerHTML = ACTIE.kop;
   $("#dealLead").textContent = ACTIE.lead;
