@@ -853,8 +853,8 @@ function tijdKort(ts){
 function bevestigTekst(b){
   const voornaam = String(b.naam || "").trim().split(/\s+/)[0];
   let t = "Hoi" + (voornaam ? " " + voornaam : "") + "! Je bestelling bij De Koekenbakker staat genoteerd.\n\n";
-  t += "Bestelnummer: " + (b.code || "—") + "\n";
-  t += (b.koekjes || 0) + " koekjes — " + euro(b.bedrag) + "\n";
+  t += "Bestelnummer: " + (b.code || "?") + "\n";
+  t += (b.koekjes || 0) + " koekjes, samen " + euro(b.bedrag) + "\n";
   (b.regels || []).forEach(function(r){
     if (r.id === "bundel") return;
     t += "  " + (r.aantal || 1) + "\u00d7 " + (r.naam || r.id) + "\n";
