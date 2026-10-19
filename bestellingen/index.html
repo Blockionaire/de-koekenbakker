@@ -618,6 +618,18 @@ const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocc
 const STUKS = {box4: 4, box5: 5, box6: 6};
 const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box4", "box5", "box6"];
 const isBox = id => id.indexOf("box") === 0;
+
+/* De actie van de week — moet hetzelfde staan als op de website, anders reken
+   je hier een ander bedrag dan wat de klant daar zag. Op false zetten en alles
+   is weer gewoon. */
+const ACTIE = {aan: true, tot: "2026-10-24", naam: "Herfstactie", stukPrijs: 2.95};
+if (ACTIE.aan && ACTIE.tot){
+  const eindActie = new Date(ACTIE.tot + "T23:59:59");
+  if (!isNaN(eindActie.getTime()) && new Date() > eindActie) ACTIE.aan = false;
+}
+const nuPrijs = id => ACTIE.aan
+  ? Math.round((STUKS[id] || 1) * ACTIE.stukPrijs * 100) / 100
+  : (PRIJZEN[id] || 0);
 // De combideal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
 // Een verrassingsbox heeft een eigen prijs en telt daar dus niet in mee.
 const BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
@@ -1001,16 +1013,18 @@ function vulFormulierLijsten(){
 
 // Wat de bestelling kost en hoeveel koekjes het zijn, uit de aantallen in het venster.
 function formulierSom(){
-  let bedrag = 0, koekjes = 0, los = 0;
+  let bedrag = 0, koekjes = 0, los = 0, kort = 0;
   SOORTEN.forEach(function(id){
     const n = formulier.aantallen[id] || 0;
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
     if (!isBox(id)) los += n;
+    if (ACTIE.aan) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
   });
   koekjes += formulier.gratisAantal || 0;
-  // Dezelfde combideal als op de webshop: vier losse koekjes voor € 12.
-  const kort = bundelKorting(los);
+  // Loopt er een actie, dan die; anders de combideal van vier voor € 12.
+  if (!ACTIE.aan) kort = bundelKorting(los);
+  kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
 
@@ -1027,7 +1041,7 @@ function tekenFormulierItems(){
   }).join("");
   const som = formulierSom();
   $("#formAantal").textContent = som.koekjes + " koekje" + (som.koekjes === 1 ? "" : "s")
-    + (som.korting > 0 ? " · − " + euro(som.korting) + " deal" : "");
+    + (som.korting > 0 ? " · − " + euro(som.korting) + (ACTIE.aan ? " actie" : " deal") : "");
   $("#formTotaal").textContent = euro(som.bedrag);
   $("#fBedrag").value = som.bedrag.toFixed(2);
 }
@@ -1097,7 +1111,7 @@ async function formulierOpslaan(){
                  aantal: formulier.gratisAantal, stuk: 0, gratis: true});
   }
   if (som.korting > 0){
-    regels.push({id: "bundel", naam: BUNDEL.aantal + " voor € " + BUNDEL.prijs,
+    regels.push({id: "bundel", naam: ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + " voor € " + BUNDEL.prijs,
                  aantal: 1, stuk: -som.korting, gratis: false});
   }
 
@@ -1330,14 +1344,16 @@ function lijstLezen(tekst){
 }
 
 function lijstSom(aantallen){
-  let bedrag = 0, koekjes = 0, los = 0;
+  let bedrag = 0, koekjes = 0, los = 0, kort = 0;
   Object.keys(aantallen).forEach(function(id){
     const n = aantallen[id];
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
-    los += n * (STUKS[id] || 1);
+    if (!isBox(id)) los += n;
+    if (ACTIE.aan) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
   });
-  const kort = bundelKorting(los);
+  if (!ACTIE.aan) kort = bundelKorting(los);
+  kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
 
@@ -1380,7 +1396,7 @@ async function lijstAanmaken(){
       return {id: id, naam: NAAMVAN(id), aantal: o.aantallen[id], stuk: PRIJZEN[id] || 0, gratis: false};
     });
     if (som.korting > 0){
-      regels.push({id: "bundel", naam: BUNDEL.aantal + " voor \u20ac " + BUNDEL.prijs,
+      regels.push({id: "bundel", naam: ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + " voor \u20ac " + BUNDEL.prijs,
                    aantal: 1, stuk: -som.korting, gratis: false});
     }
     const velden = {

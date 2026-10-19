@@ -155,6 +155,17 @@ button{font:inherit;color:inherit}
   .mandje-knop{padding:8px 13px;font-size:.88rem;gap:7px}
 }
 
+/* ---------- de actiebalk ---------- */
+.actiebalk{background:var(--karamel);color:var(--room);border-bottom:2px solid var(--inkt);
+  padding:clamp(12px,2vw,18px) 0;text-align:center;position:relative;overflow:hidden}
+.actiebalk-in{display:flex;align-items:center;justify-content:center;gap:clamp(10px,2vw,20px);
+  font-family:var(--display);font-size:clamp(1rem,2.9vw,1.75rem);line-height:1.2;
+  letter-spacing:.01em;text-transform:uppercase}
+.actiebalk-blad{font-size:clamp(1.1rem,3vw,1.9rem);line-height:1;animation:bladwiegen 3.4s ease-in-out infinite}
+.actiebalk-blad:last-child{animation-delay:1.1s}
+@keyframes bladwiegen{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+@media(prefers-reduced-motion:reduce){.actiebalk-blad{animation:none}}
+
 /* ---------- hero ---------- */
 .hero{background:var(--diep);color:var(--inkt);position:relative;overflow:hidden;
   border-bottom:2px solid var(--inkt);
@@ -294,6 +305,7 @@ button{font:inherit;color:inherit}
 .kaart-voet{margin-top:auto;display:flex;align-items:center;gap:12px;justify-content:space-between;padding-top:6px}
 .prijs{font-family:var(--kop);font-weight:800;font-size:1.5rem;font-variant-numeric:tabular-nums}
 .prijs small{font-weight:600;font-size:.72rem;color:var(--zacht);letter-spacing:.06em;text-transform:uppercase;display:block}
+.prijs-oud{color:var(--zacht);font-weight:600;font-size:1rem;text-decoration-thickness:2px;margin-right:2px}
 .toevoeg{border:2px solid var(--inkt);background:var(--inkt);color:var(--room);border-radius:999px;
   padding:11px 18px;cursor:pointer;font-family:var(--kop);font-weight:700;font-size:.92rem;
   display:inline-flex;align-items:center;gap:8px;transition:background .15s,transform .15s}
@@ -378,6 +390,8 @@ button{font:inherit;color:inherit}
 @media(max-width:880px){.overzara{grid-template-columns:1fr}}
 
 /* ---------- reviews ---------- */
+.actienoot{background:var(--karamel);color:var(--room);border-radius:12px;padding:10px 14px;
+  margin-bottom:12px;font-weight:600}
 .proef{font-family:var(--kop);font-weight:700;text-decoration:none;border-bottom:2px solid var(--karamel);
   padding-bottom:2px;color:var(--karamel-diep)}
 .proef:hover{color:var(--inkt);border-color:var(--inkt)}
@@ -533,6 +547,14 @@ button{font:inherit;color:inherit}
   </div>
 </header>
 
+<div class="actiebalk" id="actieBalk" hidden>
+  <div class="wrap actiebalk-in">
+    <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
+    <span id="actieBalkTekst"></span>
+    <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
+  </div>
+</div>
+
 <main id="top">
 
   <section class="hero">
@@ -563,7 +585,7 @@ button{font:inherit;color:inherit}
           <h2 class="titel">Dit zijn de smaken.</h2>
           <p class="lead">Om je vingers bij af te likken.</p>
         </div>
-        <span class="sticker sticker--karamel">4 voor &euro; 12</span>
+        <span class="sticker sticker--karamel" id="dealSticker">4 voor &euro; 12</span>
       </div>
       <div class="koekjes" id="koekjes"></div>
     </div>
@@ -572,9 +594,9 @@ button{font:inherit;color:inherit}
   <section class="band band--papier">
     <div class="wrap deal">
       <div class="toon">
-        <span class="eyebrow">Combideal</span>
-        <h2 class="titel">Vier in je mandje?<br>Dan betaal je &euro; 12.</h2>
-        <p class="lead" style="margin-top:14px">Los kost een koekje &euro; 3,25. Neem je er vier, dan reken ik &euro; 12. Je kunt de smaken zelf kiezen of kiezen voor een verrassingsbox, dan kies ik ze voor je!</p>
+        <span class="eyebrow" id="dealEyebrow">Combideal</span>
+        <h2 class="titel" id="dealKop">Vier in je mandje?<br>Dan betaal je &euro; 12.</h2>
+        <p class="lead" style="margin-top:14px" id="dealLead">Los kost een koekje &euro; 3,25. Neem je er vier, dan reken ik &euro; 12. Je kunt de smaken zelf kiezen of kiezen voor een verrassingsbox, dan kies ik ze voor je!</p>
         <div class="hero-acties" style="margin-top:26px">
           <button class="knop" id="dealKnop" type="button">Stel je box samen</button>
           <button class="knop knop--stil" id="verrasKnop" type="button"
@@ -714,7 +736,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="faq toon">
-        <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen &mdash; vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
+        <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p class="actienoot" id="faqActie" hidden></p><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen &mdash; vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
         <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop &mdash; je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
         <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Dat doe je op zaterdagochtend: je kiest bij het bestellen zelf tussen 10:00 en 11:00 of tussen 11:00 en 12:00. Komt dat niet uit? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
         <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt &mdash; er komt niets bij.</p></details>
@@ -844,6 +866,35 @@ const CONFIG = {
     {dagNr: 6, tijden: ["10:00 – 11:00", "11:00 – 12:00"]}
   ]
 };
+
+/* =====================================================================
+   De actie van de week
+
+   Zet `aan` op false en alles staat weer zoals het was: de banner
+   verdwijnt, de prijzen zijn weer gewoon, en de combideal doet het weer.
+   Dat is de enige regel die je hoeft aan te raken.
+   ===================================================================== */
+const ACTIE = {
+  aan: true,
+  tot: "2026-10-24",                  // laatste dag; leeg laten = tot je 'm zelf uitzet
+  naam: "Herfstactie",
+  banner: "Herfstactie · deze week alle koeken \u20ac 2,95 per stuk",
+  stukPrijs: 2.95,                    // wat een koekje deze week kost
+  kop: "Alle koekjes \u20ac 2,95.",
+  lead: "Deze week vier ik de herfst: elk koekje kost \u20ac 2,95 in plaats van \u20ac 3,25, "
+      + "en dat geldt ook voor de koekjes in een verrassingsbox. De combideal van vier voor "
+      + "\u20ac 12 laat ik deze week even rusten — met de herfstprijs ben je toch voordeliger uit.",
+  mandje: "Herfstactie: elk koekje \u20ac 2,95 in plaats van \u20ac 3,25.",
+  sticker: "Alle koekjes \u20ac 2,95",
+  faq: "Deze week niet: dan loopt de herfstactie en kost elk koekje \u20ac 2,95, los \u00e9n in een "
+     + "verrassingsbox. Na die week geldt de combideal hieronder gewoon weer."
+};
+
+// Na de laatste dag stopt de actie vanzelf, zodat niemand eraan hoeft te denken.
+if (ACTIE.aan && ACTIE.tot){
+  const eind = new Date(ACTIE.tot + "T23:59:59");
+  if (!isNaN(eind.getTime()) && new Date() > eind) ACTIE.aan = false;
+}
 
 /* ---------- kleine hulpjes ---------- */
 const INST = window.KOEKENBAKKER_CONFIG || {};
@@ -1028,6 +1079,12 @@ const BOXEN = CONFIG.boxen.map(function(b){
           kort: n + " koekjes, door mij uitgezocht — wat er die week het lekkerst uit de oven komt."};
 });
 const vind = id => isBox(id) ? BOXEN.filter(b => b.id === id)[0] : KOEKJES.filter(k => k.id === id)[0];
+// Wat iets normaal kost, en wat het deze week kost.
+const gewonePrijs = k => k.prijs;
+const nuPrijs = k => ACTIE.aan
+  ? Math.round((k.koekjes || 1) * ACTIE.stukPrijs * 100) / 100
+  : k.prijs;
+const afgeprijsd = k => ACTIE.aan && nuPrijs(k) < gewonePrijs(k);
 const koekjesVan = id => isBox(id) ? vind(id).koekjes : 1;
 
 function doosSVG(){
@@ -1064,7 +1121,9 @@ function tekenKaarten(){
       +   '<div class="smaak">' + smaakRijen + '</div>'
       + '</div>'
       + '<div class="kaart-voet">'
-      +   '<span class="prijs">' + euro(k.prijs) + '<small>' + k.gram + ' g · Ø 10 cm</small></span>'
+      +   '<span class="prijs">'
+      +     (afgeprijsd(k) ? '<s class="prijs-oud">' + euro(gewonePrijs(k)) + '</s> ' : "")
+      +     euro(nuPrijs(k)) + '<small>' + k.gram + ' g · Ø 10 cm</small></span>'
       +   '<span class="kaartknop" data-knop="' + k.id + '"></span>'
       + '</div>'
       + '</article>';
@@ -1169,7 +1228,16 @@ function grensTekst(){
 }
 const koekjesTotaal = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * koekjesVan(id), 0);
 const losseSom = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vind(id).prijs, 0);
-const korting = () => bundelKorting(losseKoekjes());
+// Tijdens een actie is de korting het verschil met de gewone prijs; anders
+// is het de combideal.
+function korting(){
+  if (!ACTIE.aan) return bundelKorting(losseKoekjes());
+  const uit = Object.keys(mandje).reduce(function(n, id){
+    const k = vind(id);
+    return n + mandje[id] * Math.max(0, gewonePrijs(k) - nuPrijs(k));
+  }, 0);
+  return Math.round(uit * 100) / 100;
+}
 const subtotaal = () => Math.round((losseSom() - korting()) * 100) / 100;
 
 function inMandje(id, aantal){
@@ -1204,12 +1272,13 @@ function ververs(){
   // Hoeveel losse koekjes nog tot de volgende vier? Dat laat de spaarbalk zien.
   const inRij = los % BUNDEL.aantal;
   const totDeal = los === 0 ? BUNDEL.aantal : (BUNDEL.aantal - inRij) % BUNDEL.aantal;
-  const spaar = totDeal === 0 && los > 0
+  const spaar = ACTIE.aan ? ACTIE.mandje : totDeal === 0 && los > 0
     ? Math.floor(los / BUNDEL.aantal) + "× de combideal — je bespaart " + euro(kort) + "."
     : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " tot "
       + (kort > 0 ? "de volgende " : "") + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + ".";
   $("#spaarTekst").textContent = spaar;
   $("#dealTekst").textContent = spaar;
+  $(".baan-bar").hidden = ACTIE.aan;
   $("#spaarBalk").style.width = (los === 0 ? 0
     : ((inRij === 0 ? BUNDEL.aantal : inRij) / BUNDEL.aantal) * 100) + "%";
 
@@ -1222,7 +1291,9 @@ function ververs(){
   const ids = Object.keys(mandje);
   if (ids.length === 0){
     body.innerHTML = '<div class="leeg"><span class="koek-plek" data-koek="chocchip"></span>'
-      + '<p>Je mandje is nog leeg. ' + BUNDEL.aantal + ' koekjes kost ' + euroNet(BUNDEL.prijs) + '.</p>'
+      + '<p>Je mandje is nog leeg. '
+      + (ACTIE.aan ? "Deze week kost elk koekje " + euro(ACTIE.stukPrijs) + "."
+                   : BUNDEL.aantal + " koekjes kost " + euroNet(BUNDEL.prijs) + ".") + '</p>'
       + '<button class="knop" type="button" data-sluit-naar="#assortiment">Kies je koekjes</button></div>';
   } else {
     body.innerHTML = ids.map(function(id){
@@ -1238,9 +1309,10 @@ function ververs(){
         + '<span class="r-prijs">' + euro(mandje[id] * k.prijs) + '</span></div>';
     }).join("") + (kort > 0
       ? '<div class="regel regel--gratis"><span class="koek-plek" data-koek="chocchip"></span>'
-        + '<div><h4>' + BUNDEL.aantal + ' voor ' + euroNet(BUNDEL.prijs) + '</h4>'
+        + '<div><h4>' + (ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + ' voor ' + euroNet(BUNDEL.prijs)) + '</h4>'
         + '<span style="font-size:.84rem;color:var(--zacht)">'
-        + Math.floor(los / BUNDEL.aantal) + '× toegepast</span></div>'
+        + (ACTIE.aan ? "elk koekje " + euro(ACTIE.stukPrijs) + " in plaats van " + euro(CONFIG.stukPrijs)
+                     : Math.floor(los / BUNDEL.aantal) + "× toegepast") + '</span></div>'
         + '<span class="r-prijs">− ' + euro(kort) + '</span></div>'
       : "");
   }
@@ -1250,7 +1322,7 @@ function ververs(){
 
   $("#totaalPrijs").textContent = euro(sub);
   $("#totaalUitleg").textContent = koekjesTotaal() === 0 ? ""
-    : (kort > 0 ? euro(kort) + " voordeel · ophalen" : "ophalen");
+    : (kort > 0 ? euro(kort) + (ACTIE.aan ? " " + ACTIE.naam.toLowerCase() : " voordeel") + " · ophalen" : "ophalen");
   const grens = grensTekst();
   $("#grens").hidden = !grens;
   $("#grens").textContent = grens;
@@ -1284,7 +1356,8 @@ function bestelTekst(code){
     return "• " + mandje[id] + "× " + k.naam + extra + " — " + euro(mandje[id] * k.prijs);
   });
   const kort = korting();
-  if (kort > 0) regels.push("• " + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + " — − " + euro(kort));
+  if (kort > 0) regels.push("• " + (ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs))
+    + " — − " + euro(kort));
   let t = "Hoi Zara! Ik wil graag bestellen bij De Koekenbakker:\n\n" + regels.join("\n");
   if (code) t = "Bestelling " + code + "\n\n" + t;
   t += "\n\nTotaal: " + euro(subtotaal());
@@ -1312,9 +1385,9 @@ async function bewaarBestelling(code){
     return {id: id, naam: k.naam, aantal: mandje[id], stuk: k.prijs, gratis: false};
   });
   const kort = korting();
-  if (kort > 0) regels.push({id: "bundel", naam: BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs),
-                             aantal: Math.floor(losseKoekjes() / BUNDEL.aantal),
-                             stuk: CONFIG.bundelPrijs - BUNDEL.aantal * CONFIG.stukPrijs, gratis: true});
+  if (kort > 0) regels.push({id: "bundel",
+                             naam: ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs),
+                             aantal: 1, stuk: -kort, gratis: true});
   try {
     await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "bestellingen"), {
       code: code,
@@ -1711,7 +1784,9 @@ function start(){
   // de drie maten van de verrassingsbox
   $("#boxRij").innerHTML = BOXEN.map(function(b){
     return '<button class="boxmaat" type="button" data-add="' + b.id + '">'
-      + '<b>' + b.koekjes + ' koekjes</b><span>' + euroNet(b.prijs) + '</span></button>';
+      + '<b>' + b.koekjes + ' koekjes</b><span>'
+      + (afgeprijsd(b) ? '<s class="prijs-oud">' + euroNet(gewonePrijs(b)) + '</s> ' : "")
+      + euro(nuPrijs(b)) + '</span></button>';
   }).join("");
 
   // de rij vakjes bij de deal: vier koekjes
@@ -1726,6 +1801,7 @@ function start(){
   cursorInstellen();
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
+  actieTonen();
 
   // Met een link als dekoekenbakkerzara.nl/?code=K7P2 kom je meteen bij je status uit.
   const uitLink = (new URLSearchParams(location.search).get("code") || "").trim();
@@ -1751,6 +1827,24 @@ function start(){
     $$(".toon").forEach(el => io.observe(el));
     setTimeout(() => $$(".toon").forEach(el => el.classList.add("in")), 3500);
   }
+}
+
+// Loopt er een actie? Dan de balk erbij, en de teksten die over de combideal
+// gaan vervangen door de actie. Staat ACTIE.aan op false, dan gebeurt hier niets
+// en ziet de site er weer precies zo uit als altijd.
+function actieTonen(){
+  if (!ACTIE.aan) return;
+  $("#actieBalkTekst").textContent = ACTIE.banner;
+  $("#actieBalk").hidden = false;
+  $("#dealEyebrow").textContent = ACTIE.naam;
+  $("#dealKop").innerHTML = ACTIE.kop;
+  $("#dealLead").textContent = ACTIE.lead;
+  $("#dealSticker").textContent = ACTIE.sticker;
+  $("#faqActie").textContent = ACTIE.faq;
+  $("#faqActie").hidden = false;
+  const telrij = $("#dealRij").closest(".toon");
+  if (telrij) telrij.hidden = true;
+  document.title = ACTIE.naam + " \u00b7 De Koekenbakker";
 }
 
 // De teksten over bakken en bestellen volgen wat Zara in de portal heeft gezet.

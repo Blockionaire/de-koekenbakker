@@ -164,6 +164,10 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
+- **Een actie** zet je aan in `ACTIE` bovenin dit bestand, bij de prijzen. Dat blokje moet
+  hetzelfde staan als dat op de website, anders komt een bestelling die je hier invoert op
+  een ander bedrag uit dan wat de klant zag. Op `aan: false` is alles weer gewoon, en met
+  `tot` stopt hij vanzelf na die dag.
 - **Volgstanden gelijkzetten** staat bij *Instellingen*. Normaal hoef je daar nooit te
   komen: de stand die de klant ziet loopt vanzelf mee met de stap die je zet. Alleen voor
   bestellingen van vóór een verandering — toen de voornaam er nog niet bij ging,

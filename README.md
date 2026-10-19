@@ -140,6 +140,37 @@ chocoladebrokken. Zet je er een zesde bij, dan schuift het raster vanzelf mee.
 
 ---
 
+## Een actie draaien
+
+Bovenin het `<script>`-blok van `index.html` staat een blokje `ACTIE`. Daarmee zet je een
+tijdelijke actie aan zonder ergens anders iets aan te raken:
+
+```js
+const ACTIE = {
+  aan: true,
+  tot: "2026-10-24",            // laatste dag; leeg laten = tot je 'm zelf uitzet
+  naam: "Herfstactie",
+  banner: "Herfstactie · deze week alle koeken € 2,95 per stuk",
+  stukPrijs: 2.95,              // wat een koekje tijdens de actie kost
+  kop: "Alle koekjes € 2,95.",
+  lead: "…",                    // de tekst in het actievak
+  mandje: "…",                  // de regel boven je mandje
+  sticker: "…",                 // het stickertje bij het assortiment
+  faq: "…"                      // het bericht boven de vraag over de combideal
+};
+```
+
+Staat `aan` op `true`, dan verschijnt de balk bovenaan, krijgt elk koekje zijn oude prijs
+doorgestreept met de actieprijs ernaast, geldt de actieprijs ook voor de koekjes in een
+verrassingsbox, en vervalt de combideal — in het mandje komt er dan één regel met de
+actienaam en het bedrag dat eraf gaat. **Uitzetten doe je met die ene regel `aan: false`**,
+of je laat `tot` het werk doen: na die dag stopt de actie vanzelf.
+
+Zet dezelfde `ACTIE` ook in `bestellingen/index.html` (bovenin, bij de prijzen), anders
+rekent de portal met de gewone prijzen voor bestellingen die je daar zelf invoert.
+
+---
+
 ## Grenzen aan een bestelling
 
 Twee rem­men, zodat je nooit meer toezegt dan je kunt bakken:
