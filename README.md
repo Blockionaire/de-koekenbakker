@@ -28,7 +28,11 @@ logica). Open 'm lokaal met dubbelklikken of zet 'm op GitHub Pages.
 - **Hero** — een groot koekje dat langzaam rondjes draait, met vijf kleintjes die er in
   twee banen omheen cirkelen. Op de telefoon schaalt het hele tafereel mee en staat het
   boven de kop.
-- **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter. Zodra
+- **Assortiment** — vijf koekjes met prijs, gewicht, allergenen en een smaakmeter, plus een
+  zesde kaart voor het koekje dat eraan komt: de foto staat er vervaagd op met een slotje,
+  zodat je wel ziet dát er iets aankomt maar niet wat. Die kaart staat in `BINNENKORT`,
+  vlak onder de lijst met koekjes; op `null` zetten laat hem verdwijnen, en zodra het koekje
+  echt te koop is zet je 'm gewoon in `KOEKJES` met een prijs erbij. Zodra
   een koekje in je mandje ligt wordt de knop *In mandje* een telletje met een min en een
   plus, zodat je op de kaart zelf ziet hoeveel je ervan neemt.
   Tik op een koekje en er gaat een hap uit. Na de tweede hap is het koekje op: je ziet

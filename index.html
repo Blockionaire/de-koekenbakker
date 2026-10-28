@@ -285,6 +285,14 @@ button{font:inherit;color:inherit}
   padding:22px;display:flex;flex-direction:column;gap:14px;position:relative;
   box-shadow:5px 5px 0 rgba(46,34,23,.16);transition:transform .2s, box-shadow .2s}
 .kaart:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 rgba(46,34,23,.22)}
+.koekjes.gelijk .kaart{grid-column:span 2}
+.koekjes.gelijk .kaart:nth-child(4),.koekjes.gelijk .kaart:nth-child(5){
+  display:flex;flex-direction:column;column-gap:0}
+.koekjes.gelijk .kaart:nth-child(4) .koek-slot,.koekjes.gelijk .kaart:nth-child(5) .koek-slot{
+  grid-row:auto;align-self:auto;width:auto}
+.koekjes.gelijk .kaart:nth-child(4) .kaart-tekst,.koekjes.gelijk .kaart:nth-child(5) .kaart-tekst,
+.koekjes.gelijk .kaart:nth-child(4) .kaart-voet,.koekjes.gelijk .kaart:nth-child(5) .kaart-voet{
+  grid-column:auto}
 .kaart:nth-child(4),.kaart:nth-child(5){grid-column:span 3;display:grid;
   grid-template-columns:180px 1fr;align-items:start;column-gap:24px;row-gap:16px}
 .kaart:nth-child(4) .kaart-tekst,.kaart:nth-child(5) .kaart-tekst{grid-column:2}
@@ -294,6 +302,19 @@ button{font:inherit;color:inherit}
 .kaart:nth-child(4) .koek-slot,.kaart:nth-child(5) .koek-slot{grid-row:1 / span 2;align-self:stretch;width:auto}
 .koek-slot svg{width:100%;max-width:190px;transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
 .koek-slot:hover svg{transform:rotate(14deg) scale(1.05)}
+/* het koekje dat nog niet te koop is */
+.kaart--binnenkort{position:relative;background:var(--zand)}
+.kaart--binnenkort h3{color:var(--karamel-diep)}
+.koek-slot--wazig{cursor:default;position:relative;overflow:hidden;background:var(--room)}
+.koek-slot--wazig svg{filter:blur(4.5px) saturate(1.35);transform:scale(1.03);opacity:.95}
+.koek-slot--wazig:hover svg{transform:scale(1.04)}
+.koek-slot--wazig::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(60% 60% at 50% 45%, rgba(250,244,234,0), rgba(250,244,234,.55))}
+.slotje{position:absolute;z-index:1;width:46px;height:46px;border-radius:50%;
+  background:var(--papier);border:2px solid var(--inkt);display:grid;place-items:center;
+  font-size:1.1rem;box-shadow:3px 3px 0 rgba(46,34,23,.2)}
+.prijs--stil{color:var(--zacht);font-size:1.15rem}
+.binnenkort-datum{font-family:var(--kop);font-weight:700;color:var(--karamel-diep);font-size:.98rem}
 .hap-hint{position:absolute;bottom:8px;right:10px;font-size:.68rem;font-family:var(--kop);font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:var(--zacht);opacity:0;transition:opacity .2s}
 .koek-slot:hover .hap-hint{opacity:1}
@@ -1129,6 +1150,18 @@ const KOEKJES = [
     seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C",
     brokken: ["#6B4423", "#7C4F2A", "#5A3517"] }
 ];
+
+// Het koekje van volgende maand: wel te zien, nog niet te bestellen.
+// Weghalen doe je met één regel: zet `binnenkort` op false en vul de
+// omschrijving en de prijs in, dan doet hij gewoon mee met de rest.
+const BINNENKORT = {
+  id: "pistache", binnenkort: true, foto: "koek-pistache.webp",
+  kop: "November special!",
+  kort: "Een nieuwe smaak, alleen te bestellen in november. Op = op, dus wees er snel bij.",
+  wanneer: "Te bestellen vanaf maandag 2 november!",
+  etiket: "2 november"
+};
+
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 const BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
 const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
@@ -1168,7 +1201,26 @@ function bolletjes(n){
   for (let i = 1; i <= 5; i++) s += '<b class="' + (i <= n ? "aan" : "") + '"></b>';
   return s + '</span>';
 }
+function binnenkortKaart(k){
+  return '<article class="kaart kaart--binnenkort toon">'
+    + '<div class="koek-slot koek-slot--wazig">'
+    +   '<span class="koek-plek" data-koek="' + k.id + '"></span>'
+    +   '<span class="slotje" aria-hidden="true">\uD83D\uDD12</span>'
+    + '</div>'
+    + '<div class="kaart-tekst">'
+    +   '<h3>' + k.kop + '</h3>'
+    +   '<p class="omschrijving">' + k.kort + '</p>'
+    +   '<p class="binnenkort-datum">' + k.wanneer + '</p>'
+    + '</div>'
+    + '<div class="kaart-voet">'
+    +   '<span class="prijs prijs--stil">Binnenkort<small>nog even geduld</small></span>'
+    +   '<span class="sticker sticker--karamel">' + k.etiket + '</span>'
+    + '</div>'
+    + '</article>';
+}
+
 function tekenKaarten(){
+  $("#koekjes").classList.toggle("gelijk", (KOEKJES.length + (BINNENKORT ? 1 : 0)) % 3 === 0);
   $("#koekjes").innerHTML = KOEKJES.map(function(k){
     const smaakRijen = Object.keys(k.smaak).map(function(naam){
       return '<div class="smaak-rij"><span>' + naam + '</span>' + bolletjes(k.smaak[naam]) + '</div>';
@@ -1190,11 +1242,12 @@ function tekenKaarten(){
       +   '<span class="kaartknop" data-knop="' + k.id + '"></span>'
       + '</div>'
       + '</article>';
-  }).join("");
+  }).join("") + (BINNENKORT ? binnenkortKaart(BINNENKORT) : "");
   $$(".koek-plek").forEach(function(el){
     const k = vind(el.dataset.koek);
-    el.innerHTML = koekSVG(k, {happen: happenPer[k.id] || []});
+    if (k) el.innerHTML = koekSVG(k, {happen: happenPer[k.id] || []});
   });
+  if (BINNENKORT) $('[data-koek="' + BINNENKORT.id + '"]').innerHTML = koekSVG(BINNENKORT);
 }
 
 const happenKlok = {};
