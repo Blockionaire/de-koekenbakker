@@ -186,6 +186,20 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .actiestrook{background:var(--karamel);color:var(--room);text-align:center;
   font-family:var(--kop);font-weight:700;font-size:.86rem;letter-spacing:.04em;
   text-transform:uppercase;padding:8px 14px;line-height:1.3}
+.beheerrij{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;
+  padding:12px 0;border-bottom:1px dashed var(--lijn)}
+.beheerrij:last-child{border-bottom:0}
+.beheerrij svg{width:44px}
+.beheerrij .naam{font-family:var(--kop);font-weight:700}
+.beheerrij .stand{font-size:.84rem;color:var(--zacht)}
+.beheerrij .stand.uit{color:#8E3B2E;font-weight:600}
+.beheerrij select{margin-top:6px;border:2px solid var(--lijn);border-radius:10px;padding:5px 8px;
+  font-family:var(--tekst);font-size:.86rem;background:var(--room);max-width:15rem}
+.knopje{border:2px solid var(--inkt);border-radius:999px;background:var(--papier);
+  font-family:var(--kop);font-weight:700;font-size:.84rem;padding:9px 14px;cursor:pointer;
+  box-shadow:2px 2px 0 rgba(46,34,23,.18);white-space:nowrap}
+.knopje:hover{background:var(--zand)}
+.knopje.uit{background:#8E3B2E;border-color:#8E3B2E;color:var(--room)}
 .staafjes{display:flex;align-items:flex-end;gap:5px;height:150px;padding-top:6px}
 .staaf{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%}
 .staaf i{display:block;width:100%;background:var(--karamel);border-radius:5px 5px 0 0;min-height:3px;
@@ -364,6 +378,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       <div class="tabs">
         <button class="tab aan" data-tab="overzicht" type="button">Deze week</button>
         <button class="tab" data-tab="lijst" type="button">Bestellingen <b id="telNieuw">0</b></button>
+        <button class="tab" data-tab="koekjes" type="button">Koekjes</button>
         <button class="tab" data-tab="data" type="button">Data</button>
         <button class="tab" data-tab="instellingen" type="button">Instellingen</button>
       </div>
@@ -428,6 +443,17 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
         <p class="zoekstand" id="zoekStand" hidden></p>
         <div id="bestelLijst" style="display:grid;gap:12px;margin-top:12px"></div>
+      </section>
+
+      <section id="vlakKoekjes" hidden>
+        <div class="kaart">
+          <div class="kaartkop"><h3>Wat is er te koop</h3><span class="etiket">op de website</span></div>
+          <p class="uitleg">Zet een koekje uit als het op is of als je het deze week even niet
+            bakt. Op de website blijft hij staan, maar grijs en met een bandje erover, en
+            niemand kan hem nog in zijn mandje leggen. Ligt hij al in iemands mandje, dan haalt
+            de site hem er vanzelf uit.</p>
+          <div id="koekjesBeheer" style="margin-top:14px"></div>
+        </div>
       </section>
 
       <section id="vlakData" hidden>
@@ -1288,6 +1314,60 @@ async function bestellingVerwijderen(id){
   }
 }
 
+/* ---------- wat er te koop is ----------
+   In één documentje staat per koekje of het aan of uit staat, en waarom.
+   De webshop luistert daar live naar, dus een koekje uitzetten is meteen
+   te zien op de site. */
+const REDENEN = ["Uitverkocht", "Deze week niet", "Tijdelijk niet te bestellen", "Even geen voorraad"];
+let winkel = {};
+let winkelGeladen = false;
+
+async function winkelLaden(){
+  if (winkelGeladen || !db) return;
+  try {
+    const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "koekjes"));
+    winkel = snap.exists() ? (snap.data() || {}) : {};
+    winkelGeladen = true;
+  } catch (fout){
+    melden("De koekjes ophalen lukte niet: " + (fout.code || fout.message));
+  }
+  koekjesTekenen();
+}
+
+function koekjesTekenen(){
+  const soorten = SOORTEN.filter(id => !isBox(id));
+  $("#koekjesBeheer").innerHTML = soorten.map(function(id){
+    const stand = winkel[id] || {};
+    const uit = stand.aan === false;
+    const reden = stand.reden || REDENEN[0];
+    return '<div class="beheerrij">'
+      + koekSVG(KOEKJES[id])
+      + '<div><div class="naam">' + NAAMVAN(id) + '</div>'
+      +   '<div class="stand' + (uit ? " uit" : "") + '">'
+      +     (uit ? veilig(reden) : "Gewoon te bestellen") + '</div>'
+      +   (uit ? '<select data-reden="' + id + '">'
+            + REDENEN.map(r => '<option value="' + r + '"' + (r === reden ? " selected" : "") + '>'
+                + r + '</option>').join("")
+            + '</select>' : "")
+      + '</div>'
+      + '<button class="knopje' + (uit ? " uit" : "") + '" data-schakel="' + id + '" type="button">'
+      +   (uit ? "Zet aan" : "Zet uit") + '</button>'
+      + '</div>';
+  }).join("");
+}
+
+async function winkelOpslaan(id, stand){
+  winkel[id] = stand;
+  koekjesTekenen();
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "koekjes"),
+                    {[id]: stand}, {merge: true});
+    melden(NAAMVAN(id) + (stand.aan === false ? " staat uit." : " staat weer aan."));
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+  }
+}
+
 /* ---------- de cijfers van de website ----------
    De webshop turft per dag hoe druk het was. Hier lezen we die rijtjes
    terug: deze week, de laatste twee weken per dag, en waar bezoekers
@@ -1761,6 +1841,8 @@ async function weekOpslaan(velden){
 
 /* ---------- klikken ---------- */
 document.addEventListener("change", function(e){
+  const reden = e.target.closest("[data-reden]");
+  if (reden){ winkelOpslaan(reden.dataset.reden, {aan: false, reden: reden.value}); return; }
   const stap = e.target.closest("[data-stap]");
   if (stap){ statusZetten(stap.dataset.stap, stap.value); return; }
   if (e.target.id === "kanaalFilter"){ kanaalFilter = e.target.value; tekenLijst(); }
@@ -1808,9 +1890,11 @@ document.addEventListener("click", function(e){
     $$(".tab").forEach(t => t.classList.toggle("aan", t === tabKnop));
     $("#vlakOverzicht").hidden = tab !== "overzicht";
     $("#vlakLijst").hidden = tab !== "lijst";
+    $("#vlakKoekjes").hidden = tab !== "koekjes";
     $("#vlakData").hidden = tab !== "data";
     $("#vlakInstellingen").hidden = tab !== "instellingen";
     if (tab === "data") dataLaden();
+    if (tab === "koekjes") winkelLaden();
     return;
   }
   if (e.target.closest("#zoekWis")){ zoek = ""; $("#zoekVeld").value = ""; zoekUitvoeren(); return; }
@@ -1855,6 +1939,14 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
   if (e.target.closest("#lijstKnop")){ lijstOpenen(); return; }
   if (e.target.closest("#bakmailKnop")){ bakoverzichtMailen(); return; }
+  const schakel = e.target.closest("[data-schakel]");
+  if (schakel){
+    const id = schakel.dataset.schakel, nu = winkel[id] || {};
+    winkelOpslaan(id, nu.aan === false
+      ? {aan: true, reden: ""}
+      : {aan: false, reden: nu.reden || REDENEN[0]});
+    return;
+  }
   if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
   if (e.target.closest("#lijstMaken")){ lijstAanmaken(); return; }
   if (e.target.closest("#lijstDicht")){ lijstSluiten(); return; }

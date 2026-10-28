@@ -26,6 +26,9 @@
        een klant met zijn eigen nummer kan zien waar zijn koekjes zijn.
        Daar staat alleen de stap in waar hij is, plus een voornaam om
        iemand gedag te kunnen zeggen — geen achternaam, geen contact.
+     - In de winkel staat welke koekjes te koop zijn. Dat mag iedereen
+       lezen (de website heeft het nodig), maar alleen jij kunt een
+       koekje aan of uit zetten.
      - Per dag staat er een rijtje turven: hoe vaak de site geopend is,
        hoe vaak er besteld is, en waar bezoekers vandaan kwamen. Daar
        staat niets persoonlijks in, en lezen mag alleen jij.
@@ -195,6 +198,18 @@ service cloud.firestore {
       allow create: if nieuweDag() || isBakker();
       allow update: if netjesGeturfd() || isBakker();
       allow delete: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       De winkel: welke koekjes te koop zijn
+
+       Een documentje met per koekje of het aan of uit staat, en waarom.
+       Iedereen mag het lezen, want de website heeft het nodig om een
+       uitverkocht koekje grijs te zetten. Aanpassen mag alleen jij.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/winkel/{wat} {
+      allow read: if true;
+      allow write: if isBakker();
     }
 
     /* Alles wat hier niet staat, mag niet. */

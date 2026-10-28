@@ -302,6 +302,16 @@ button{font:inherit;color:inherit}
 .kaart:nth-child(4) .koek-slot,.kaart:nth-child(5) .koek-slot{grid-row:1 / span 2;align-self:stretch;width:auto}
 .koek-slot svg{width:100%;max-width:190px;transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
 .koek-slot:hover svg{transform:rotate(14deg) scale(1.05)}
+/* een koekje dat tijdelijk niet te bestellen is */
+.kaart--uit{background:var(--zand)}
+.kaart--uit h3,.kaart--uit .omschrijving{opacity:.75}
+.koek-slot--uit{cursor:default;position:relative;overflow:hidden;background:var(--room)}
+.koek-slot--uit svg{filter:grayscale(.75) contrast(.9);opacity:.5}
+.uitband{position:absolute;z-index:1;background:var(--inkt);color:var(--room);
+  font-family:var(--kop);font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 18px;border-radius:999px;box-shadow:3px 3px 0 rgba(46,34,23,.25);
+  transform:rotate(-6deg);text-align:center;max-width:88%}
+
 /* het koekje dat nog niet te koop is */
 .kaart--binnenkort{position:relative;background:var(--zand)}
 .kaart--binnenkort h3{color:var(--karamel-diep)}
@@ -932,6 +942,7 @@ const RUIMTE = INST.ruimte || "zara";
 // Wat er live uit de database komt. Zolang die er niet is, blijft dit leeg
 // en rekent de site met de getallen uit CONFIG hierboven.
 let weekStand = null;
+let winkel = {};        // welke koekjes Zara aan of uit heeft gezet
 let db = null, fx = null;
 
 const $ = (s, el) => (el || document).querySelector(s);
@@ -973,6 +984,15 @@ async function verbind(){
       tikTak();
       ververs();
     }, function(){ /* geen verbinding: de site werkt gewoon door */ });
+
+    // Zara kan een koekje tijdelijk uitzetten in de portal; dat komt hier binnen.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "koekjes"), function(snap){
+      winkel = snap.exists() ? (snap.data() || {}) : {};
+      uitverkochtOpruimen();
+      tekenKaarten();
+      ververs();
+    }, function(){ /* lukt het niet, dan is alles gewoon te koop */ });
+
     bezoekTellen();
   } catch (fout){
     console.warn("Geen verbinding met de database, de site werkt zonder.", fout);
@@ -1175,6 +1195,21 @@ const BOXEN = CONFIG.boxen.map(function(b){
           kort: n + " koekjes, door mij uitgezocht: wat er die week het lekkerst uit de oven komt."};
 });
 const vind = id => isBox(id) ? BOXEN.filter(b => b.id === id)[0] : KOEKJES.filter(k => k.id === id)[0];
+// Een koekje is te koop tenzij Zara het heeft uitgezet.
+const stand = id => winkel[id] || {};
+const teKoop = id => stand(id).aan !== false;
+const uitReden = id => stand(id).reden || "Tijdelijk niet te bestellen";
+
+// Ligt er iets in je mandje dat ondertussen uitverkocht is, dan haal ik het eruit.
+function uitverkochtOpruimen(){
+  const weg = Object.keys(mandje).filter(id => !isBox(id) && !teKoop(id));
+  if (!weg.length) return;
+  weg.forEach(id => delete mandje[id]);
+  bewaar("kb-mandje", mandje);
+  melding(weg.length === 1
+    ? vind(weg[0]).naam + " is helaas niet meer te bestellen."
+    : "Een paar koekjes uit je mandje zijn niet meer te bestellen.");
+}
 // Wat iets normaal kost, en wat het deze week kost.
 const gewonePrijs = k => k.prijs;
 const nuPrijs = k => ACTIE.aan
@@ -1219,9 +1254,30 @@ function binnenkortKaart(k){
     + '</article>';
 }
 
+function uitKaart(k){
+  return '<article class="kaart kaart--uit toon">'
+    + '<div class="koek-slot koek-slot--uit">'
+    +   '<span class="koek-plek" data-koek="' + k.id + '"></span>'
+    +   '<span class="uitband">' + veiligeTekst(uitReden(k.id)) + '</span>'
+    + '</div>'
+    + '<div class="kaart-tekst">'
+    +   '<h3>' + k.naam + '</h3>'
+    +   '<p class="omschrijving">' + k.kort + '</p>'
+    + '</div>'
+    + '<div class="kaart-voet">'
+    +   '<span class="prijs prijs--stil">' + euro(nuPrijs(k)) + '<small>' + k.gram + ' g</small></span>'
+    +   '<span class="sticker">Nu even niet</span>'
+    + '</div>'
+    + '</article>';
+}
+
+const veiligeTekst = t => String(t == null ? "" : t)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").slice(0, 60);
+
 function tekenKaarten(){
   $("#koekjes").classList.toggle("gelijk", (KOEKJES.length + (BINNENKORT ? 1 : 0)) % 3 === 0);
   $("#koekjes").innerHTML = KOEKJES.map(function(k){
+    if (!teKoop(k.id)) return uitKaart(k);
     const smaakRijen = Object.keys(k.smaak).map(function(naam){
       return '<div class="smaak-rij"><span>' + naam + '</span>' + bolletjes(k.smaak[naam]) + '</div>';
     }).join("");
@@ -1357,6 +1413,7 @@ function korting(){
 const subtotaal = () => Math.round((losseSom() - korting()) * 100) / 100;
 
 function inMandje(id, aantal){
+  if (!isBox(id) && !teKoop(id)){ melding(uitReden(id) + "."); return; }
   aantal = aantal || 1;
   mandje[id] = (mandje[id] || 0) + aantal;
   if (mandje[id] <= 0) delete mandje[id];
@@ -1553,6 +1610,8 @@ async function bewaarBestelling(code){
 
 async function versturen(){
   if (koekjesTotaal() === 0){ melding("Je mandje is nog leeg."); return; }
+  const uit = Object.keys(mandje).filter(id => !isBox(id) && !teKoop(id));
+  if (uit.length){ uitverkochtOpruimen(); ververs(); return; }
   if (grensTekst()){ melding("Deze bestelling is te groot, stuur me even een berichtje."); return; }
   if (!$("#vNaam").value.trim()){ struikel($("#vNaam"), "Je naam is verplicht."); return; }
   if (!$("#vContact").value.trim()){ struikel($("#vContact"), "Een telefoonnummer of e-mailadres is verplicht."); return; }
