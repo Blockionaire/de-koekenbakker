@@ -26,6 +26,9 @@
        een klant met zijn eigen nummer kan zien waar zijn koekjes zijn.
        Daar staat alleen de stap in waar hij is, plus een voornaam om
        iemand gedag te kunnen zeggen — geen achternaam, geen contact.
+     - Per dag staat er een rijtje turven: hoe vaak de site geopend is,
+       hoe vaak er besteld is, en waar bezoekers vandaan kwamen. Daar
+       staat niets persoonlijks in, en lezen mag alleen jij.
      - Het weekoverzicht (hoeveel er al besteld is) mag iedereen lezen —
        de webshop heeft dat nodig om te weten of de week nog ruimte
        heeft. Wijzigen mag alleen in één richting: het aantal omhoog,
@@ -144,6 +147,54 @@ service cloud.firestore {
       /* De bakker mag alles: limiet zetten, week sluiten, teller
          corrigeren, en bij een annulering de teller omlaag. */
       allow write: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       De turven: hoe druk was het op een dag
+
+       Per dag één rijtje getallen. Er staat niets persoonlijks in: geen
+       namen, geen IP-adressen, geen nummers waarmee je iemand over
+       websites heen kunt volgen. Alleen hoe vaak de site geopend is, hoe
+       vaak er een mandje openging, hoe vaak er besteld is, en waar
+       bezoekers vandaan kwamen.
+
+       Lezen mag alleen jij. Een bezoeker mag alleen turven: elk getal
+       blijft gelijk of gaat precies één omhoog, nooit omlaag en nooit met
+       sprongen. Zo kan niemand de cijfers opblazen of wissen.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/bezoek/{dag} {
+
+      function velden() {
+        return ['bezoeken', 'sessies', 'mobiel', 'mandje', 'besteld', 'volg',
+                'direct', 'instagram', 'whatsapp', 'google', 'tiktok', 'anders'];
+      }
+
+      /* Een nieuwe dag begint bij nul of één. */
+      function nieuweDag() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(velden())
+          && d.values().hasOnly([0, 1]);
+      }
+
+      /* Daarna mag elk getal alleen gelijk blijven of één omhoog. */
+      function eenOmhoog(k) {
+        let d = request.resource.data;
+        let o = resource.data;
+        return !(k in d) || d[k] == (k in o ? o[k] : 0) || d[k] == (k in o ? o[k] : 0) + 1;
+      }
+
+      function netjesGeturfd() {
+        return request.resource.data.keys().hasOnly(velden())
+          && eenOmhoog('bezoeken') && eenOmhoog('sessies') && eenOmhoog('mobiel')
+          && eenOmhoog('mandje') && eenOmhoog('besteld') && eenOmhoog('volg')
+          && eenOmhoog('direct') && eenOmhoog('instagram') && eenOmhoog('whatsapp')
+          && eenOmhoog('google') && eenOmhoog('tiktok') && eenOmhoog('anders');
+      }
+
+      allow read: if isBakker();
+      allow create: if nieuweDag() || isBakker();
+      allow update: if netjesGeturfd() || isBakker();
+      allow delete: if isBakker();
     }
 
     /* Alles wat hier niet staat, mag niet. */

@@ -186,6 +186,18 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .actiestrook{background:var(--karamel);color:var(--room);text-align:center;
   font-family:var(--kop);font-weight:700;font-size:.86rem;letter-spacing:.04em;
   text-transform:uppercase;padding:8px 14px;line-height:1.3}
+.staafjes{display:flex;align-items:flex-end;gap:5px;height:150px;padding-top:6px}
+.staaf{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%}
+.staaf i{display:block;width:100%;background:var(--karamel);border-radius:5px 5px 0 0;min-height:3px;
+  transition:height .4s}
+.staaf i.vandaag{background:var(--karamel-diep)}
+.staaf b{font-family:var(--kop);font-weight:700;font-size:.72rem;font-variant-numeric:tabular-nums}
+.staaf span{font-size:.64rem;color:var(--zacht);text-transform:uppercase;letter-spacing:.04em}
+.balkrij{display:grid;grid-template-columns:7.5rem 1fr auto;gap:10px;align-items:center;
+  padding:7px 0;font-size:.92rem}
+.balkrij .baan{height:10px;background:var(--zand);border-radius:99px;overflow:hidden}
+.balkrij .baan i{display:block;height:100%;background:var(--karamel);border-radius:99px}
+.balkrij b{font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums;font-size:.9rem}
 .knoprij{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .knoprij .knop{width:100%;padding:11px 10px;font-size:.88rem}
 @media(max-width:420px){.knoprij{grid-template-columns:1fr}}
@@ -352,6 +364,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       <div class="tabs">
         <button class="tab aan" data-tab="overzicht" type="button">Deze week</button>
         <button class="tab" data-tab="lijst" type="button">Bestellingen <b id="telNieuw">0</b></button>
+        <button class="tab" data-tab="data" type="button">Data</button>
         <button class="tab" data-tab="instellingen" type="button">Instellingen</button>
       </div>
     </div>
@@ -415,6 +428,38 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
         <p class="zoekstand" id="zoekStand" hidden></p>
         <div id="bestelLijst" style="display:grid;gap:12px;margin-top:12px"></div>
+      </section>
+
+      <section id="vlakData" hidden>
+        <div class="kaart">
+          <div class="kaartkop"><h3>Deze week</h3><span class="etiket" id="dataPeriode">maandag t/m vandaag</span></div>
+          <div class="cijfers">
+            <div class="cijfer"><b id="dBezoekers">0</b><span>bezoekers</span></div>
+            <div class="cijfer"><b id="dBezoeken">0</b><span>keer geopend</span></div>
+            <div class="cijfer"><b id="dMandjes">0</b><span>mandjes open</span></div>
+            <div class="cijfer"><b id="dBesteld">0</b><span>bestellingen</span></div>
+            <div class="cijfer"><b id="dConversie">0%</b><span>die bestelt</span></div>
+          </div>
+          <p class="uitleg" id="dVergelijk" style="margin-top:12px"></p>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Per dag</h3><span class="etiket">laatste twee weken</span></div>
+          <div class="staafjes" id="dStaafjes"></div>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Waar komen ze vandaan</h3><span class="etiket">laatste 30 dagen</span></div>
+          <div id="dBronnen"></div>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Waarmee kijken ze</h3><span class="etiket">laatste 30 dagen</span></div>
+          <div id="dApparaat"></div>
+          <p class="uitleg" style="margin-top:14px">Ik tel alleen turfjes: hoe vaak de site geopend
+            is, hoe vaak er een mandje openging en hoe vaak er besteld is. Geen namen, geen
+            IP-adressen, en niemand wordt gevolgd naar andere websites.</p>
+        </div>
       </section>
 
       <section id="vlakInstellingen" hidden>
@@ -1243,6 +1288,124 @@ async function bestellingVerwijderen(id){
   }
 }
 
+/* ---------- de cijfers van de website ----------
+   De webshop turft per dag hoe druk het was. Hier lezen we die rijtjes
+   terug: deze week, de laatste twee weken per dag, en waar bezoekers
+   vandaan kwamen. */
+const DAGCODE = d => d.getFullYear() + "-"
+  + String(d.getMonth() + 1).padStart(2, "0") + "-"
+  + String(d.getDate()).padStart(2, "0");
+const KORTEDAG = ["zo", "ma", "di", "wo", "do", "vr", "za"];
+const BRONNAAM = {instagram: "Instagram", whatsapp: "WhatsApp", google: "Google",
+                  tiktok: "TikTok", direct: "Rechtstreeks", anders: "Ergens anders"};
+
+let dataRij = null;
+
+async function dataLaden(){
+  if (dataRij || !db) return;
+  try {
+    const snap = await fx.getDocs(fx.collection(db, "koekenbakker", RUIMTE, "bezoek"));
+    dataRij = {};
+    snap.docs.forEach(function(d){ dataRij[d.id] = d.data(); });
+    dataTonen();
+  } catch (fout){
+    $("#dVergelijk").textContent = "De cijfers ophalen lukte niet: " + (fout.code || fout.message)
+      + ". Staan de nieuwste beveiligingsregels er al in?";
+  }
+}
+
+function dagVan(code){ return dataRij[code] || {}; }
+
+function optellen(dagen, veld){
+  return dagen.reduce((n, code) => n + (dagVan(code)[veld] || 0), 0);
+}
+
+// De dagen van een week, vanaf maandag; 0 = deze week, -1 = vorige week.
+function weekDagen(verschuiving){
+  const nu = new Date();
+  const maandag = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate() - ((nu.getDay() + 6) % 7) + (verschuiving * 7));
+  const uit = [];
+  for (let i = 0; i < 7; i++){
+    const d = new Date(maandag.getFullYear(), maandag.getMonth(), maandag.getDate() + i);
+    if (d <= nu || verschuiving < 0) uit.push(DAGCODE(d));
+  }
+  return uit;
+}
+
+function laatsteDagen(aantal){
+  const nu = new Date(), uit = [];
+  for (let i = aantal - 1; i >= 0; i--){
+    uit.push(DAGCODE(new Date(nu.getFullYear(), nu.getMonth(), nu.getDate() - i)));
+  }
+  return uit;
+}
+
+function dataTonen(){
+  const deze = weekDagen(0), vorige = weekDagen(-1);
+  const bezoekers = optellen(deze, "sessies");
+  const bezoeken = optellen(deze, "bezoeken");
+  const mandjes = optellen(deze, "mandje");
+  const besteld = optellen(deze, "besteld");
+  $("#dBezoekers").textContent = bezoekers;
+  $("#dBezoeken").textContent = bezoeken;
+  $("#dMandjes").textContent = mandjes;
+  $("#dBesteld").textContent = besteld;
+  $("#dConversie").textContent = bezoekers ? Math.round((besteld / bezoekers) * 100) + "%" : "\u2013";
+
+  const toen = optellen(vorige, "sessies");
+  let vergelijk;
+  if (!toen && !bezoekers){
+    vergelijk = "Nog niets geteld. Zodra iemand de site opent verschijnt het hier.";
+  } else if (!toen){
+    vergelijk = "Vorige week heb ik hier nog niets geteld, dus er valt nog niets te vergelijken.";
+  } else if (bezoekers === toen){
+    vergelijk = "Precies evenveel bezoekers als vorige week (" + toen + ").";
+  } else if (bezoekers > toen){
+    vergelijk = "Dat zijn er " + (bezoekers - toen) + " meer dan vorige week (" + toen + ").";
+  } else {
+    vergelijk = "Dat zijn er " + (toen - bezoekers) + " minder dan vorige week (" + toen + ").";
+  }
+  $("#dVergelijk").textContent = vergelijk;
+
+  // per dag
+  const rij = laatsteDagen(14);
+  const hoogste = Math.max(1, ...rij.map(c => dagVan(c).sessies || 0));
+  const vandaag = DAGCODE(new Date());
+  $("#dStaafjes").innerHTML = rij.map(function(code){
+    const n = dagVan(code).sessies || 0;
+    const dag = new Date(code + "T12:00:00");
+    return '<div class="staaf" title="' + code + ': ' + n + ' bezoekers">'
+      + '<b>' + (n || "") + '</b>'
+      + '<i class="' + (code === vandaag ? "vandaag" : "") + '" style="height:'
+      + Math.round((n / hoogste) * 100) + '%"></i>'
+      + '<span>' + KORTEDAG[dag.getDay()] + '</span></div>';
+  }).join("");
+
+  // waar vandaan
+  const maand = laatsteDagen(30);
+  const bronnen = Object.keys(BRONNAAM)
+    .map(k => ({naam: BRONNAAM[k], n: optellen(maand, k)}))
+    .filter(b => b.n > 0)
+    .sort((a, b) => b.n - a.n);
+  $("#dBronnen").innerHTML = bronnen.length ? balkjes(bronnen) : '<p class="leeg">Nog niets geteld.</p>';
+
+  // telefoon of computer
+  const alles = optellen(maand, "bezoeken"), mobiel = optellen(maand, "mobiel");
+  $("#dApparaat").innerHTML = alles
+    ? balkjes([{naam: "Telefoon", n: mobiel}, {naam: "Computer", n: alles - mobiel}])
+    : '<p class="leeg">Nog niets geteld.</p>';
+}
+
+function balkjes(rij){
+  const hoogste = Math.max(1, ...rij.map(r => r.n));
+  const totaal = rij.reduce((n, r) => n + r.n, 0) || 1;
+  return rij.map(function(r){
+    return '<div class="balkrij"><span>' + veilig(r.naam) + '</span>'
+      + '<span class="baan"><i style="width:' + Math.round((r.n / hoogste) * 100) + '%"></i></span>'
+      + '<b>' + r.n + ' \u00b7 ' + Math.round((r.n / totaal) * 100) + '%</b></div>';
+  }).join("");
+}
+
 /* ---------- het bakoverzicht als bericht ----------
    Elke donderdagavond om 20:00 komt dit vanzelf per mail binnen; die taak
    draait bij GitHub en heeft het wachtwoord van de mailbox. De knop hier
@@ -1645,7 +1808,9 @@ document.addEventListener("click", function(e){
     $$(".tab").forEach(t => t.classList.toggle("aan", t === tabKnop));
     $("#vlakOverzicht").hidden = tab !== "overzicht";
     $("#vlakLijst").hidden = tab !== "lijst";
+    $("#vlakData").hidden = tab !== "data";
     $("#vlakInstellingen").hidden = tab !== "instellingen";
+    if (tab === "data") dataLaden();
     return;
   }
   if (e.target.closest("#zoekWis")){ zoek = ""; $("#zoekVeld").value = ""; zoekUitvoeren(); return; }

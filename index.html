@@ -952,6 +952,7 @@ async function verbind(){
       tikTak();
       ververs();
     }, function(){ /* geen verbinding: de site werkt gewoon door */ });
+    bezoekTellen();
   } catch (fout){
     console.warn("Geen verbinding met de database, de site werkt zonder.", fout);
   }
@@ -1039,6 +1040,60 @@ function koekFotoSVG(k, happen, id){
   s += '<image href="' + k.foto + '" x="2" y="2" width="196" height="196" '
      + 'preserveAspectRatio="xMidYMid meet" mask="url(#m' + id + ')"/>';
   return s + '</svg>';
+}
+
+/* =====================================================================
+   Meetellen hoe druk het is
+
+   Per dag één rijtje getallen in de database: hoeveel keer de site geopend
+   is, hoeveel verschillende bezoeken dat waren, hoeveel er een mandje
+   openden en hoeveel er bestelden. Verder waar iemand vandaan kwam
+   (Instagram, een appje, Google of rechtstreeks) en of het een telefoon
+   was. Geen namen, geen IP-adressen, geen volgen over andere websites:
+   het zijn turven, meer niet. Zara ziet ze terug in de portal.
+   ===================================================================== */
+const DAGCODE = d => d.getFullYear() + "-"
+  + String(d.getMonth() + 1).padStart(2, "0") + "-"
+  + String(d.getDate()).padStart(2, "0");
+
+function waarVandaan(){
+  const v = document.referrer || "";
+  if (!v) return "direct";
+  let host = "";
+  try { host = new URL(v).hostname.replace(/^www\./, "").toLowerCase(); } catch (e) { return "anders"; }
+  if (host.indexOf("dekoekenbakkerzara.nl") > -1) return "";          // eigen pagina, niet meetellen
+  if (host.indexOf("instagram") > -1) return "instagram";
+  if (host.indexOf("whatsapp") > -1 || host === "l.wl.co") return "whatsapp";
+  if (host.indexOf("google") > -1) return "google";
+  if (host.indexOf("tiktok") > -1) return "tiktok";
+  return "anders";
+}
+
+// Eén turf erbij. Lukt het niet, dan merkt een bezoeker daar niets van.
+async function turf(velden){
+  if (!db || !fx) return;
+  try {
+    const nul = {bezoeken: 0, sessies: 0, mobiel: 0, mandje: 0, besteld: 0, volg: 0,
+                 direct: 0, instagram: 0, whatsapp: 0, google: 0, tiktok: 0, anders: 0};
+    const uit = {};
+    Object.keys(nul).forEach(function(k){ uit[k] = fx.increment(velden[k] || 0); });
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "bezoek", DAGCODE(new Date())), uit, {merge: true});
+  } catch (fout){ /* tellen is bijzaak */ }
+}
+
+function bezoekTellen(){
+  let eerste = true;
+  try {
+    eerste = !sessionStorage.getItem("kb-geteld");
+    sessionStorage.setItem("kb-geteld", "1");
+  } catch (e) {}
+  const velden = {bezoeken: 1, sessies: eerste ? 1 : 0,
+                  mobiel: window.matchMedia("(max-width: 860px)").matches ? 1 : 0};
+  if (eerste){
+    const bron = waarVandaan();
+    if (bron) velden[bron] = 1;
+  }
+  turf(velden);
 }
 
 /* ---------- het assortiment ---------- */
@@ -1348,7 +1403,9 @@ function boxKeuzeTonen(open){
   $("#verrasKnop").setAttribute("aria-expanded", open ? "true" : "false");
 }
 
+let mandjeGeteld = false;
 function openLade(open){
+  if (open && !mandjeGeteld){ mandjeGeteld = true; turf({mandje: 1}); }
   $("#lade").classList.toggle("open", open);
   $("#sluier").classList.toggle("open", open);
   $("#lade").setAttribute("aria-hidden", open ? "false" : "true");
@@ -1463,6 +1520,7 @@ async function versturen(){
     knop.disabled = false;
     if (gelukt){
       bevestigd = code;
+      turf({besteld: 1});
       bewaar("kb-code", code);          // zodat je 'm later niet kwijt bent
       mandje = {};
       bewaar("kb-mandje", mandje);
@@ -1677,6 +1735,7 @@ async function volgZoeken(code){
   knop.disabled = true;
   knop.textContent = "Even kijken…";
   try {
+    turf({volg: 1});
     const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "status", code));
     if (!snap.exists()){
       volgMis("Dat nummer ken ik niet. Kijk 'm even na: vier tekens, bijvoorbeeld K7P2. "

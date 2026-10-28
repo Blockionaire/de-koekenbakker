@@ -140,6 +140,24 @@ chocoladebrokken. Zet je er een zesde bij, dan schuift het raster vanzelf mee.
 
 ---
 
+## Hoe druk is het op de site
+
+De site houdt zelf bij hoe druk het is: per dag één rijtje turven in de database. Hoe vaak
+de site geopend is, hoeveel verschillende bezoeken dat waren, hoe vaak er een mandje
+openging, hoe vaak er besteld is, hoe vaak iemand zijn bestelling volgde, waar bezoekers
+vandaan kwamen (Instagram, een appje, Google, TikTok of rechtstreeks) en of het een telefoon
+was. Zara ziet dat terug in de portal onder **Data**.
+
+Daar zit niets persoonlijks in: geen namen, geen IP-adressen, geen nummer waarmee je iemand
+over andere websites heen kunt volgen, en er gaat niets naar een ander bedrijf. Om een
+bezoek niet dubbel te tellen zet de site één vlaggetje in `sessionStorage`, dat bij het
+sluiten van het tabblad verdwijnt. Daarom is er ook geen cookiemelding nodig.
+
+Lezen mag alleen Zara; een bezoeker mag alleen turven, en elk getal kan per keer maar één
+omhoog. Zo kan niemand de cijfers opblazen of wissen.
+
+---
+
 ## Een actie draaien
 
 Bovenin het `<script>`-blok van `index.html` staat een blokje `ACTIE`. Daarmee zet je een

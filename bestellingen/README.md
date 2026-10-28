@@ -164,6 +164,11 @@ leegtrekken of het limiet veranderen.
 - **Zet de portal op je beginscherm.** Android: menu → *App installeren*. iPhone: Deel →
   *Zet op beginscherm* — daar is het zelfs verplicht, want zonder installatie laat iOS
   geen meldingen toe.
+- **Data** is het vierde tabblad: hoeveel bezoekers de site deze week had, hoeveel er een
+  mandje openden en hoeveel er bestelden (met het percentage dat bestelt), een staafje per
+  dag over de laatste twee weken, waar bezoekers vandaan kwamen en of ze op een telefoon of
+  een computer keken. Die cijfers turft de webshop zelf; er staat niets persoonlijks in en
+  alleen jij mag ze lezen.
 - **Een actie** zet je aan in `ACTIE` bovenin dit bestand, bij de prijzen. Loopt er een,
   dan staat er bovenin de portal een strookje met de actieprijs en tot wanneer hij geldt,
   en staat bij elk koekje in het bestelformulier de gewone prijs doorgestreept met de
