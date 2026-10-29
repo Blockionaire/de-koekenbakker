@@ -334,6 +334,7 @@ button{font:inherit;color:inherit}
 .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--kop);font-size:.74rem;
   letter-spacing:.06em;text-transform:uppercase;color:var(--zacht)}
 .meta i{font-style:normal;border:1px solid var(--lijn);border-radius:99px;padding:3px 9px}
+.meta i.top{background:var(--karamel-diep);border-color:var(--karamel-diep);color:var(--room);font-weight:700}
 .smaak{display:grid;gap:6px;margin-top:2px}
 .smaak-rij{display:grid;grid-template-columns:78px 1fr;align-items:center;gap:10px;
   font-family:var(--kop);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--zacht)}
@@ -1230,14 +1231,14 @@ const KOEKJES = [
     seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A",
     brokken: ["#C07F3C", "#995E26", "#F0DCC0"] },
   { id: "kinder", naam: "Kinderchocolade", prijs: 3.25, gram: 95, foto: "koek-kinder.webp",
-    kort: "Melkchocoladedeeg met stukken Kinderchocolade die smelten tot een wit-bruine kern. De favoriet van iedereen onder de twaalf (en daarboven).",
-    tags: ["Kinderchocolade", "Melk"],
+    kort: "Melkchocoladedeeg met stukken Kinderchocolade die smelten tot een wit-bruine kern.",
+    tags: ["Bestseller", "Kinderchocolade", "Melk"],
     smaak: {Choco: 4, Zoet: 5, Krokant: 1},
     seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C",
     brokken: ["#8A5A33", "#FBF3E5", "#6E4524"] },
   { id: "chocchip", naam: "Chocolate chip", prijs: 3.25, gram: 95, foto: "koek-chocchip.webp",
     kort: "De klassieker: roomboterdeeg dat 48 uur heeft gerust, grove brokken chocolade en een vlokje zeezout erbovenop.",
-    tags: ["Melkchocolade", "Zeezout", "Bestseller"],
+    tags: ["Melkchocolade", "Zeezout"],
     smaak: {Choco: 4, Zoet: 4, Krokant: 2},
     seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C",
     brokken: ["#6B4423", "#7C4F2A", "#5A3517"] }
@@ -1358,7 +1359,8 @@ function tekenKaarten(){
       + '<div class="kaart-tekst">'
       +   '<h3>' + k.naam + '</h3>'
       +   '<p class="omschrijving">' + k.kort + '</p>'
-      +   '<div class="meta">' + k.tags.map(t => "<i>" + t + "</i>").join("") + '</div>'
+      +   '<div class="meta">' + k.tags.map(t =>
+            '<i class="' + (t === "Bestseller" ? "top" : "") + '">' + t + "</i>").join("") + '</div>'
       +   '<div class="smaak">' + smaakRijen + '</div>'
       + '</div>'
       + '<div class="kaart-voet">'
