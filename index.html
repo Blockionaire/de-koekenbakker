@@ -287,7 +287,7 @@ button{font:inherit;color:inherit}
 .kaart:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 rgba(46,34,23,.22)}
 .koekjes.gelijk .kaart{grid-column:span 2}
 .koekjes.gelijk .kaart:nth-child(4),.koekjes.gelijk .kaart:nth-child(5){
-  display:flex;flex-direction:column;column-gap:0}
+  display:flex;flex-direction:column;column-gap:0;align-items:stretch}
 .koekjes.gelijk .kaart:nth-child(4) .koek-slot,.koekjes.gelijk .kaart:nth-child(5) .koek-slot{
   grid-row:auto;align-self:auto;width:auto}
 .koekjes.gelijk .kaart:nth-child(4) .kaart-tekst,.koekjes.gelijk .kaart:nth-child(5) .kaart-tekst,
@@ -444,6 +444,37 @@ button{font:inherit;color:inherit}
 .briefje p{font-size:1.02rem}
 .briefje footer{margin-top:14px;font-family:var(--kop);font-weight:700;font-size:.85rem;color:var(--zacht)}
 .sterren{color:var(--karamel-diep);letter-spacing:.14em;font-size:.9rem;margin-bottom:8px}
+
+/* het formuliertje waarmee klanten zelf een reactie achterlaten */
+.recensiekaart{margin-top:30px;background:var(--papier);border:2px solid var(--inkt);
+  border-radius:var(--r);padding:26px;box-shadow:5px 5px 0 rgba(46,34,23,.16);max-width:640px}
+.recensiekaart h3{font-size:1.35rem}
+.recensielead{color:var(--zacht);margin:6px 0 20px;font-size:.98rem}
+.recensieform{display:grid;gap:18px}
+.rvak{display:grid;gap:8px}
+.rlabel{font-family:var(--kop);font-weight:700;font-size:.95rem}
+.rlabel i{font-weight:400;font-style:normal;color:var(--zacht);font-size:.86rem}
+.recensieform textarea,.recensieform input[type=text]{width:100%;padding:13px 16px;border:2px solid var(--inkt);
+  border-radius:14px;font-family:var(--tekst);font-size:1rem;background:var(--room);color:var(--inkt);resize:vertical}
+.recensieform textarea:focus,.recensieform input[type=text]:focus{outline:3px solid var(--karamel);outline-offset:1px}
+.recensieform .fout{border-color:#8E3B2E}
+.rteller{font-size:.82rem;color:var(--zacht);justify-self:end}
+.sterkiezer{display:flex;gap:4px}
+.sterkiezer button{background:none;border:0;cursor:pointer;font-size:1.9rem;line-height:1;padding:2px 3px;
+  color:var(--klei);transition:transform .12s,color .12s}
+.sterkiezer button:hover{transform:scale(1.12)}
+.sterkiezer button.aan{color:var(--karamel-diep)}
+.smaakkeuze{display:flex;flex-wrap:wrap;gap:8px}
+.smaakkeuze button{background:var(--room);border:2px solid var(--lijn);border-radius:999px;padding:8px 14px;
+  cursor:pointer;font-family:var(--tekst);font-size:.9rem;color:var(--inkt)}
+.smaakkeuze button.aan{background:var(--inkt);border-color:var(--inkt);color:var(--room);font-weight:600}
+.rvink{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:.95rem}
+.rvink input{width:20px;height:20px;accent-color:var(--karamel-diep);flex:0 0 auto;margin-top:1px}
+.rnoot{font-size:.86rem;color:var(--zacht);margin:0}
+.rfout{color:#8E3B2E;font-weight:600;font-size:.92rem;margin:0}
+.rval{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.rdank{text-align:center;padding:14px 0 6px}
+.rdankkop{font-family:var(--kop);font-weight:800;font-size:1.3rem;margin-bottom:8px}
 
 /* ---------- FAQ ---------- */
 .faq{display:grid;gap:12px;max-width:820px}
@@ -712,19 +743,59 @@ button{font:inherit;color:inherit}
           <p class="lead"><a class="proef" href="#assortiment" id="proefZelf">Proef het zelf &rarr;</a></p>
         </div>
       </div>
-      <div class="briefjes toon">
-        <!-- Zodra je de eerste reacties hebt: haal dit blok weg en zet er per reactie
-             zo'n kaartje neer. Drie naast elkaar past precies.
-
-        <div class="briefje">
-          <div class="sterren" aria-label="5 van de 5 sterren">★★★★★</div>
-          <p>"Hier de reactie van de klant."</p>
-          <footer>Naam · hoe je diegene kent</footer>
-        </div>
-
-        -->
+      <div class="briefjes toon" id="recensies">
         <p class="nogleeg">De eerste reacties komen eraan: deze week gaan de eerste dozen de deur uit.
-          Heb je iets van mij geproefd? Laat het me weten, dan zet ik het hier neer.</p>
+          Heb je iets van mij geproefd? Laat het hieronder weten, dan zet ik het hier neer.</p>
+      </div>
+
+      <div class="recensiekaart toon">
+        <h3 id="recensieKop">Wat vond jij ervan?</h3>
+        <p class="recensielead">Schrijf hier kort je reactie. Ik lees alles zelf, en als jij het goed
+          vindt zet ik hem daarna op de site.</p>
+
+        <form class="recensieform" id="recensieForm" autocomplete="off" novalidate>
+          <div class="rvak">
+            <span class="rlabel">Hoeveel sterren geef je?</span>
+            <div class="sterkiezer" id="sterKiezer" role="radiogroup" aria-label="Aantal sterren"></div>
+          </div>
+
+          <div class="rvak">
+            <label class="rlabel" for="rTekst">Je reactie</label>
+            <textarea id="rTekst" rows="3" maxlength="400"
+              placeholder="Een paar zinnen is genoeg. Wat vond je van de koekjes?"></textarea>
+            <span class="rteller" id="rTeller"></span>
+          </div>
+
+          <div class="rvak">
+            <span class="rlabel">Welke koekjes had je? <i>Mag je overslaan</i></span>
+            <div class="smaakkeuze" id="smaakKeuze"></div>
+          </div>
+
+          <div class="rvak">
+            <label class="rlabel" for="rNaam">Je naam</label>
+            <input id="rNaam" type="text" maxlength="60" placeholder="Je voornaam is genoeg">
+          </div>
+
+          <label class="rvink"><input type="checkbox" id="rNaamTonen" checked>
+            <span>Mijn naam mag bij mijn reactie op de website</span></label>
+          <p class="rnoot" id="rNaamNoot" hidden>Zet je dit uit, dan komt er <b>Anoniem</b> bij te staan.</p>
+
+          <div class="rval" aria-hidden="true">
+            <label for="rWebsite">Laat dit veld leeg</label>
+            <input id="rWebsite" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <p class="rfout" id="rFout" hidden></p>
+          <button class="knop knop--vol" id="rKnop" type="submit">Reactie versturen</button>
+          <p class="rnoot">Je reactie komt eerst bij mij binnen. Je naam en je reactie staan pas op de
+            site als ik hem erop zet, en je kunt me altijd vragen hem weer weg te halen.</p>
+        </form>
+
+        <div class="rdank" id="rDank" hidden>
+          <p class="rdankkop">Dankjewel!</p>
+          <p>Je reactie is binnen. Ik lees hem zo, en als hij op de site komt zie je hem hierboven
+            staan. Wat lief dat je even de tijd nam.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -993,6 +1064,7 @@ async function verbind(){
       ververs();
     }, function(){ /* lukt het niet, dan is alles gewoon te koop */ });
 
+    recensiesLaden();
     bezoekTellen();
   } catch (fout){
     console.warn("Geen verbinding met de database, de site werkt zonder.", fout);
@@ -1258,7 +1330,7 @@ function uitKaart(k){
   return '<article class="kaart kaart--uit toon">'
     + '<div class="koek-slot koek-slot--uit">'
     +   '<span class="koek-plek" data-koek="' + k.id + '"></span>'
-    +   '<span class="uitband">' + veiligeTekst(uitReden(k.id)) + '</span>'
+    +   '<span class="uitband">' + vrijeTekst(uitReden(k.id), 60) + '</span>'
     + '</div>'
     + '<div class="kaart-tekst">'
     +   '<h3>' + k.naam + '</h3>'
@@ -1271,8 +1343,6 @@ function uitKaart(k){
     + '</article>';
 }
 
-const veiligeTekst = t => String(t == null ? "" : t)
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").slice(0, 60);
 
 function tekenKaarten(){
   $("#koekjes").classList.toggle("gelijk", (KOEKJES.length + (BINNENKORT ? 1 : 0)) % 3 === 0);
@@ -1606,6 +1676,139 @@ async function bewaarBestelling(code){
     console.error(fout);
     return false;
   }
+}
+
+/* =====================================================================
+   Reacties van klanten
+
+   Iedereen mag er één achterlaten, maar niemand ziet hem meteen: een
+   reactie komt eerst in de portal te staan. Pas als Zara hem goedkeurt,
+   komt hij op de site. Daarom halen we hier alleen de goedgekeurde op.
+   ===================================================================== */
+const MAXRECENSIES = 6;
+let sterren = 0;
+let gekozenSmaken = [];
+
+async function recensiesLaden(){
+  if (!db) return;
+  try {
+    const snap = await fx.getDocs(fx.query(
+      fx.collection(db, "koekenbakker", RUIMTE, "recensies"),
+      fx.where("goedgekeurd", "==", true),
+      fx.limit(50)));
+    const rij = snap.docs.map(d => d.data())
+      .sort((a, b) => (b.gemaakt && b.gemaakt.seconds || 0) - (a.gemaakt && a.gemaakt.seconds || 0))
+      .slice(0, MAXRECENSIES);
+    if (rij.length) $("#recensies").innerHTML = rij.map(recensieKaart).join("");
+  } catch (fout){
+    // Geen reacties te zien is niet erg, de rest van de site werkt gewoon door.
+    console.warn("Reacties ophalen lukte niet.", fout);
+  }
+}
+
+function recensieKaart(r){
+  const n = Math.min(5, Math.max(1, r.sterren || 5));
+  const smaken = (r.smaken || []).map(id => (vind(id) || {}).naam).filter(Boolean);
+  const wie = (r.naamTonen && r.naam) ? vrijeTekst(r.naam, 60) : "Anoniem";
+  return '<div class="briefje">'
+    + '<div class="sterren" aria-label="' + n + ' van de 5 sterren">'
+    +   "\u2605".repeat(n) + '</div>'
+    + '<p>&ldquo;' + vrijeTekst(r.tekst, 400) + '&rdquo;</p>'
+    + '<footer>' + wie + (smaken.length ? ' \u00b7 ' + vrijeTekst(smaken.join(" en "), 90) : "") + '</footer>'
+    + '</div>';
+}
+
+// Alles wat een klant zelf typt gaat hier doorheen voordat het op de pagina komt.
+const vrijeTekst = (t, max) => String(t == null ? "" : t)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;").slice(0, max || 200);
+
+function recensieformVullen(){
+  $("#sterKiezer").innerHTML = [1, 2, 3, 4, 5].map(n =>
+    '<button type="button" data-ster="' + n + '" aria-label="' + n
+    + (n === 1 ? ' ster" ' : ' sterren" ') + '>\u2605</button>').join("");
+  $("#smaakKeuze").innerHTML = KOEKJES.map(k =>
+    '<button type="button" data-smaak="' + k.id + '">' + k.naam + '</button>').join("");
+  recensieTeller();
+}
+
+function sterrenZetten(n){
+  sterren = n;
+  $$("#sterKiezer button").forEach(function(b){
+    b.classList.toggle("aan", Number(b.dataset.ster) <= n);
+  });
+  $("#rFout").hidden = true;
+}
+
+function recensieTeller(){
+  const over = 400 - $("#rTekst").value.length;
+  $("#rTeller").textContent = over + (over === 1 ? " teken over" : " tekens over");
+}
+
+function recensieFout(tekst, veld){
+  $("#rFout").textContent = tekst;
+  $("#rFout").hidden = false;
+  if (veld){ veld.classList.add("fout"); veld.focus(); }
+}
+
+async function recensieVersturen(){
+  const tekst = $("#rTekst").value.trim();
+  const naam = $("#rNaam").value.trim();
+  const toon = $("#rNaamTonen").checked;
+  $("#rFout").hidden = true;
+  $$(".recensieform .fout").forEach(v => v.classList.remove("fout"));
+
+  if ($("#rWebsite").value) return;                 // hier trapt alleen een robot in
+  if (!sterren){ recensieFout("Kies even hoeveel sterren je geeft."); return; }
+  if (tekst.length < 5){ recensieFout("Schrijf even kort wat je ervan vond.", $("#rTekst")); return; }
+  if (toon && !naam){ recensieFout("Vul je naam in, of zet het vinkje uit.", $("#rNaam")); return; }
+
+  const laatst = lees("kb-recensie", 0);
+  if (laatst && Date.now() - laatst < 6 * 60 * 60 * 1000){
+    recensieFout("Je hebt net al een reactie gestuurd, dankjewel! Die staat bij mij klaar.");
+    return;
+  }
+
+  const knop = $("#rKnop");
+  knop.disabled = true;
+  knop.textContent = "Bezig met versturen\u2026";
+
+  if (db){
+    try {
+      await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "recensies"), {
+        tekst: tekst.slice(0, 400),
+        naam: naam.slice(0, 60),
+        naamTonen: toon,
+        smaken: gekozenSmaken.slice(0, 8),
+        sterren: sterren,
+        bestelling: String(lees("kb-code", "") || "").slice(0, 8),
+        gemaakt: fx.serverTimestamp(),
+        goedgekeurd: false,
+        behandeld: false
+      });
+      bewaar("kb-recensie", Date.now());
+      $("#recensieForm").hidden = true;
+      $("#rDank").hidden = false;
+      $("#recensieKop").textContent = "Bedankt voor je reactie";
+      return;
+    } catch (fout){
+      console.warn("Reactie opslaan lukte niet.", fout);
+    } finally {
+      knop.disabled = false;
+      knop.textContent = "Reactie versturen";
+    }
+  }
+
+  // Vangnet: zonder verbinding gaat de reactie als berichtje, net als een bestelling.
+  knop.disabled = false;
+  knop.textContent = "Reactie versturen";
+  const smaken = gekozenSmaken.map(id => (vind(id) || {}).naam).filter(Boolean);
+  stuur("Reactie voor De Koekenbakker\n\n"
+        + "\u2605".repeat(sterren) + " (" + sterren + "/5)\n"
+        + tekst + "\n\n"
+        + "Van: " + (naam || "onbekend") + (toon ? " (naam mag erbij)" : " (liever anoniem)")
+        + (smaken.length ? "\nKoekjes: " + smaken.join(", ") : ""),
+        "Reactie De Koekenbakker", "Je reactie staat klaar");
 }
 
 async function versturen(){
@@ -2041,6 +2244,16 @@ function bakdagTonen(){
 
 /* ---------- klikken en typen ---------- */
 document.addEventListener("click", function(e){
+  const ster = e.target.closest("[data-ster]");
+  if (ster){ sterrenZetten(Number(ster.dataset.ster)); return; }
+  const smaak = e.target.closest("[data-smaak]");
+  if (smaak){
+    const id = smaak.dataset.smaak;
+    const aan = gekozenSmaken.indexOf(id) < 0;
+    gekozenSmaken = aan ? gekozenSmaken.concat([id]) : gekozenSmaken.filter(x => x !== id);
+    smaak.classList.toggle("aan", aan);
+    return;
+  }
   const add = e.target.closest("[data-add]");
   if (add){
     const id = add.dataset.add;
@@ -2130,6 +2343,12 @@ document.addEventListener("keydown", function(e){
 });
 
 $("#volgForm").addEventListener("submit", function(e){ e.preventDefault(); volgZoeken($("#volgCode").value); });
+$("#recensieForm").addEventListener("submit", function(e){ e.preventDefault(); recensieVersturen(); });
+$("#rTekst").addEventListener("input", recensieTeller);
+$("#rNaamTonen").addEventListener("change", function(){
+  $("#rNaamNoot").hidden = $("#rNaamTonen").checked;
+});
+recensieformVullen();
 $("#bestelKnop").addEventListener("click", versturen);
 $("#overlegKnop").addEventListener("click", overleggen);
 document.addEventListener("input", function(e){ e.target.classList.remove("fout"); });

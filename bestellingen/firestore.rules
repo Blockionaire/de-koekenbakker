@@ -26,6 +26,9 @@
        een klant met zijn eigen nummer kan zien waar zijn koekjes zijn.
        Daar staat alleen de stap in waar hij is, plus een voornaam om
        iemand gedag te kunnen zeggen — geen achternaam, geen contact.
+     - Reacties van klanten mag iedereen insturen, maar ze staan pas op
+       de site als jij ze in de portal goedkeurt. Tot die tijd kan
+       niemand ze lezen behalve jij.
      - In de winkel staat welke koekjes te koop zijn. Dat mag iedereen
        lezen (de website heeft het nodig), maar alleen jij kunt een
        koekje aan of uit zetten.
@@ -198,6 +201,43 @@ service cloud.firestore {
       allow create: if nieuweDag() || isBakker();
       allow update: if netjesGeturfd() || isBakker();
       allow delete: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       Reacties van klanten
+
+       Iedereen mag er een achterlaten, maar niemand ziet hem meteen.
+       Een nieuwe reactie moet binnenkomen met goedgekeurd op false, en
+       alleen jij kunt dat op true zetten. De website vraagt dus alleen
+       om de goedgekeurde reacties, en meer krijgt hij ook niet.
+
+       Wat erin mag staan ligt vast: een reactie, een naam, of de naam
+       erbij mag, welke koekjes het waren, hoeveel sterren, en eventueel
+       het bestelnummer dat de site zelf al onthouden had. Alles is
+       begrensd, zodat niemand er een heel boek in kwijt kan.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/recensies/{reactie} {
+
+      function nieuweReactie() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['tekst', 'naam', 'naamTonen', 'smaken', 'sterren',
+                                 'bestelling', 'gemaakt', 'goedgekeurd', 'behandeld'])
+          && d.keys().hasAll(['tekst', 'naamTonen', 'sterren', 'goedgekeurd', 'behandeld'])
+          && d.goedgekeurd == false
+          && d.behandeld == false
+          && d.tekst is string && d.tekst.size() >= 5 && d.tekst.size() <= 400
+          && (!('naam' in d) || (d.naam is string && d.naam.size() <= 60))
+          && d.naamTonen is bool
+          && (!('smaken' in d) || (d.smaken is list && d.smaken.size() <= 8))
+          && d.sterren is int && d.sterren >= 1 && d.sterren <= 5
+          && (!('bestelling' in d) || (d.bestelling is string && d.bestelling.size() <= 8))
+          && (!('gemaakt' in d) || d.gemaakt == request.time);
+      }
+
+      /* Lezen mag iedereen, maar alleen wat jij hebt goedgekeurd. */
+      allow read: if isBakker() || resource.data.goedgekeurd == true;
+      allow create: if nieuweReactie() || isBakker();
+      allow update, delete: if isBakker();
     }
 
     /* ---------------------------------------------------------------

@@ -155,6 +155,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .gegevens b{font-family:var(--kop);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--zacht)}
 .notitie{background:var(--zand);border-radius:12px;padding:10px 12px;font-size:.92rem}
 .acties{display:flex;flex-wrap:wrap;gap:8px}
+.venster-in--smal{max-width:430px}
 .leeg{text-align:center;color:var(--zacht);padding:26px 0}
 
 /* het venster waarin je een bestelling toevoegt of bewerkt */
@@ -186,6 +187,18 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .actiestrook{background:var(--karamel);color:var(--room);text-align:center;
   font-family:var(--kop);font-weight:700;font-size:.86rem;letter-spacing:.04em;
   text-transform:uppercase;padding:8px 14px;line-height:1.3}
+.reactie{border:2px solid var(--lijn);border-radius:14px;padding:16px;margin-bottom:12px;background:var(--room)}
+.reactie:last-child{margin-bottom:0}
+.reactie.staat-geplaatst{border-color:var(--karamel)}
+.reactiekop{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.reactiesterren{color:var(--karamel-diep);letter-spacing:.1em}
+.reactiewanneer{font-size:.8rem;color:var(--zacht)}
+.reactietekst{margin:10px 0;font-size:.98rem;line-height:1.55}
+.reactievan{font-size:.86rem;color:var(--zacht)}
+.reactievan b{font-family:var(--kop);color:var(--inkt)}
+.reactieknoppen{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.anoniem{display:inline-block;background:var(--zand);border-radius:99px;padding:1px 8px;font-size:.78rem;
+  font-weight:600;color:var(--inkt)}
 .beheerrij{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;
   padding:12px 0;border-bottom:1px dashed var(--lijn)}
 .beheerrij:last-child{border-bottom:0}
@@ -325,6 +338,20 @@ main{padding:18px 0 80px;display:grid;gap:16px}
   </div>
 </div>
 
+<div class="venster" id="vraagVenster" role="dialog" aria-modal="true" aria-labelledby="vraagTitel">
+  <div class="venster-in venster-in--smal">
+    <div class="venster-kop">
+      <h3 id="vraagTitel">Weet je dit zeker?</h3>
+      <button class="dicht" id="vraagDicht" aria-label="Sluiten">&#10005;</button>
+    </div>
+    <div class="venster-body"><p class="waarschuw" id="vraagUitleg"></p></div>
+    <div class="venster-voet">
+      <button class="knop knop--vol knop--gevaar" id="vraagDoor" type="button">Ja</button>
+      <button class="knop knop--stil knop--vol" id="vraagTerug" type="button">Nee, laat maar</button>
+    </div>
+  </div>
+</div>
+
 <div class="venster" id="lijstVenster" role="dialog" aria-modal="true" aria-label="Lijst invoeren">
   <div class="venster-in">
     <div class="venster-kop">
@@ -379,6 +406,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         <button class="tab aan" data-tab="overzicht" type="button">Deze week</button>
         <button class="tab" data-tab="lijst" type="button">Bestellingen <b id="telNieuw">0</b></button>
         <button class="tab" data-tab="koekjes" type="button">Koekjes</button>
+        <button class="tab" data-tab="recensies" type="button">Reacties <b id="telReacties">0</b></button>
         <button class="tab" data-tab="data" type="button">Data</button>
         <button class="tab" data-tab="instellingen" type="button">Instellingen</button>
       </div>
@@ -453,6 +481,30 @@ main{padding:18px 0 80px;display:grid;gap:16px}
             niemand kan hem nog in zijn mandje leggen. Ligt hij al in iemands mandje, dan haalt
             de site hem er vanzelf uit.</p>
           <div id="koekjesBeheer" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <section id="vlakRecensies" hidden>
+        <div class="kaart">
+          <div class="kaartkop"><h3>Nog te beoordelen</h3><span class="etiket" id="reactiesEtiket">0 nieuw</span></div>
+          <p class="uitleg">Klanten kunnen op de website zelf een reactie achterlaten. Die komt hier
+            binnen en staat nog nergens op de site. Pas als jij op <b>Plaatsen</b> klikt is hij voor
+            iedereen te zien. Weghalen kan daarna altijd nog.</p>
+          <div id="reactiesNieuw" style="margin-top:14px"></div>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Op de website</h3><span class="etiket" id="reactiesGeplaatst">0 geplaatst</span></div>
+          <p class="uitleg">Deze staan nu bij "Wat klanten over mij zeggen". De zes nieuwste zijn
+            zichtbaar; zet je er meer op de site, dan schuiven de oudste eruit.</p>
+          <div id="reactiesLijst" style="margin-top:14px"></div>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Niet geplaatst</h3><span class="etiket" id="reactiesAf">0 opzij</span></div>
+          <p class="uitleg">Deze heb je opzijgelegd. Ze staan niet op de site, maar je kunt ze later
+            alsnog plaatsen of definitief weggooien.</p>
+          <div id="reactiesAfgewezen" style="margin-top:14px"></div>
         </div>
       </section>
 
@@ -808,7 +860,8 @@ async function start(){
   fa.onAuthStateChanged(auth, function(gebruiker){
     $("#inlogScherm").hidden = !!gebruiker;
     $("#app").hidden = !gebruiker;
-    if (gebruiker) luister(); else losmaken();
+    if (gebruiker){ luister(); recensiesVolgen(); }
+    else { losmaken(); recensiesLosmaken(); }
   });
 }
 
@@ -1260,6 +1313,23 @@ function bestelCode(){
 
 // Verwijderen vraagt eerst om een bevestiging in een eigen schermpje,
 // niet via het popupvenster van de browser.
+// Een ja/nee-vraag in de portal zelf, geen pop-up van de browser.
+let vraagAntwoord = null;
+
+function bevestig(titel, uitleg, doorTekst){
+  $("#vraagTitel").textContent = titel;
+  $("#vraagUitleg").textContent = uitleg;
+  $("#vraagDoor").textContent = doorTekst || "Ja";
+  $("#vraagVenster").classList.add("aan");
+  setTimeout(() => $("#vraagDoor").focus(), 80);
+  return new Promise(function(klaar){ vraagAntwoord = klaar; });
+}
+
+function vraagSluiten(ja){
+  $("#vraagVenster").classList.remove("aan");
+  if (vraagAntwoord){ vraagAntwoord(!!ja); vraagAntwoord = null; }
+}
+
 let wisDoel = null;
 
 function wisVragen(id){
@@ -1311,6 +1381,123 @@ async function bestellingVerwijderen(id){
   } catch (fout){
     melden("Verwijderen lukte niet: " + (fout.code || fout.message));
     return false;
+  }
+}
+
+/* ---------- reacties van klanten ----------
+   Een reactie van de website komt hier binnen met goedgekeurd op false.
+   Pas als je op Plaatsen klikt gaat dat op true, en dan pas mag de
+   website hem ophalen. Zo staat er nooit iets op de site wat jij niet
+   gezien hebt. */
+let recensies = [];
+let stopRecensies = null;
+
+function recensiesVolgen(){
+  if (stopRecensies || !db) return;
+  stopRecensies = fx.onSnapshot(fx.collection(db, "koekenbakker", RUIMTE, "recensies"),
+    function(snap){
+      recensies = snap.docs.map(d => Object.assign({id: d.id}, d.data()));
+      recensies.sort((a, b) => (b.gemaakt && b.gemaakt.seconds || 0) - (a.gemaakt && a.gemaakt.seconds || 0));
+      reactiesTekenen();
+    },
+    function(fout){
+      $("#reactiesNieuw").innerHTML = '<p class="leeg">Reacties ophalen lukte niet: '
+        + veilig(fout.code || fout.message) + '. Staan de nieuwste beveiligingsregels er al in?</p>';
+    });
+}
+
+function recensiesLosmaken(){
+  if (stopRecensies) stopRecensies();
+  stopRecensies = null;
+  recensies = [];
+}
+
+const nogTeZien = () => recensies.filter(r => !r.behandeld);
+
+function reactiesTekenen(){
+  const nieuw = nogTeZien();
+  const geplaatst = recensies.filter(r => r.behandeld && r.goedgekeurd);
+  const opzij = recensies.filter(r => r.behandeld && !r.goedgekeurd);
+
+  $("#telReacties").textContent = nieuw.length;
+  $("#telReacties").classList.toggle("nieuw", nieuw.length > 0);
+  $("#reactiesEtiket").textContent = nieuw.length + (nieuw.length === 1 ? " nieuw" : " nieuw");
+  $("#reactiesGeplaatst").textContent = geplaatst.length + " geplaatst";
+  $("#reactiesAf").textContent = opzij.length + " opzij";
+
+  vulReacties("#reactiesNieuw", nieuw, "Geen nieuwe reacties. Zodra iemand er een achterlaat staat hij hier.");
+  vulReacties("#reactiesLijst", geplaatst, "Nog niets op de site gezet.");
+  vulReacties("#reactiesAfgewezen", opzij, "Niets opzijgelegd.");
+}
+
+function vulReacties(waar, rij, leegtekst){
+  $(waar).innerHTML = rij.length
+    ? rij.map(reactieKaart).join("")
+    : '<p class="leeg">' + leegtekst + '</p>';
+}
+
+function reactieKaart(r){
+  const n = Math.min(5, Math.max(1, r.sterren || 5));
+  const smaken = (r.smaken || []).map(id => NAAMVAN(id)).filter(Boolean);
+  const wanneer = r.gemaakt && r.gemaakt.seconds
+    ? new Date(r.gemaakt.seconds * 1000).toLocaleDateString("nl-NL",
+        {day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"})
+    : "zojuist";
+  const geplaatst = r.behandeld && r.goedgekeurd;
+
+  let van;
+  if (!r.naam){
+    van = '<b>Zonder naam</b> \u00b7 <span class="anoniem">komt als anoniem op de site</span>';
+  } else {
+    van = "<b>" + veilig(r.naam) + "</b>" + (r.naamTonen
+      ? ' \u00b7 naam mag op de site'
+      : ' \u00b7 <span class="anoniem">liever anoniem</span>');
+  }
+  if (smaken.length) van += ' \u00b7 ' + veilig(smaken.join(", "));
+  if (r.bestelling) van += ' \u00b7 bestelling ' + veilig(r.bestelling);
+
+  const knoppen = geplaatst
+    ? '<button class="knopje" data-reactie="verbergen" data-id="' + r.id + '" type="button">Van de site halen</button>'
+    : '<button class="knopje" data-reactie="plaatsen" data-id="' + r.id + '" type="button">Plaatsen</button>'
+      + (r.behandeld ? "" : '<button class="knopje" data-reactie="opzij" data-id="' + r.id + '" type="button">Nog even niet</button>');
+
+  return '<div class="reactie' + (geplaatst ? " staat-geplaatst" : "") + '">'
+    + '<div class="reactiekop">'
+    +   '<span class="reactiesterren" aria-label="' + n + ' van de 5 sterren">' + "\u2605".repeat(n) + '</span>'
+    +   '<span class="reactiewanneer">' + wanneer + '</span>'
+    + '</div>'
+    + '<p class="reactietekst">\u201c' + veiligLang(r.tekst) + '\u201d</p>'
+    + '<p class="reactievan">' + van + '</p>'
+    + '<div class="reactieknoppen">' + knoppen
+    +   '<button class="knopje" data-reactie="weg" data-id="' + r.id + '" type="button">Verwijderen</button>'
+    + '</div></div>';
+}
+
+// veilig() kort af op een naamlengte; een reactie mag langer zijn.
+const veiligLang = t => String(t == null ? "" : t)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").slice(0, 400);
+
+async function reactieDoen(id, wat){
+  const r = recensies.filter(x => x.id === id)[0];
+  if (!r) return;
+  const plek = fx.doc(db, "koekenbakker", RUIMTE, "recensies", id);
+  try {
+    if (wat === "weg"){
+      const naam = r.naam ? "de reactie van " + r.naam : "deze reactie";
+      if (!await bevestig("Weggooien?", "Dan is " + naam + " voorgoed weg.", "Verwijderen")) return;
+      await fx.deleteDoc(plek);
+      melden("Reactie verwijderd.");
+      return;
+    }
+    const nieuw = wat === "plaatsen" ? {goedgekeurd: true,  behandeld: true}
+                : wat === "opzij"    ? {goedgekeurd: false, behandeld: true}
+                                     : {goedgekeurd: false, behandeld: true};
+    await fx.updateDoc(plek, nieuw);
+    melden(wat === "plaatsen" ? "Staat nu op de website."
+         : wat === "verbergen" ? "Van de website gehaald."
+         : "Opzijgelegd.");
+  } catch (fout){
+    melden("Dat lukte niet: " + (fout.code || fout.message));
   }
 }
 
@@ -1891,6 +2078,7 @@ document.addEventListener("click", function(e){
     $("#vlakOverzicht").hidden = tab !== "overzicht";
     $("#vlakLijst").hidden = tab !== "lijst";
     $("#vlakKoekjes").hidden = tab !== "koekjes";
+    $("#vlakRecensies").hidden = tab !== "recensies";
     $("#vlakData").hidden = tab !== "data";
     $("#vlakInstellingen").hidden = tab !== "instellingen";
     if (tab === "data") dataLaden();
@@ -1938,7 +2126,11 @@ document.addEventListener("click", function(e){
 
   if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
   if (e.target.closest("#lijstKnop")){ lijstOpenen(); return; }
+  if (e.target.closest("#vraagDoor")){ vraagSluiten(true); return; }
+  if (e.target.closest("#vraagTerug") || e.target.closest("#vraagDicht")){ vraagSluiten(false); return; }
   if (e.target.closest("#bakmailKnop")){ bakoverzichtMailen(); return; }
+  const reactie = e.target.closest("[data-reactie]");
+  if (reactie){ reactieDoen(reactie.dataset.id, reactie.dataset.reactie); return; }
   const schakel = e.target.closest("[data-schakel]");
   if (schakel){
     const id = schakel.dataset.schakel, nu = winkel[id] || {};
