@@ -232,6 +232,10 @@ button{font:inherit;color:inherit}
 .volgophalen{margin-top:16px;background:var(--zand);border:2px solid var(--klei);border-radius:14px;
   padding:12px 16px;font-size:.95rem}
 .volgophalen b{font-family:var(--kop);font-weight:800;display:block;margin-top:2px;font-size:1.02rem}
+.volgadres{display:block;margin-top:12px;padding-top:12px;border-top:2px dashed var(--klei)}
+.bedankt-adres{font-size:.88rem;color:var(--zacht);background:var(--zand);border-radius:12px;
+  padding:12px 14px;margin-top:10px}
+.bedankt-adres b{display:block;margin-top:2px;font-family:var(--kop);font-weight:800;font-size:1rem;color:var(--inkt)}
 .volgtekst .lead{margin-top:10px}
 .volgbaan{list-style:none;display:grid;gap:9px;margin-top:22px}
 .volgbaan li{display:flex;align-items:center;gap:12px;font-family:var(--kop);font-weight:700;
@@ -839,7 +843,8 @@ button{font:inherit;color:inherit}
             <h3 id="volgKop"></h3>
             <p class="lead" id="volgUitleg"></p>
             <p class="volgophalen" id="volgOphalen" hidden>Ophalen:
-              <b id="volgOphaalTijd"></b></p>
+              <b id="volgOphaalTijd"></b>
+              <span class="volgadres" id="volgAdres" hidden></span></p>
             <ol class="volgbaan" id="volgBaan"></ol>
           </div>
         </div>
@@ -921,6 +926,7 @@ button{font:inherit;color:inherit}
     <p>Je bestelling staat op mijn lijst onder nummer <b id="bedanktCode">…</b>. Ik bevestig 'm
        persoonlijk, meestal nog dezelfde dag, via het contactgegeven dat je hebt ingevuld.</p>
     <p class="bedankt-klein" id="bedanktWanneer"></p>
+    <p class="bedankt-adres" id="bedanktAdres"></p>
     <p class="bedankt-klein">Bewaar je nummer even. Daarmee zie je bij
        <b>Volg je bestelling</b> hoe ver ik ben. Op dit apparaat onthoud ik 'm voor je.</p>
     <button class="knop knop--vol" id="volgVanaf" type="button">Volg je bestelling</button>
@@ -965,6 +971,8 @@ const CONFIG = {
   whatsapp: "31620892147",            // landcode 31, zonder + en zonder de 0 ervoor
   email: "zaraprins08@gmail.com",   // hierheen gaat een bestelling als de verbinding wegvalt
   stad: "de Hoeksche Waard",          // hier haal je de koekjes op
+  adres: "Admiraal de Ruyterstraat 76", // het ophaaladres, pas dit aan als je verhuist
+  plaats: "Oud-Beijerland",
   stukPrijs: 3.25,                    // wat één los koekje kost
   bundelAantal: 4,                    // bij zoveel koekjes geldt de deal
   bundelPrijs: 12.00,                 // en dan betaal je dit voor die vier
@@ -1614,6 +1622,7 @@ function ververs(){
     $("#bedanktWanneer").textContent = (afhaalmoment && afhaalmoment !== "In overleg")
       ? "Ophalen: " + afhaalmoment + "."
       : "We spreken samen een ophaalmoment af.";
+    $("#bedanktAdres").innerHTML = "Ophaaladres<b>" + CONFIG.adres + "<br>" + CONFIG.plaats + "</b>";
   }
 
   const alles = koekjesTotaal(), los = losseKoekjes(), sub = subtotaal(), kort = korting();
@@ -2154,6 +2163,9 @@ function volgTonen(gegevens){
   const ophalen = ophaalTekst(gegevens);
   $("#volgOphalen").hidden = !ophalen || stap.id === "afgerond";
   $("#volgOphaalTijd").textContent = ophalen;
+  // Het adres pas als het doosje echt klaarstaat, niet al bij het bestellen.
+  $("#volgAdres").hidden = stap.id !== "ingepakt";
+  $("#volgAdres").innerHTML = "Je haalt het op bij<b>" + CONFIG.adres + "<br>" + CONFIG.plaats + "</b>";
   $("#volgBaan").innerHTML = STAPPEN.map(function(x, i){
     const klas = i < nr ? "klaar" : (i === nr ? "nu" : "");
     return '<li class="' + klas + '">' + x.kort + '</li>';
