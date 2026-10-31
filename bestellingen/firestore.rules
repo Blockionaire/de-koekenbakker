@@ -29,6 +29,8 @@
      - Reacties van klanten mag iedereen insturen, maar ze staan pas op
        de site als jij ze in de portal goedkeurt. Tot die tijd kan
        niemand ze lezen behalve jij.
+     - Bij de afhaalmomenten staat per moment hoeveel klanten er al op
+       staan. Een bestelling mag dat getal een omhoog doen, verder niets.
      - In de winkel staat welke koekjes te koop zijn. Dat mag iedereen
        lezen (de website heeft het nodig), maar alleen jij kunt een
        koekje aan of uit zetten.
@@ -200,6 +202,41 @@ service cloud.firestore {
       allow read: if isBakker();
       allow create: if nieuweDag() || isBakker();
       allow update: if netjesGeturfd() || isBakker();
+      allow delete: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       De afhaalmomenten: hoeveel klanten er al op staan
+
+       Per moment per week een documentje met een getalletje. Er staat
+       geen naam in en geen bestelling, alleen hoeveel klanten er op dat
+       moment staan. Iedereen mag het lezen, want de website moet weten
+       of een moment vol zit.
+
+       Een bestelling mag de teller precies een omhoog doen, nooit meer
+       en nooit omlaag. Zo kan niemand een moment volgooien of leegmaken.
+       Op nul zetten mag alleen jij, vanuit de portal.
+
+       De momenten zelf staan in winkel/ophalen, daar hierboven.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/slots/{sleutel} {
+
+      function eersteKlant() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['week', 'slot', 'genomen'])
+          && d.genomen == 1
+          && d.week is string && d.week.size() <= 10
+          && d.slot is string && d.slot.size() <= 24;
+      }
+
+      function eentjeErbij() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['genomen'])
+          && request.resource.data.genomen == resource.data.genomen + 1;
+      }
+
+      allow read: if true;
+      allow create: if eersteKlant() || isBakker();
+      allow update: if eentjeErbij() || isBakker();
       allow delete: if isBakker();
     }
 

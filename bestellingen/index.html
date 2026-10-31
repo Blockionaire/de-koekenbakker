@@ -187,6 +187,22 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .actiestrook{background:var(--karamel);color:var(--room);text-align:center;
   font-family:var(--kop);font-weight:700;font-size:.86rem;letter-spacing:.04em;
   text-transform:uppercase;padding:8px 14px;line-height:1.3}
+.slotrij{display:grid;grid-template-columns:1fr 112px 112px 86px auto;gap:10px;align-items:end;
+  padding:12px 0;border-bottom:1px dashed var(--lijn)}
+.slotrij:last-child{border-bottom:0}
+.slotrij label{display:block;font-size:.74rem;color:var(--zacht);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:4px}
+.slotrij select,.slotrij input{width:100%;padding:9px 10px;border:2px solid var(--lijn);border-radius:10px;
+  font-family:var(--tekst);font-size:.9rem;background:var(--room);color:var(--inkt)}
+.slotstand{font-size:.84rem;color:var(--zacht);grid-column:1 / -1;margin-top:-4px}
+.slotstand.vol{color:#8E3B2E;font-weight:600}
+.slotweg{border:2px solid var(--lijn);background:var(--papier);border-radius:10px;width:40px;height:40px;
+  cursor:pointer;font-size:1rem;line-height:1}
+.slotweg:hover{background:#8E3B2E;border-color:#8E3B2E;color:var(--room)}
+@media (max-width:620px){
+  .slotrij{grid-template-columns:1fr 1fr;gap:8px}
+  .slotrij .slotdag{grid-column:1 / -1}
+}
 .reactie{border:2px solid var(--lijn);border-radius:14px;padding:16px;margin-bottom:12px;background:var(--room)}
 .reactie:last-child{margin-bottom:0}
 .reactie.staat-geplaatst{border-color:var(--karamel)}
@@ -583,6 +599,24 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
 
         <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Afhaalmomenten</h3><span class="etiket" id="slotEtiket">—</span></div>
+          <p class="uitleg">Dit zijn de tijden die klanten in hun mandje te zien krijgen. Vul je bij
+            <b>max</b> niets in, dan mogen er zoveel klanten op als je wil. Zit een moment vol, dan
+            blijft het staan maar kan niemand het meer kiezen. Staan er meer dan drie momenten open,
+            dan maakt de website er vanzelf een keuzelijstje van in plaats van een rij knoppen.</p>
+          <div id="slotLijst" style="margin-top:14px"></div>
+          <button class="knop knop--stil knop--vol" id="slotErbij" type="button" style="margin-top:12px">Moment toevoegen</button>
+          <label class="vinkje" style="margin-top:14px">
+            <input type="checkbox" id="slotOverleg" checked>
+            <span>Klanten mogen ook "Maakt me niet uit" kiezen</span>
+          </label>
+          <button class="knop knop--vol" id="slotOpslaan" type="button" style="margin-top:14px">Opslaan</button>
+          <p class="uitleg" style="margin-top:12px">De tellers lopen per week mee. Klopt er een niet
+            meer, bijvoorbeeld na een bestelling die je zelf hebt aangepast, dan zet je hem hier terug
+            op nul.</p>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
           <div class="kaartkop"><h3>Bakdag en bestellen</h3><span class="etiket">deze week</span></div>
           <p class="uitleg">Wat je hier zet, gebruikt de webshop meteen: de aftelklok, de teksten
             over bakken en bestellen, en het moment waarop bestellingen doorschuiven naar de
@@ -860,7 +894,7 @@ async function start(){
   fa.onAuthStateChanged(auth, function(gebruiker){
     $("#inlogScherm").hidden = !!gebruiker;
     $("#app").hidden = !gebruiker;
-    if (gebruiker){ luister(); recensiesVolgen(); }
+    if (gebruiker){ luister(); recensiesVolgen(); slotsLaden(); }
     else { losmaken(); recensiesLosmaken(); }
   });
 }
@@ -868,12 +902,14 @@ async function start(){
 function losmaken(){
   if (stopBestellingen) stopBestellingen();
   if (stopWeek) stopWeek();
-  stopBestellingen = stopWeek = null;
+  if (stopSlotTellers) stopSlotTellers();
+  stopBestellingen = stopWeek = stopSlotTellers = null;
 }
 
 function luister(){
   losmaken();
   $("#weekTitel").textContent = weekLabel(huidigeWeek);
+  slotTellersVolgen();
 
   stopWeek = fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek), function(snap){
     weekDoc = snap.exists() ? snap.data() : null;
@@ -1381,6 +1417,120 @@ async function bestellingVerwijderen(id){
   } catch (fout){
     melden("Verwijderen lukte niet: " + (fout.code || fout.message));
     return false;
+  }
+}
+
+/* ---------- de afhaalmomenten ----------
+   Ze staan in één documentje dat de website ook mag lezen. Elk moment
+   heeft een eigen nummertje; daaronder telt de site in de slots-map hoe
+   veel klanten er die week op staan. */
+let slots = [];
+let slotOphaal = {};
+let slotTellers = {};
+let stopSlotTellers = null;
+
+const slotNummer = () => "s" + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36);
+
+async function slotsLaden(){
+  if (!db) return;
+  try {
+    const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "ophalen"));
+    slotOphaal = snap.exists() ? (snap.data() || {}) : {};
+    slots = Array.isArray(slotOphaal.slots) ? slotOphaal.slots.map(m => Object.assign({}, m)) : [];
+    $("#slotOverleg").checked = slotOphaal.overleg !== false;
+  } catch (fout){
+    melden("Afhaalmomenten ophalen lukte niet: " + (fout.code || fout.message));
+  }
+  slotsTekenen();
+}
+
+// De tellers van de week die je bekijkt.
+function slotTellersVolgen(){
+  if (!db) return;
+  if (stopSlotTellers) stopSlotTellers();
+  stopSlotTellers = fx.onSnapshot(
+    fx.query(fx.collection(db, "koekenbakker", RUIMTE, "slots"), fx.where("week", "==", huidigeWeek)),
+    function(snap){
+      slotTellers = {};
+      snap.docs.forEach(function(d){
+        const v = d.data() || {};
+        if (v.slot) slotTellers[v.slot] = v.genomen || 0;
+      });
+      slotsTekenen();
+    },
+    function(){ slotTellers = {}; });
+}
+
+function slotsTekenen(){
+  const vol = slots.filter(m => m.max > 0 && (slotTellers[m.id] || 0) >= m.max).length;
+  $("#slotEtiket").textContent = slots.length
+    ? slots.length + (slots.length === 1 ? " moment" : " momenten") + (vol ? ", " + vol + " vol" : "")
+    : "nog geen";
+
+  $("#slotLijst").innerHTML = slots.length ? slots.map(function(m, i){
+    const genomen = slotTellers[m.id] || 0;
+    const isVol = m.max > 0 && genomen >= m.max;
+    return '<div class="slotrij">'
+      + '<div class="slotdag"><label for="sd' + i + '">Dag</label><select id="sd' + i + '" data-slot="dag" data-i="' + i + '">'
+      +   DAGEN.map((d, n) => '<option value="' + n + '"' + (Number(m.dag) === n ? " selected" : "") + '>'
+            + d.charAt(0).toUpperCase() + d.slice(1) + '</option>').join("")
+      + '</select></div>'
+      + '<div><label for="sv' + i + '">Van</label><input id="sv' + i + '" type="time" data-slot="van" data-i="' + i + '" value="' + veilig(m.van || "") + '"></div>'
+      + '<div><label for="st' + i + '">Tot</label><input id="st' + i + '" type="time" data-slot="tot" data-i="' + i + '" value="' + veilig(m.tot || "") + '"></div>'
+      + '<div><label for="sm' + i + '">Max</label><input id="sm' + i + '" type="number" min="1" max="99" placeholder="geen" data-slot="max" data-i="' + i + '" value="' + (m.max > 0 ? m.max : "") + '"></div>'
+      + '<button class="slotweg" data-slotweg="' + i + '" type="button" aria-label="Dit moment weghalen">&#10005;</button>'
+      + '<p class="slotstand' + (isVol ? " vol" : "") + '">'
+      +   (m.max > 0 ? genomen + " van de " + m.max + (isVol ? " \u00b7 vol" : "") : genomen + " klanten, geen max")
+      +   (genomen ? ' \u00b7 <a href="#" data-slotnul="' + i + '">terug op nul</a>' : "")
+      + '</p>'
+      + '</div>';
+  }).join("") : '<p class="leeg">Nog geen momenten. Zonder momenten vraagt de website niet naar een tijd.</p>';
+}
+
+function slotVeld(i, veld, waarde){
+  if (!slots[i]) return;
+  if (veld === "max"){
+    const n = parseInt(waarde, 10);
+    slots[i].max = (waarde === "" || isNaN(n) || n < 1) ? 0 : Math.min(99, n);
+  } else if (veld === "dag"){
+    slots[i].dag = parseInt(waarde, 10);
+  } else {
+    slots[i][veld] = String(waarde || "").slice(0, 5);
+  }
+}
+
+async function slotsOpslaan(){
+  const schoon = slots
+    .filter(m => m.van)
+    .map(m => ({id: m.id || slotNummer(), dag: Number(m.dag) || 0,
+                van: String(m.van).slice(0, 5), tot: String(m.tot || "").slice(0, 5),
+                max: m.max > 0 ? m.max : 0}));
+  if (schoon.length !== slots.length){
+    melden("Een moment zonder begintijd sla ik niet op.");
+  }
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "ophalen"),
+                    {slots: schoon, overleg: $("#slotOverleg").checked}, {merge: true});
+    slots = schoon.map(m => Object.assign({}, m));
+    slotsTekenen();
+    melden("Afhaalmomenten opgeslagen.");
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+  }
+}
+
+async function slotTellerNul(i){
+  const m = slots[i];
+  if (!m) return;
+  if (!await bevestig("Teller op nul?",
+        "Dan staat dit moment weer helemaal leeg en kunnen klanten het opnieuw kiezen. "
+        + "De bestellingen zelf blijven gewoon staan.", "Op nul zetten")) return;
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "slots", huidigeWeek + "__" + m.id),
+                    {week: huidigeWeek, slot: m.id, genomen: 0});
+    melden("Teller op nul.");
+  } catch (fout){
+    melden("Dat lukte niet: " + (fout.code || fout.message));
   }
 }
 
@@ -2028,6 +2178,8 @@ async function weekOpslaan(velden){
 
 /* ---------- klikken ---------- */
 document.addEventListener("change", function(e){
+  const slotVak = e.target.closest("[data-slot]");
+  if (slotVak){ slotVeld(Number(slotVak.dataset.i), slotVak.dataset.slot, slotVak.value); return; }
   const reden = e.target.closest("[data-reden]");
   if (reden){ winkelOpslaan(reden.dataset.reden, {aan: false, reden: reden.value}); return; }
   const stap = e.target.closest("[data-stap]");
@@ -2117,6 +2269,16 @@ document.addEventListener("click", function(e){
     return;
   }
   if (e.target.closest("#sTijdenOpslaan")){ tijdenOpslaan(); return; }
+  if (e.target.closest("#slotOpslaan")){ slotsOpslaan(); return; }
+  if (e.target.closest("#slotErbij")){
+    slots.push({id: slotNummer(), dag: 6, van: "10:00", tot: "11:00", max: 0});
+    slotsTekenen();
+    return;
+  }
+  const slotWeg = e.target.closest("[data-slotweg]");
+  if (slotWeg){ slots.splice(Number(slotWeg.dataset.slotweg), 1); slotsTekenen(); return; }
+  const slotNul = e.target.closest("[data-slotnul]");
+  if (slotNul){ e.preventDefault(); slotTellerNul(Number(slotNul.dataset.slotnul)); return; }
   if (e.target.closest("#sStandenKnop")){ standenGelijkzetten(); return; }
   if (e.target.closest("#sTellerOpslaan")){
     weekOpslaan({besteld: Math.max(0, parseInt($("#sBesteld").value, 10) || 0)});

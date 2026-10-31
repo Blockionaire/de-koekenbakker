@@ -542,6 +542,12 @@ button{font:inherit;color:inherit}
   font-family:var(--kop);font-weight:700;font-size:.84rem;font-variant-numeric:tabular-nums}
 .moment:hover{background:var(--zand)}
 .moment.aan{background:var(--inkt);color:var(--papier)}
+.moment.vol{opacity:.45;cursor:not-allowed;border-style:dashed}
+.moment.vol:hover{background:var(--room)}
+.moment i{font-style:normal;font-weight:400;text-transform:uppercase;font-size:.7rem;letter-spacing:.06em}
+.momentkiezer{width:100%;padding:12px 14px;border:2px solid var(--inkt);border-radius:12px;
+  background:var(--room);font-family:var(--kop);font-weight:700;font-size:.92rem;color:var(--inkt)}
+.momentnoot{font-size:.9rem;color:var(--zacht);background:var(--zand);border-radius:12px;padding:12px 14px}
 .veld input,.veld textarea,.veld select{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;
   background:var(--room);font-family:var(--tekst);font-size:.97rem;width:100%}
 .veld textarea{min-height:64px;resize:vertical}
@@ -1068,6 +1074,23 @@ async function verbind(){
       ververs();
     }, function(){ /* lukt het niet, dan is alles gewoon te koop */ });
 
+    // De afhaalmomenten die Zara in de portal heeft gezet.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "ophalen"), function(snap){
+      ophaalInst = snap.exists() ? (snap.data() || null) : null;
+      ververs();
+    }, function(){ /* lukt het niet, dan gelden de momenten uit dit bestand */ });
+
+    // Hoe vol elk moment deze week al zit.
+    fx.onSnapshot(fx.query(fx.collection(db, "koekenbakker", RUIMTE, "slots"),
+                           fx.where("week", "==", dezeWeek())), function(snap){
+      slotTellers = {};
+      snap.docs.forEach(function(d){
+        const v = d.data() || {};
+        if (v.slot) slotTellers[v.slot] = v.genomen || 0;
+      });
+      ververs();
+    }, function(){ /* zonder tellers is geen enkel moment vol */ });
+
     recensiesLaden();
     bezoekTellen();
   } catch (fout){
@@ -1428,19 +1451,102 @@ Object.keys(mandje).forEach(function(id){ if (!vind(id)) delete mandje[id]; });
 bewaar("kb-mandje", mandje);
 let bevestigd = "";   // het bestelnummer zodra een bestelling genoteerd is
 let afhaalmoment = lees("kb-afhaal", "");
+let afhaalSlot = lees("kb-afhaalslot", "");
+let ophaalInst = null;     // de afhaalmomenten zoals ze in de portal staan
+let slotTellers = {};      // hoeveel klanten er per moment al op staan
 
 function afhaalDatum(dagNr){
   const vr = volgendeBakdag();
   return new Date(vr.getFullYear(), vr.getMonth(), vr.getDate() + ((dagNr - CONFIG.bakdag + 7) % 7));
 }
-function tekenMomenten(){
-  const knop = (waarde, tekst) => '<button type="button" class="moment' + (afhaalmoment === waarde ? " aan" : "")
-    + '" data-moment="' + waarde + '">' + tekst + '</button>';
-  $("#momenten").innerHTML = CONFIG.afhaalmomenten.map(function(m){
+
+/* De afhaalmomenten komen uit de portal. Staat daar nog niets, dan gelden
+   de momenten uit het instellingenblok bovenin dit bestand. Elk moment
+   heeft een eigen nummertje, zodat we kunnen tellen hoeveel klanten er al
+   op staan en hem vol kunnen melden. */
+function ophaalSlots(){
+  const uit = [];
+  if (ophaalInst && Array.isArray(ophaalInst.slots)){
+    ophaalInst.slots.forEach(function(m){
+      if (!m || !m.id || m.aan === false) return;
+      uit.push({id: m.id, dagNr: Number(m.dag), van: String(m.van || ""), tot: String(m.tot || ""),
+                max: (typeof m.max === "number" && m.max > 0) ? m.max : 0});
+    });
+  } else {
+    CONFIG.afhaalmomenten.forEach(function(m){
+      m.tijden.forEach(function(t, i){
+        const stuk = t.split("\u2013");
+        uit.push({id: "v" + m.dagNr + "-" + i, dagNr: m.dagNr,
+                  van: (stuk[0] || "").trim(), tot: (stuk[1] || "").trim(), max: 0});
+      });
+    });
+  }
+  return uit.map(function(m){
     const dag = afhaalDatum(m.dagNr).toLocaleDateString("nl-NL", {weekday: "long", day: "numeric", month: "long"});
+    const tijd = m.tot ? m.van + " \u2013 " + m.tot : m.van;
+    const genomen = slotTellers[m.id] || 0;
+    return Object.assign({}, m, {dag: dag, tijd: tijd, label: dag + ", " + tijd,
+                                 genomen: genomen, vol: m.max > 0 && genomen >= m.max});
+  });
+}
+
+const inOverlegMag = () => !ophaalInst || ophaalInst.overleg !== false;
+
+function tekenMomenten(){
+  const slots = ophaalSlots();
+  const vrij = slots.filter(m => !m.vol);
+
+  // Stond je keuze er niet meer bij, of zit hij inmiddels vol, dan vervalt hij.
+  if (afhaalSlot && !vrij.filter(m => m.id === afhaalSlot).length){ afhaalSlot = ""; afhaalmoment = ""; }
+
+  if (!slots.length){
+    afhaalSlot = "";
+    afhaalmoment = inOverlegMag() ? "In overleg" : "";
+    $("#momenten").innerHTML = inOverlegMag()
+      ? '<p class="momentnoot">Er staan deze week nog geen vaste tijden klaar. Ik neem contact met je op om een moment af te spreken.</p>'
+      : '<p class="momentnoot">Er staan deze week nog geen afhaaltijden klaar.</p>';
+    return;
+  }
+
+  // Meer dan drie momenten wordt een rij knoppen te lang, dan is een keuzelijst prettiger.
+  if (slots.length > 3){ tekenMomentLijst(slots); return; }
+
+  const gekozen = (id, waarde) => id ? afhaalSlot === id : afhaalmoment === waarde;
+  const knop = (id, waarde, tekst, vol) => '<button type="button" class="moment'
+    + (gekozen(id, waarde) ? " aan" : "") + (vol ? " vol" : "") + '"'
+    + (vol ? " disabled" : "") + ' data-slot="' + id + '" data-moment="' + waarde + '">'
+    + tekst + (vol ? ' <i>vol</i>' : "") + '</button>';
+
+  const perDag = {};
+  slots.forEach(function(m){ (perDag[m.dag] = perDag[m.dag] || []).push(m); });
+  $("#momenten").innerHTML = Object.keys(perDag).map(function(dag){
     return '<div><span class="moment-dag">' + dag + '</span><div class="moment-rij">'
-      + m.tijden.map(t => knop(dag + ", " + t, t)).join("") + '</div></div>';
-  }).join("") + '<div class="moment-rij">' + knop("In overleg", "Maakt me niet uit") + '</div>';
+      + perDag[dag].map(m => knop(m.id, m.label, m.tijd, m.vol)).join("") + '</div></div>';
+  }).join("")
+  + (inOverlegMag()
+      ? '<div class="moment-rij">' + knop("", "In overleg", "Maakt me niet uit", false) + '</div>'
+      : "");
+}
+
+function tekenMomentLijst(slots){
+  const optie = (id, waarde, tekst, vol) => '<option value="' + id + '" data-moment="' + waarde + '"'
+    + (afhaalSlot === id ? " selected" : "") + (vol ? " disabled" : "") + '>'
+    + tekst + (vol ? " (vol)" : "") + '</option>';
+
+  const perDag = {};
+  slots.forEach(function(m){ (perDag[m.dag] = perDag[m.dag] || []).push(m); });
+
+  $("#momenten").innerHTML = '<select class="momentkiezer" id="momentKiezer" aria-label="Kies een afhaalmoment">'
+    + '<option value="" disabled' + (afhaalSlot || afhaalmoment === "In overleg" ? "" : " selected") + '>Kies een moment\u2026</option>'
+    + Object.keys(perDag).map(function(dag){
+        return '<optgroup label="' + dag.charAt(0).toUpperCase() + dag.slice(1) + '">'
+          + perDag[dag].map(m => optie(m.id, m.label, m.tijd, m.vol)).join("") + '</optgroup>';
+      }).join("")
+    + (inOverlegMag()
+        ? '<option value="overleg" data-moment="In overleg"'
+          + (afhaalmoment === "In overleg" ? " selected" : "") + '>Maakt me niet uit</option>'
+        : "")
+    + '</select>';
 }
 
 // Een verrassingsbox heeft zijn eigen prijs, dus de combideal rekent alleen over
@@ -1655,6 +1761,18 @@ async function bewaarBestelling(code){
       koekjes: n,
       bedrag: subtotaal()
     });
+    // Een turfje op het gekozen afhaalmoment, zodat de site weet wanneer het vol is.
+    if (afhaalSlot){
+      try {
+        const plek = fx.doc(db, "koekenbakker", RUIMTE, "slots", week + "__" + afhaalSlot);
+        const er = await fx.getDoc(plek);
+        if (er.exists()) await fx.updateDoc(plek, {genomen: fx.increment(1)});
+        else await fx.setDoc(plek, {week: week, slot: afhaalSlot, genomen: 1});
+      } catch (nietErg){
+        console.warn("Het afhaalmoment kon niet worden geteld; de bestelling staat er wel.", nietErg);
+      }
+    }
+
     // Het losse statusdocument waar de klant zijn bestelling mee kan volgen.
     // Hier staat alleen in hoe ver hij is, geen naam en geen contactgegeven.
     try {
@@ -1828,6 +1946,15 @@ async function versturen(){
     $("#momenten").classList.add("fout");
     $("#momenten").scrollIntoView({block: "nearest"});
     melding("Kies even wanneer je het ophaalt.");
+    return;
+  }
+  // Iemand anders kan je moment net voor je neus hebben weggekaapt.
+  if (afhaalSlot && ophaalSlots().filter(m => m.id === afhaalSlot && !m.vol).length === 0){
+    afhaalSlot = ""; afhaalmoment = "";
+    tekenMomenten();
+    $("#momenten").classList.add("fout");
+    $("#momenten").scrollIntoView({block: "nearest"});
+    melding("Dat moment is net volgeraakt, kies even een ander.");
     return;
   }
   // Met verbinding gaat de bestelling rechtstreeks naar mijn bestellijst.
@@ -2336,7 +2463,9 @@ document.addEventListener("click", function(e){
   const moment = e.target.closest("[data-moment]");
   if (moment){
     afhaalmoment = moment.dataset.moment;
+    afhaalSlot = moment.dataset.slot || "";
     bewaar("kb-afhaal", afhaalmoment);
+    bewaar("kb-afhaalslot", afhaalSlot);
     $("#momenten").classList.remove("fout");
     tekenMomenten();
     return;
@@ -2351,6 +2480,17 @@ document.addEventListener("keydown", function(e){
 $("#volgForm").addEventListener("submit", function(e){ e.preventDefault(); volgZoeken($("#volgCode").value); });
 $("#recensieForm").addEventListener("submit", function(e){ e.preventDefault(); recensieVersturen(); });
 $("#rTekst").addEventListener("input", recensieTeller);
+// De keuzelijst met afhaalmomenten, als er meer dan drie zijn.
+document.addEventListener("change", function(e){
+  if (e.target.id !== "momentKiezer") return;
+  const optie = e.target.selectedOptions[0];
+  afhaalSlot = e.target.value === "overleg" ? "" : e.target.value;
+  afhaalmoment = optie ? (optie.dataset.moment || "") : "";
+  bewaar("kb-afhaal", afhaalmoment);
+  bewaar("kb-afhaalslot", afhaalSlot);
+  $("#momenten").classList.remove("fout");
+});
+
 $("#rNaamTonen").addEventListener("change", function(){
   $("#rNaamNoot").hidden = $("#rNaamTonen").checked;
 });
