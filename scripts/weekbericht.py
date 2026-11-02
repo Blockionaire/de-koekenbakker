@@ -35,6 +35,7 @@ HIER = ZoneInfo("Europe/Amsterdam")
 NAMEN = {
     "oreo": "Oreo", "stroopwafel": "Stroopwafel", "lotus": "Lotus Biscoff",
     "kinder": "Kinderchocolade", "chocchip": "Chocolate chip",
+    "pistache": "Pistache",
 }
 # Hoeveel koekjes er in een verrassingsbox gaan, per soort box.
 BOXMAAT = {"box4": 4, "box5": 5, "box6": 6, "box": 6}

@@ -646,7 +646,7 @@ button{font:inherit;color:inherit}
       <div>
         <span class="eyebrow">Vers gebakken · elke vrijdag</span>
         <h1>Verse koekjes,<br><span class="fat"><em>rechtstreeks</em></span><br>uit mijn oven.</h1>
-        <p class="hero-p">Vijf koekjes die ik met de hand draai en dezelfde dag bak. Je haalt ze vers op, nog een beetje zacht vanbinnen, precies zoals het hoort.</p>
+        <p class="hero-p">Zes koekjes die ik met de hand draai en dezelfde dag bak. Je haalt ze vers op, nog een beetje zacht vanbinnen, precies zoals het hoort.</p>
         <div class="hero-acties">
           <a class="knop" href="#assortiment">Bekijk de koekjes</a>
           <button class="knop knop--stil" id="verrasMij" type="button">Verras me met een box</button>
@@ -714,7 +714,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="stappen toon">
-        <div class="stap"><div><h4>Kies je koekjes</h4><p>Vijf smaken, vrij te combineren. Vier stuks kost € 12.</p></div></div>
+        <div class="stap"><div><h4>Kies je koekjes</h4><p>Zes smaken, vrij te combineren. Vier stuks kost € 12.</p></div></div>
         <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
         <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Je haalt ze op het moment op dat je zelf hebt gekozen, vers uit de oven.</p></div></div>
       </div>
@@ -1270,6 +1270,13 @@ const KOEKJES = [
     smaak: {Choco: 4, Zoet: 5, Krokant: 1},
     seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C",
     brokken: ["#8A5A33", "#FBF3E5", "#6E4524"] },
+  { id: "pistache", naam: "Pistache", prijs: 3.25, gram: 95, foto: "koek-pistache.webp",
+    vlag: "November special",
+    kort: "Pistachepasta door het deeg, gehakte pistachenoten erdoor en witte chocolade die wegsmelt. Alleen in november, op = op.",
+    tags: ["Pistache", "Witte chocolade", "Noten"],
+    smaak: {Choco: 2, Zoet: 4, Krokant: 3},
+    seed: 53, deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E",
+    brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"] },
   { id: "chocchip", naam: "Chocolate chip", prijs: 3.25, gram: 95, foto: "koek-chocchip.webp",
     vlag: "Bestseller",
     kort: "De klassieker: roomboterdeeg dat 48 uur heeft gerust, grove brokken chocolade en een vlokje zeezout erbovenop.",
@@ -1282,13 +1289,10 @@ const KOEKJES = [
 // Het koekje van volgende maand: wel te zien, nog niet te bestellen.
 // Weghalen doe je met één regel: zet `binnenkort` op false en vul de
 // omschrijving en de prijs in, dan doet hij gewoon mee met de rest.
-const BINNENKORT = {
-  id: "pistache", binnenkort: true, foto: "koek-pistache.webp",
-  kop: "November special!",
-  kort: "Een nieuwe smaak, alleen te bestellen in november. Op = op, dus wees er snel bij.",
-  wanneer: "Te bestellen vanaf maandag 2 november!",
-  etiket: "2 november"
-};
+// Een koekje dat je alvast laat zien maar nog niet verkoopt: vervaagd, met een
+// slotje erop. Zet het hier neer en het verschijnt als laatste kaart; op null
+// is er niets om te laten zien. Zo stond de pistache er in oktober bij.
+const BINNENKORT = null;
 
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 const BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
@@ -2288,13 +2292,14 @@ function kruimel(x, y){
 
 /* ---------- opstarten ---------- */
 function start(){
-  // vaste koekjes tekenen
-  $("#laadKoek").innerHTML = koekSVG(KOEKJES[4]);
-  $("#heroKoek").innerHTML = koekSVG(KOEKJES[4]);
+  // Vaste koekjes tekenen. Welke dat zijn staat op naam, niet op plek in de
+  // lijst, zodat een nieuwe smaak de versiering niet door elkaar gooit.
+  $("#laadKoek").innerHTML = koekSVG(vind("chocchip"));
+  $("#heroKoek").innerHTML = koekSVG(vind("chocchip"));
   ["#orbit1", "#orbit2", "#orbit3", "#orbit4", "#orbit5"].forEach(function(sel, i){
     $(sel).innerHTML = koekSVG(KOEKJES[i % KOEKJES.length]);
   });
-  $("#cursor").innerHTML = koekSVG(KOEKJES[1]);
+  $("#cursor").innerHTML = koekSVG(vind("stroopwafel"));
 
   // Staat er een foto van Zara in de map? Dan komt die in de polaroid te staan.
   // Hij kan al binnen zijn voordat dit draait, vandaar de check op complete.
@@ -2305,8 +2310,8 @@ function start(){
     $("#polaroidVlak").classList.add("met-foto");
   };
   if (foto.complete) fotoAan(); else foto.addEventListener("load", fotoAan);
-  $("#polaroidKoek").innerHTML = koekSVG(KOEKJES[2]);
-  $("#bedanktKoek").innerHTML = koekSVG(KOEKJES[3]);
+  $("#polaroidKoek").innerHTML = koekSVG(vind("lotus"));
+  $("#bedanktKoek").innerHTML = koekSVG(vind("kinder"));
 
   // de drie maten van de verrassingsbox
   $("#boxRij").innerHTML = BOXEN.map(function(b){
@@ -2317,8 +2322,8 @@ function start(){
   }).join("");
 
   // de rij vakjes bij de deal: vier koekjes
-  $("#dealRij").innerHTML = [0,1,2,3].map(function(i){
-    return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">' + koekSVG(KOEKJES[i]) + '</div>';
+  $("#dealRij").innerHTML = ["oreo", "stroopwafel", "lotus", "chocchip"].map(function(id, i){
+    return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">' + koekSVG(vind(id)) + '</div>';
   }).join("");
 
   tekenKaarten();

@@ -772,13 +772,15 @@ const KOEKJES = {
   stroopwafel: {naam: "Stroopwafel",     seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E", brokken: ["#B5762C", "#8A5420", "#E3AB5E"]},
   lotus:       {naam: "Lotus Biscoff",   seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A", brokken: ["#C07F3C", "#995E26", "#F0DCC0"]},
   kinder:      {naam: "Kinderchocolade", seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C", brokken: ["#8A5A33", "#FBF3E5", "#6E4524"]},
-  chocchip:    {naam: "Chocolate chip",  seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]}
+  chocchip:    {naam: "Chocolate chip",  seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]},
+  pistache:    {naam: "Pistache",        seed: 53, deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E", brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"]}
 };
 // Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
 const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25,
-                 box4: 12.00, box5: 15.00, box6: 18.00};
+                 pistache: 3.25, box4: 12.00, box5: 15.00, box6: 18.00};
 const STUKS = {box4: 4, box5: 5, box6: 6};
-const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "box4", "box5", "box6"];
+const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "pistache",
+                 "box4", "box5", "box6"];
 const isBox = id => id.indexOf("box") === 0;
 
 /* De actie van de week — moet hetzelfde staan als op de website, anders reken
@@ -869,9 +871,10 @@ async function start(){
   actieStrookTonen();
   // Twee koekjes als versiering. Via SOORTEN, zodat een andere smaaknaam
   // dit nooit meer onderuit kan halen.
-  const versiering = SOORTEN.filter(id => !isBox(id));
+  const versiering = SOORTEN.filter(id => !isBox(id) && KOEKJES[id]);
+  const merkKoekje = KOEKJES.chocchip ? "chocchip" : versiering[0];
   $("#merkKoek").innerHTML = koekSVG(KOEKJES[versiering[0]]);
-  $("#merkKoek2").innerHTML = koekSVG(KOEKJES[versiering[versiering.length - 1]]);
+  $("#merkKoek2").innerHTML = koekSVG(KOEKJES[merkKoekje]);
 
   if (!INST.firebase){
     $("#inlogUitleg").textContent = "Er is nog geen verbinding ingesteld. Vul firebase-config.js in — de stappen staan in README.md.";
