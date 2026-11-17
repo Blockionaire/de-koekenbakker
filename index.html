@@ -484,6 +484,61 @@ button{font:inherit;color:inherit}
 .rdank{text-align:center;padding:14px 0 6px}
 .rdankkop{font-family:var(--kop);font-weight:800;font-size:1.3rem;margin-bottom:8px}
 
+/* ---------- bewerkmodus ----------
+   Alles hieronder ziet een gewone bezoeker nooit: het verschijnt pas als
+   Zara is ingelogd. */
+.beheerpoort{position:fixed;inset:0;z-index:200;background:rgba(46,34,23,.55);
+  display:grid;place-items:center;padding:20px}
+.beheerkaart{background:var(--papier);border:2px solid var(--inkt);border-radius:var(--r);
+  padding:26px;width:min(380px,100%);box-shadow:6px 6px 0 rgba(46,34,23,.25)}
+.beheerkaart h3{font-size:1.3rem;margin-bottom:4px}
+.beheerkaart p{color:var(--zacht);font-size:.9rem;margin-bottom:16px}
+.beheerkaart label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--zacht);margin:12px 0 4px}
+.beheerkaart input{width:100%;padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;
+  background:var(--room);font-family:var(--tekst);font-size:.97rem;color:var(--inkt)}
+.beheerfout{color:#8E3B2E;font-weight:600;font-size:.88rem;margin-top:10px}
+
+.beheerbalk{position:fixed;left:0;right:0;bottom:0;z-index:190;background:var(--inkt);
+  color:var(--room);display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:10px clamp(12px,3vw,22px);box-shadow:0 -4px 0 rgba(46,34,23,.25)}
+.beheerbalk b{font-family:var(--kop);font-size:.9rem;margin-right:6px}
+.beheerbalk .los{margin-left:auto}
+.bknop{border:2px solid var(--room);background:none;color:var(--room);border-radius:999px;
+  padding:8px 14px;font-family:var(--kop);font-weight:700;font-size:.82rem;cursor:pointer}
+.bknop:hover{background:rgba(250,244,234,.15)}
+.bknop.aan{background:var(--room);color:var(--inkt)}
+.bknop[disabled]{opacity:.4;cursor:not-allowed}
+body.beheert{padding-bottom:84px}
+
+.beheerluik{position:fixed;right:clamp(12px,3vw,22px);bottom:76px;z-index:191;width:min(340px,calc(100vw - 24px));
+  max-height:min(70vh,560px);overflow-y:auto;background:var(--papier);border:2px solid var(--inkt);
+  border-radius:var(--r);padding:18px;box-shadow:6px 6px 0 rgba(46,34,23,.25)}
+.beheerluik h4{font-size:1rem;margin-bottom:4px}
+.beheerluik .uitleg{font-size:.84rem;color:var(--zacht);margin-bottom:14px}
+.kleurrij,.sectierij{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px dashed var(--lijn);font-size:.9rem}
+.kleurrij:last-child,.sectierij:last-child{border-bottom:0}
+.kleurrij input[type=color]{width:42px;height:30px;border:2px solid var(--lijn);border-radius:8px;
+  padding:0;background:none;cursor:pointer;flex:0 0 auto}
+.kleurrij span,.sectierij span{flex:1}
+.sectierij input[type=checkbox]{width:20px;height:20px;accent-color:var(--karamel-diep)}
+.sectierij.vast{opacity:.5}
+.waarschuw-contrast{background:#8E3B2E;color:var(--room);border-radius:10px;padding:9px 12px;
+  font-size:.82rem;margin-top:12px}
+.versierij{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--lijn);
+  font-size:.86rem}
+.versierij:last-child{border-bottom:0}
+.versierij span{flex:1;color:var(--zacht)}
+
+/* een tekst die je kunt aanpassen */
+body.tekstmodus [data-tekst]{outline:2px dashed var(--karamel);outline-offset:3px;border-radius:4px;
+  cursor:text;transition:outline-color .15s}
+body.tekstmodus [data-tekst]:hover{outline-color:var(--inkt)}
+body.tekstmodus [data-tekst]:focus{outline:3px solid var(--karamel-diep);outline-offset:3px;
+  background:rgba(142,90,59,.07)}
+[data-tekst].gewijzigd{outline-style:solid}
+
 /* ---------- FAQ ---------- */
 .faq{display:grid;gap:12px;max-width:820px}
 .faq details{background:var(--papier);border:2px solid var(--inkt);border-radius:var(--r);overflow:hidden}
@@ -619,13 +674,13 @@ button{font:inherit;color:inherit}
 
 <header class="top">
   <div class="wrap top-in">
-    <a class="merk" href="#top"><img src="logo.png" alt="" width="40" height="40" loading="eager"> De Koekenbakker</a>
+    <a class="merk" href="#top" data-tekst="kop-de-koekenbakker"><img src="logo.png" alt="" width="40" height="40" loading="eager"> De Koekenbakker</a>
     <nav class="nav" aria-label="Hoofdmenu">
-      <a href="#assortiment">Koekjes</a>
-      <a href="#bakdag">Bakdag</a>
-      <a href="#zara">Over mij</a>
-      <a href="#volgen">Mijn bestelling</a>
-      <a href="#vragen">Vragen</a>
+      <a href="#assortiment" data-tekst="kop-koekjes">Koekjes</a>
+      <a href="#bakdag" data-tekst="kop-bakdag">Bakdag</a>
+      <a href="#zara" data-tekst="kop-over-mij">Over mij</a>
+      <a href="#volgen" data-tekst="kop-mijn-bestelling">Mijn bestelling</a>
+      <a href="#vragen" data-tekst="kop-vragen">Vragen</a>
     </nav>
     <button class="mandje-knop" id="mandjeKnop" aria-haspopup="dialog">Mandje <b id="mandjeTeller">0</b></button>
   </div>
@@ -641,14 +696,14 @@ button{font:inherit;color:inherit}
 
 <main id="top">
 
-  <section class="hero">
+  <section class="hero" id="welkom">
     <div class="wrap hero-grid">
       <div>
-        <span class="eyebrow">Vers gebakken · elke vrijdag</span>
-        <h1>Verse koekjes,<br><span class="fat"><em>rechtstreeks</em></span><br>uit mijn oven.</h1>
-        <p class="hero-p"><span id="heroAantal">Zes koekjes die</span> ik met de hand draai en dezelfde dag bak. Je haalt ze vers op, nog een beetje zacht vanbinnen, precies zoals het hoort.</p>
+        <span class="eyebrow" data-tekst="welkom-vers-gebakken-elke-vrijdag">Vers gebakken · elke vrijdag</span>
+        <h1><span data-tekst="welkom-kop-1">Verse koekjes,</span><br><span class="fat" data-tekst="welkom-rechtstreeks"><em>rechtstreeks</em></span><br><span data-tekst="welkom-kop-2">uit mijn oven.</span></h1>
+        <p class="hero-p"><span id="heroAantal">Zes koekjes die</span> <span data-tekst="welkom-lead">ik met de hand draai en dezelfde dag bak. Je haalt ze vers op, nog een beetje zacht vanbinnen, precies zoals het hoort.</span></p>
         <div class="hero-acties">
-          <a class="knop" href="#assortiment">Bekijk de koekjes</a>
+          <a class="knop" href="#assortiment" data-tekst="welkom-bekijk-de-koekjes">Bekijk de koekjes</a>
           <button class="knop knop--stil" id="verrasMij" type="button">Verras me met een box</button>
         </div>
       </div>
@@ -665,9 +720,9 @@ button{font:inherit;color:inherit}
     <div class="wrap">
       <div class="sectiekop toon">
         <div class="tekstkant">
-          <span class="eyebrow">Het assortiment</span>
-          <h2 class="titel">Dit zijn de smaken.</h2>
-          <p class="lead">Om je vingers bij af te likken.</p>
+          <span class="eyebrow" data-tekst="assortiment-het-assortiment">Het assortiment</span>
+          <h2 class="titel" data-tekst="assortiment-dit-zijn-de-smaken">Dit zijn de smaken.</h2>
+          <p class="lead" data-tekst="assortiment-om-je-vingers-bij">Om je vingers bij af te likken.</p>
         </div>
         <span class="sticker sticker--karamel" id="dealSticker">4 voor &euro; 12</span>
       </div>
@@ -675,7 +730,7 @@ button{font:inherit;color:inherit}
     </div>
   </section>
 
-  <section class="band band--papier">
+  <section class="band band--papier" id="combideal">
     <div class="wrap deal">
       <div class="toon">
         <span class="eyebrow" id="dealEyebrow">Combideal</span>
@@ -687,13 +742,13 @@ button{font:inherit;color:inherit}
                   aria-expanded="false" aria-controls="boxKeuze">Kies verrassingsbox</button>
         </div>
         <div class="boxkeuze" id="boxKeuze" hidden>
-          <p class="eyebrow" style="margin-bottom:12px">Hoeveel koekjes zitten erin?</p>
+          <p class="eyebrow" style="margin-bottom:12px" data-tekst="combideal-hoeveel-koekjes-zitten-erin">Hoeveel koekjes zitten erin?</p>
           <div class="boxrij" id="boxRij"></div>
-          <p class="mini" style="text-align:left;margin-top:12px">Welke smaken erin gaan blijft een verrassing: ik kies wat die week het lekkerst uit de oven komt.</p>
+          <p class="mini" style="text-align:left;margin-top:12px" data-tekst="combideal-welke-smaken-erin-gaan">Welke smaken erin gaan blijft een verrassing: ik kies wat die week het lekkerst uit de oven komt.</p>
         </div>
       </div>
       <div class="toon">
-        <p class="eyebrow">Zo telt het op</p>
+        <p class="eyebrow" data-tekst="combideal-zo-telt-het-op">Zo telt het op</p>
         <div class="deal-rij" id="dealRij" aria-hidden="true"></div>
         <p class="mini" style="text-align:left;margin-top:22px" id="dealTekst">Nog 4 koekjes tot de deal van € 12.</p>
       </div>
@@ -703,20 +758,20 @@ button{font:inherit;color:inherit}
   <section class="band band--diep" id="bakdag">
     <div class="wrap agenda">
       <div class="toon">
-        <span class="eyebrow">Bakdag</span>
+        <span class="eyebrow" data-tekst="bakdag-bakdag">Bakdag</span>
         <h2 class="titel" id="bakdagKop">De oven gaat vrijdag om 09:00 aan.</h2>
-        <p class="lead" style="margin-top:14px">Ik bak één keer per week, en heb een maximum aan koekjes. <span id="bakdagUitleg">Bestel je vóór donderdag 22:00, dan zit je in de batch van vrijdag en kun je de koekjes op zaterdag ophalen.</span></p>
+        <p class="lead" style="margin-top:14px"><span data-tekst="bakdag-lead">Ik bak één keer per week, en heb een maximum aan koekjes.</span> <span id="bakdagUitleg">Bestel je vóór donderdag 22:00, dan zit je in de batch van vrijdag en kun je de koekjes op zaterdag ophalen.</span></p>
         <div class="klok" id="klok" role="timer" aria-label="Tijd tot de volgende bakdag">
-          <div><b id="kD">0</b><span>dagen</span></div>
-          <div><b id="kU">0</b><span>uur</span></div>
-          <div><b id="kM">0</b><span>min</span></div>
-          <div><b id="kS">0</b><span>sec</span></div>
+          <div><b id="kD">0</b><span data-tekst="bakdag-dagen">dagen</span></div>
+          <div><b id="kU">0</b><span data-tekst="bakdag-uur">uur</span></div>
+          <div><b id="kM">0</b><span data-tekst="bakdag-min">min</span></div>
+          <div><b id="kS">0</b><span data-tekst="bakdag-sec">sec</span></div>
         </div>
       </div>
       <div class="stappen toon">
-        <div class="stap"><div><h4>Kies je koekjes</h4><p><span id="stapAantal">Zes smaken, vrij te combineren.</span> Vier stuks kost € 12.</p></div></div>
-        <div class="stap"><div><h4>Stuur je bestelling</h4><p>Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
-        <div class="stap"><div><h4>Vrijdag vers in de doos</h4><p>Je haalt ze op het moment op dat je zelf hebt gekozen, vers uit de oven.</p></div></div>
+        <div class="stap"><div><h4 data-tekst="bakdag-kies-je-koekjes">Kies je koekjes</h4><p><span id="stapAantal">Zes smaken, vrij te combineren.</span> Vier stuks kost € 12.</p></div></div>
+        <div class="stap"><div><h4 data-tekst="bakdag-stuur-je-bestelling">Stuur je bestelling</h4><p data-tekst="bakdag-een-tik-en-je">Eén tik en je bestelling staat op mijn lijst. Ik bevestig 'm persoonlijk.</p></div></div>
+        <div class="stap"><div><h4 data-tekst="bakdag-vrijdag-vers-in-de">Vrijdag vers in de doos</h4><p data-tekst="bakdag-je-haalt-ze-op">Je haalt ze op het moment op dat je zelf hebt gekozen, vers uit de oven.</p></div></div>
       </div>
     </div>
   </section>
@@ -734,26 +789,26 @@ button{font:inherit;color:inherit}
         <figcaption id="zaraBijschrift">Zara Prins</figcaption>
       </figure>
       <div class="toon">
-        <span class="eyebrow">Over de bakker</span>
-        <h2 class="titel">Hoi, ik ben Zara.</h2>
+        <span class="eyebrow" data-tekst="zara-over-de-bakker">Over de bakker</span>
+        <h2 class="titel" data-tekst="zara-hoi-ik-ben-zara">Hoi, ik ben Zara.</h2>
         <!-- Hier komt het verhaal van Zara. Vervang de regel hieronder door je eigen
              tekst; meerdere alinea's mogen, zet er dan nog een <p class="lead"> bij. -->
-        <p class="lead" style="margin-top:16px">Hier komt binnenkort mijn verhaal: wie ik ben, hoe ik begonnen ben en waarom de oven hier elke vrijdag aangaat.</p>
+        <p class="lead" style="margin-top:16px" data-tekst="zara-hier-komt-binnenkort-mijn">Hier komt binnenkort mijn verhaal: wie ik ben, hoe ik begonnen ben en waarom de oven hier elke vrijdag aangaat.</p>
         <div class="cijfers">
-          <div class="cijfer"><b id="leeftijd">15</b><span>jaar</span></div>
+          <div class="cijfer"><b id="leeftijd">15</b><span data-tekst="zara-jaar">jaar</span></div>
           <div class="cijfer"><b id="smaakTeller">6</b><span id="smaakWoord">smaken</span></div>
-          <div class="cijfer"><b>1×</b><span>bakdag per week</span></div>
+          <div class="cijfer"><b>1×</b><span data-tekst="zara-bakdag-per-week">bakdag per week</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="band band--zand">
+  <section class="band band--zand" id="reacties">
     <div class="wrap">
       <div class="sectiekop toon">
         <div class="tekstkant">
-          <span class="eyebrow">Van de klanten</span>
-          <h2 class="titel">Wat klanten over mij zeggen.</h2>
+          <span class="eyebrow" data-tekst="reacties-van-de-klanten">Van de klanten</span>
+          <h2 class="titel" data-tekst="reacties-wat-klanten-over-mij">Wat klanten over mij zeggen.</h2>
           <p class="lead"><a class="proef" href="#assortiment" id="proefZelf">Proef het zelf &rarr;</a></p>
         </div>
       </div>
@@ -764,35 +819,35 @@ button{font:inherit;color:inherit}
 
       <div class="recensiekaart toon">
         <h3 id="recensieKop">Wat vond jij ervan?</h3>
-        <p class="recensielead">Schrijf hier kort je reactie. Ik lees alles zelf, en als jij het goed
+        <p class="recensielead" data-tekst="reacties-schrijf-hier-kort-je">Schrijf hier kort je reactie. Ik lees alles zelf, en als jij het goed
           vindt zet ik hem daarna op de site.</p>
 
         <form class="recensieform" id="recensieForm" autocomplete="off" novalidate>
           <div class="rvak">
-            <span class="rlabel">Hoeveel sterren geef je?</span>
+            <span class="rlabel" data-tekst="reacties-hoeveel-sterren-geef-je">Hoeveel sterren geef je?</span>
             <div class="sterkiezer" id="sterKiezer" role="radiogroup" aria-label="Aantal sterren"></div>
           </div>
 
           <div class="rvak">
-            <label class="rlabel" for="rTekst">Je reactie</label>
+            <label class="rlabel" for="rTekst" data-tekst="reacties-je-reactie">Je reactie</label>
             <textarea id="rTekst" rows="3" maxlength="400"
               placeholder="Een paar zinnen is genoeg. Wat vond je van de koekjes?"></textarea>
             <span class="rteller" id="rTeller"></span>
           </div>
 
           <div class="rvak">
-            <span class="rlabel">Welke koekjes had je? <i>Mag je overslaan</i></span>
+            <span class="rlabel" data-tekst="reacties-welke-koekjes-had-je">Welke koekjes had je? <i>Mag je overslaan</i></span>
             <div class="smaakkeuze" id="smaakKeuze"></div>
           </div>
 
           <div class="rvak">
-            <label class="rlabel" for="rNaam">Je naam</label>
+            <label class="rlabel" for="rNaam" data-tekst="reacties-je-naam">Je naam</label>
             <input id="rNaam" type="text" maxlength="60" placeholder="Je voornaam is genoeg">
           </div>
 
           <label class="rvink"><input type="checkbox" id="rNaamTonen" checked>
-            <span>Mijn naam mag bij mijn reactie op de website</span></label>
-          <p class="rnoot" id="rNaamNoot" hidden>Zet je dit uit, dan komt er <b>Anoniem</b> bij te staan.</p>
+            <span data-tekst="reacties-mijn-naam-mag-bij">Mijn naam mag bij mijn reactie op de website</span></label>
+          <p class="rnoot" id="rNaamNoot" hidden>Zet je dit uit, dan komt er <b data-tekst="reacties-anoniem">Anoniem</b> bij te staan.</p>
 
           <div class="rval" aria-hidden="true">
             <label for="rWebsite">Laat dit veld leeg</label>
@@ -801,7 +856,7 @@ button{font:inherit;color:inherit}
 
           <p class="rfout" id="rFout" hidden></p>
           <button class="knop knop--vol" id="rKnop" type="submit">Reactie versturen</button>
-          <p class="rnoot">Je reactie komt eerst bij mij binnen. Je naam en je reactie staan pas op de
+          <p class="rnoot" data-tekst="reacties-je-reactie-komt-eerst">Je reactie komt eerst bij mij binnen. Je naam en je reactie staan pas op de
             site als ik hem erop zet, en je kunt me altijd vragen hem weer weg te halen.</p>
         </form>
 
@@ -818,9 +873,9 @@ button{font:inherit;color:inherit}
     <div class="wrap">
       <div class="sectiekop toon">
         <div class="tekstkant">
-          <span class="eyebrow">Waar zijn mijn koekjes?</span>
-          <h2 class="titel">Volg je bestelling.</h2>
-          <p class="lead">Vul je bestelnummer in, dat kreeg je toen je bestelde, en je ziet
+          <span class="eyebrow" data-tekst="volgen-waar-zijn-mijn-koekjes">Waar zijn mijn koekjes?</span>
+          <h2 class="titel" data-tekst="volgen-volg-je-bestelling">Volg je bestelling.</h2>
+          <p class="lead" data-tekst="volgen-vul-je-bestelnummer-in">Vul je bestelnummer in, dat kreeg je toen je bestelde, en je ziet
             precies hoe ver ik ben.</p>
         </div>
       </div>
@@ -830,7 +885,7 @@ button{font:inherit;color:inherit}
                  aria-label="Je bestelnummer">
           <button class="knop" type="submit" id="volgKnop">Zoek mijn bestelling</button>
         </form>
-        <p class="volgnoot">Je bestelnummer bestaat uit vier tekens en staat in de bevestiging die je
+        <p class="volgnoot" data-tekst="volgen-je-bestelnummer-bestaat-uit">Je bestelnummer bestaat uit vier tekens en staat in de bevestiging die je
           van mij kreeg. Bestelde je op dit apparaat, dan heb ik 'm voor je onthouden.</p>
         <p class="volgnoot" id="volgOnthouden" hidden>Je laatste bestelling bij mij was
           <b id="volgOnthoudenCode"></b>. Die staat hierboven al ingevuld.</p>
@@ -856,22 +911,22 @@ button{font:inherit;color:inherit}
     <div class="wrap">
       <div class="sectiekop toon">
         <div class="tekstkant">
-          <span class="eyebrow">Praktisch</span>
-          <h2 class="titel">Even snel de vragen.</h2>
+          <span class="eyebrow" data-tekst="vragen-praktisch">Praktisch</span>
+          <h2 class="titel" data-tekst="vragen-even-snel-de-vragen">Even snel de vragen.</h2>
         </div>
       </div>
       <div class="faq toon">
-        <details open><summary>Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p class="actienoot" id="faqActie" hidden></p><p>Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen: vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
-        <details><summary>Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop. Je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
-        <details><summary>Hoe krijg ik mijn koekjes?</summary><p>Ophalen, bij mij thuis in de Hoeksche Waard. Dat doe je op zaterdagochtend: je kiest bij het bestellen zelf tussen 10:00 en 11:00 of tussen 11:00 en 12:00. Komt dat niet uit? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
-        <details><summary>Hoe en wanneer betaal ik?</summary><p>Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt. Er komt niets bij.</p></details>
-        <details><summary>Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag. Met dat nummer kun je bij <a href="#volgen">Volg je bestelling</a> altijd zien hoe ver ik ben: van bevestigd tot in de oven, ingepakt en opgehaald.</p></details>
-        <details><summary>Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p>Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
-        <details><summary>Hoeveel calorieën bevat 1 koekje?</summary><p>Ik laat mijn koekjes niet in een laboratorium doorrekenen, dus ik kan je geen etiket geven. Voor een koekje van 120 gram deeg met roomboter en chocolade kom je ongeveer op <b>500 tot 560 kcal</b> uit, vergelijkbaar met een flinke plak cake. Het is geen tussendoortje voor elke dag, en dat is ook precies de bedoeling: eentje, maar dan wel een goeie.</p></details>
-        <details><summary>Hoe lang blijven ze goed?</summary><p>Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel. Tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden; laat ze daarna op kamertemperatuur ontdooien.</p></details>
-        <details><summary>Allergenen</summary><p>Alle koekjes bevatten tarwe (gluten), ei, melk en soja. In de Oreo, Lotus Biscoff en Stroopwafel zit geen noot, maar ik bak in een gewone keuken waar ook noten liggen, dus kruisbesmetting kan ik niet uitsluiten. Heb je een allergie? Zet het bij je bestelling in het opmerkingenveld, dan kijk ik even met je mee.</p></details>
-        <details><summary>Kan ik een grotere bestelling doen voor een feest?</summary><p>Zeker, maar niet via de knop: boven de 20 koekjes vraagt de site je om eerst even contact met me op te nemen. Ik bak naast school, dus dan plan ik het liever samen met je in. Stuur de datum en het aantal mee, dan laat ik snel weten of het past.</p></details>
-        <details><summary>Zit er een maximum aan wat je per week bakt?</summary><p>Ja. Ik bak één keer per week in kleine batches, dus op een gegeven moment is de oven vol. Zit je mandje tegen die grens aan, dan zegt de site dat meteen bij het bestellen en kijken we samen naar de week erna.</p></details>
+        <details open><summary data-tekst="vragen-hoe-werkt-quot-4">Hoe werkt &quot;4 voor &euro; 12&quot;?</summary><p class="actienoot" id="faqActie" hidden></p><p data-tekst="vragen-los-kost-een-koekje">Los kost een koekje &euro; 3,25. Zodra er vier in je mandje liggen reken ik er &euro; 12 voor, en dat geldt bij elke volgende vier: acht koekjes is &euro; 24, twaalf is &euro; 36. Je mag de smaken vrij door elkaar kiezen: vier verschillende telt net zo goed als vier dezelfde. De korting gaat vanzelf van je totaal af, je hoeft niets in te vullen.</p></details>
+        <details><summary data-tekst="vragen-wanneer-worden-mijn-koekjes">Wanneer worden mijn koekjes gebakken?</summary><p><span id="faqBakdag">Elke vrijdag. Bestel je v&oacute;&oacute;r donderdag 22:00, dan zit je in de batch van diezelfde week.</span> Kom je later, dan schuif je door naar de week erop. Je bestelling blijft gewoon staan, ik laat het je weten.</p></details>
+        <details><summary data-tekst="vragen-hoe-krijg-ik-mijn">Hoe krijg ik mijn koekjes?</summary><p data-tekst="vragen-ophalen-bij-mij-thuis">Ophalen, bij mij thuis in de Hoeksche Waard. Dat doe je op zaterdagochtend: je kiest bij het bestellen zelf tussen 10:00 en 11:00 of tussen 11:00 en 12:00. Komt dat niet uit? Kies &quot;maakt me niet uit&quot;, dan spreken we samen iets af. Bezorgen doe ik voorlopig even niet.</p></details>
+        <details><summary data-tekst="vragen-hoe-en-wanneer-betaal">Hoe en wanneer betaal ik?</summary><p data-tekst="vragen-bij-het-ophalen-contant">Bij het ophalen, contant of met een tikkie. Je hoeft vooraf dus niets over te maken. Het bedrag dat je in je mandje ziet is wat je betaalt. Er komt niets bij.</p></details>
+        <details><summary data-tekst="vragen-krijg-ik-een-bevestiging">Krijg ik een bevestiging?</summary><p>Ja. Zodra je op versturen klikt staat je bestelling op mijn lijst, met een kort bestelnummer dat je meteen in beeld krijgt. Ik bevestig daarna zelf nog even persoonlijk via het telefoonnummer of e-mailadres dat je hebt ingevuld, meestal dezelfde dag. Met dat nummer kun je bij <a href="#volgen" data-tekst="vragen-volg-je-bestelling">Volg je bestelling</a> altijd zien hoe ver ik ben: van bevestigd tot in de oven, ingepakt en opgehaald.</p></details>
+        <details><summary data-tekst="vragen-kan-ik-mijn-bestelling">Kan ik mijn bestelling nog wijzigen of annuleren?</summary><p data-tekst="vragen-tot-het-sluitmoment-op">Tot het sluitmoment op donderdag kan dat altijd. Stuur me even een berichtje met je bestelnummer, dan pas ik het aan. Daarna ligt het deeg al klaar en wordt het lastig.</p></details>
+        <details><summary data-tekst="vragen-hoeveel-calorieen-bevat-1">Hoeveel calorieën bevat 1 koekje?</summary><p data-tekst="vragen-ik-laat-mijn-koekjes">Ik laat mijn koekjes niet in een laboratorium doorrekenen, dus ik kan je geen etiket geven. Voor een koekje van 120 gram deeg met roomboter en chocolade kom je ongeveer op <b>500 tot 560 kcal</b> uit, vergelijkbaar met een flinke plak cake. Het is geen tussendoortje voor elke dag, en dat is ook precies de bedoeling: eentje, maar dan wel een goeie.</p></details>
+        <details><summary data-tekst="vragen-hoe-lang-blijven-ze">Hoe lang blijven ze goed?</summary><p data-tekst="vragen-op-hun-best-zijn">Op hun best zijn ze de dag zelf. Daarna nog drie dagen prima in een afgesloten trommel. Tien seconden in de magnetron en ze zijn weer als nieuw. Invriezen kan tot drie maanden; laat ze daarna op kamertemperatuur ontdooien.</p></details>
+        <details><summary data-tekst="vragen-allergenen">Allergenen</summary><p data-tekst="vragen-alle-koekjes-bevatten-tarwe">Alle koekjes bevatten tarwe (gluten), ei, melk en soja. In de Oreo, Lotus Biscoff en Stroopwafel zit geen noot, maar ik bak in een gewone keuken waar ook noten liggen, dus kruisbesmetting kan ik niet uitsluiten. Heb je een allergie? Zet het bij je bestelling in het opmerkingenveld, dan kijk ik even met je mee.</p></details>
+        <details><summary data-tekst="vragen-kan-ik-een-grotere">Kan ik een grotere bestelling doen voor een feest?</summary><p data-tekst="vragen-zeker-maar-niet-via">Zeker, maar niet via de knop: boven de 20 koekjes vraagt de site je om eerst even contact met me op te nemen. Ik bak naast school, dus dan plan ik het liever samen met je in. Stuur de datum en het aantal mee, dan laat ik snel weten of het past.</p></details>
+        <details><summary data-tekst="vragen-zit-er-een-maximum">Zit er een maximum aan wat je per week bakt?</summary><p data-tekst="vragen-ja-ik-bak-een">Ja. Ik bak één keer per week in kleine batches, dus op een gegeven moment is de oven vol. Zit je mandje tegen die grens aan, dan zegt de site dat meteen bij het bestellen en kijken we samen naar de week erna.</p></details>
       </div>
     </div>
   </section>
@@ -881,24 +936,24 @@ button{font:inherit;color:inherit}
   <div class="wrap">
     <div class="voet-grid">
       <div>
-        <div class="voet-merk">De Koekenbakker</div>
-        <p class="lead" style="max-width:34ch;margin-top:10px">Verse koekjes die ik met de hand bak. Eén bakdag per week, en dan is het op.</p>
+        <div class="voet-merk" data-tekst="voet-de-koekenbakker">De Koekenbakker</div>
+        <p class="lead" style="max-width:34ch;margin-top:10px" data-tekst="voet-verse-koekjes-die-ik">Verse koekjes die ik met de hand bak. Eén bakdag per week, en dan is het op.</p>
       </div>
       <div>
-        <h4>Bestellen</h4>
+        <h4 data-tekst="voet-bestellen">Bestellen</h4>
         <ul>
-          <li><a href="#assortiment">Het assortiment</a></li>
-          <li><a href="#bakdag">Bakdag en ophalen</a></li>
-          <li><a href="#volgen">Volg je bestelling</a></li>
-          <li><a href="#vragen">Veelgestelde vragen</a></li>
+          <li><a href="#assortiment" data-tekst="voet-het-assortiment">Het assortiment</a></li>
+          <li><a href="#bakdag" data-tekst="voet-bakdag-en-ophalen">Bakdag en ophalen</a></li>
+          <li><a href="#volgen" data-tekst="voet-volg-je-bestelling">Volg je bestelling</a></li>
+          <li><a href="#vragen" data-tekst="voet-veelgestelde-vragen">Veelgestelde vragen</a></li>
         </ul>
       </div>
       <div>
-        <h4>Volgen</h4>
+        <h4 data-tekst="voet-volgen">Volgen</h4>
         <ul>
-          <li><a href="#" data-social="Instagram">Instagram @dekoekenbakker</a></li>
-          <li><a href="#" data-social="TikTok">TikTok @dekoekenbakker</a></li>
-          <li><a href="mailto:zaraprins08@gmail.com">zaraprins08@gmail.com</a></li>
+          <li><a href="#" data-social="Instagram" data-tekst="voet-instagram-dekoekenbakker">Instagram @dekoekenbakker</a></li>
+          <li><a href="#" data-social="TikTok" data-tekst="voet-tiktok-dekoekenbakker">TikTok @dekoekenbakker</a></li>
+          <li><a href="mailto:zaraprins08@gmail.com" data-tekst="voet-zaraprins08-gmail-com">zaraprins08@gmail.com</a></li>
         </ul>
       </div>
     </div>
@@ -958,6 +1013,18 @@ button{font:inherit;color:inherit}
     <p class="mini">Je bestelling komt meteen bij mij binnen. Betalen doe je bij het ophalen.</p>
   </div>
 </aside>
+
+<div class="beheerbalk" id="beheerBalk" hidden>
+  <b>Bewerken</b>
+  <button class="bknop" id="bTeksten" type="button">Teksten</button>
+  <button class="bknop" id="bKleuren" type="button">Kleuren</button>
+  <button class="bknop" id="bSecties" type="button">Secties</button>
+  <button class="bknop" id="bHerstel" type="button">Herstellen</button>
+  <button class="bknop" id="bOrigineel" type="button" disabled>Terug naar origineel</button>
+  <button class="bknop los" id="bKlaar" type="button">Klaar</button>
+</div>
+
+<div class="beheerluik" id="beheerLuik" hidden></div>
 
 <script src="firebase-config.js"></script>
 <script>
@@ -1098,6 +1165,13 @@ async function verbind(){
       });
       ververs();
     }, function(){ /* zonder tellers is geen enkel moment vol */ });
+
+    // De teksten, kleuren en secties zoals ze in de portal zijn gezet.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "inhoud", "site"), function(snap){
+      inhoudBinnen(snap.exists() ? snap.data() : null);
+    }, function(){ /* zonder verbinding staat gewoon de tekst uit dit bestand er */ });
+
+    if (location.hash === "#beheer") beheerWachten();
 
     recensiesLaden();
     bezoekTellen();
@@ -2312,8 +2386,429 @@ function kruimel(x, y){
   setTimeout(() => c.remove(), 720);
 }
 
+
+/* =====================================================================
+   Bewerkmodus
+
+   De hele site is aan te passen zonder in de code te duiken. Elke vaste
+   tekst heeft een nummertje (data-tekst). Past Zara er een aan, dan komt
+   die versie in Firestore te staan en wint hij van de tekst die hier in
+   het bestand staat. Hetzelfde geldt voor de kleuren en voor welke
+   secties zichtbaar zijn.
+
+   Een bezoeker ziet hier niets van. Opslaan kan alleen als je bent
+   ingelogd, en de beveiligingsregels bewaken dat nog een keer: wie niet
+   de bakker is, mag niet schrijven. Wat je typt gaat door een filter dat
+   alleen vet, cursief en een regelafbreking doorlaat.
+   ===================================================================== */
+const OPMAAK = ["b", "i", "em", "strong", "br"];
+const KLEUREN = [
+  {naam: "--room",         wat: "Achtergrond"},
+  {naam: "--zand",         wat: "Panelen"},
+  {naam: "--papier",       wat: "Kaarten"},
+  {naam: "--diep",         wat: "Donkere banen"},
+  {naam: "--lijn",         wat: "Randen"},
+  {naam: "--karamel",      wat: "Knoppen"},
+  {naam: "--karamel-diep", wat: "Knoppen, donker"},
+  {naam: "--inkt",         wat: "Tekst"},
+  {naam: "--zacht",        wat: "Gedempte tekst"}
+];
+const SECTIES = [
+  {id: "welkom",      wat: "Welkom bovenaan", vast: true},
+  {id: "assortiment", wat: "Het assortiment", vast: true},
+  {id: "combideal",   wat: "Combideal"},
+  {id: "bakdag",      wat: "Bakdag en de drie stappen"},
+  {id: "zara",        wat: "Over Zara"},
+  {id: "reacties",    wat: "Reacties van klanten"},
+  {id: "volgen",      wat: "Volg je bestelling"},
+  {id: "vragen",      wat: "Veelgestelde vragen"}
+];
+
+let inhoud = {teksten: {}, kleuren: {}, verborgen: []};
+const ORIGINEEL = {};        // de teksten zoals ze in dit bestand staan
+let beheerder = null;        // wie er is ingelogd
+let fa = null;               // de inlogmodule, pas geladen als het nodig is
+let tekstmodus = false;
+let luik = "";               // welk paneel openstaat
+let inZicht = null;          // de tekst waar de cursor nu in staat
+
+/* ---------- veilig houden ---------- */
+// Alles wat iemand typt gaat hier doorheen voordat het op de pagina komt.
+// Alleen vet, cursief en een regelafbreking blijven staan, zonder attributen.
+function veiligeOpmaak(ruw){
+  // Ontleden doen we met DOMParser en niet met innerHTML: dat levert een
+  // document op waarin niets draait en niets wordt opgehaald. Zet je
+  // vreemde opmaak via innerHTML in de pagina, dan vuurt bijvoorbeeld de
+  // onerror van een plaatje al af voordat je hem hebt weggehaald.
+  const bron = new DOMParser().parseFromString(
+    "<body>" + String(ruw == null ? "" : ruw), "text/html");
+  const uit = document.createElement("div");
+  (function kopieer(van, naar){
+    Array.from(van.childNodes).forEach(function(knoop){
+      if (knoop.nodeType === 3){
+        naar.appendChild(document.createTextNode(knoop.nodeValue));
+        return;
+      }
+      if (knoop.nodeType !== 1) return;
+      const naam = knoop.tagName.toLowerCase();
+      if (naam === "script" || naam === "style") return;   // inhoud en al weg
+      if (OPMAAK.indexOf(naam) >= 0){
+        const schoon = document.createElement(naam);       // zonder attributen
+        naar.appendChild(schoon);
+        kopieer(knoop, schoon);
+      } else {
+        kopieer(knoop, naar);                              // tag weg, tekst blijft
+      }
+    });
+  })(bron.body, uit);
+  return uit.innerHTML.slice(0, 1500);
+}
+
+/* ---------- de inhoud op de pagina zetten ---------- */
+function origineelOnthouden(){
+  $$("[data-tekst]").forEach(function(el){
+    if (!(el.dataset.tekst in ORIGINEEL)) ORIGINEEL[el.dataset.tekst] = el.innerHTML;
+  });
+}
+
+function inhoudToepassen(){
+  // teksten
+  $$("[data-tekst]").forEach(function(el){
+    const nr = el.dataset.tekst;
+    const eigen = inhoud.teksten && inhoud.teksten[nr];
+    const nieuw = (eigen === undefined || eigen === null) ? ORIGINEEL[nr] : veiligeOpmaak(eigen);
+    if (el.innerHTML !== nieuw) el.innerHTML = nieuw;
+    el.classList.toggle("gewijzigd", eigen !== undefined && eigen !== null);
+  });
+  // kleuren
+  const wortel = document.documentElement;
+  KLEUREN.forEach(function(k){
+    const eigen = inhoud.kleuren && inhoud.kleuren[k.naam];
+    if (eigen) wortel.style.setProperty(k.naam, eigen);
+    else wortel.style.removeProperty(k.naam);
+  });
+  // secties aan of uit, met de menulinks erbij
+  const uit = inhoud.verborgen || [];
+  SECTIES.forEach(function(sec){
+    const el = $("#" + sec.id);
+    if (!el) return;
+    const weg = !sec.vast && uit.indexOf(sec.id) >= 0;
+    el.hidden = weg;
+    $$('a[href="#' + sec.id + '"]').forEach(function(a){
+      const rij = a.closest("li") || a;
+      rij.hidden = weg;
+    });
+  });
+}
+
+// De laatst bekende versie staat lokaal, zodat een bezoeker niet eerst de
+// oude tekst ziet en daarna de nieuwe.
+function inhoudUitKast(){
+  const bewaard = lees("kb-inhoud", null);
+  if (bewaard && typeof bewaard === "object"){
+    inhoud.teksten = bewaard.teksten || {};
+    inhoud.kleuren = bewaard.kleuren || {};
+    inhoud.verborgen = bewaard.verborgen || [];
+  }
+}
+
+function inhoudBinnen(data){
+  inhoud = {
+    teksten: (data && data.teksten) || {},
+    kleuren: (data && data.kleuren) || {},
+    verborgen: (data && data.verborgen) || []
+  };
+  bewaar("kb-inhoud", inhoud);
+  inhoudToepassen();
+  if (luik) luikTekenen();
+}
+
+/* ---------- inloggen ---------- */
+function beheerPoort(){
+  if ($("#beheerPoort")) return;
+  const poort = document.createElement("div");
+  poort.className = "beheerpoort";
+  poort.id = "beheerPoort";
+  poort.innerHTML = '<form class="beheerkaart" id="beheerForm">'
+    + '<h3>Even inloggen</h3>'
+    + '<p>Met hetzelfde account als de bestellingen portal.</p>'
+    + '<label for="bMail">E-mail</label><input id="bMail" type="email" autocomplete="username" required>'
+    + '<label for="bWw">Wachtwoord</label><input id="bWw" type="password" autocomplete="current-password" required>'
+    + '<p class="beheerfout" id="bFout" hidden></p>'
+    + '<button class="knop knop--vol" type="submit" id="bInlog" style="margin-top:18px;width:100%">Inloggen</button>'
+    + '<button class="knop knop--stil knop--vol" type="button" id="bWeg" style="margin-top:8px;width:100%">Laat maar</button>'
+    + '</form>';
+  document.body.appendChild(poort);
+  $("#bMail").focus();
+}
+
+async function beheerInloggen(){
+  const knop = $("#bInlog");
+  $("#bFout").hidden = true;
+  if (!db){
+    $("#bFout").textContent = "Geen verbinding met de database.";
+    $("#bFout").hidden = false;
+    return;
+  }
+  knop.disabled = true;
+  knop.textContent = "Bezig\u2026";
+  try {
+    if (!fa) fa = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    await fa.signInWithEmailAndPassword(fa.getAuth(), $("#bMail").value.trim(), $("#bWw").value);
+  } catch (fout){
+    $("#bFout").textContent = "Dat lukte niet. Klopt het e-mailadres en het wachtwoord?";
+    $("#bFout").hidden = false;
+  }
+  knop.disabled = false;
+  knop.textContent = "Inloggen";
+}
+
+async function beheerWachten(){
+  if (!db || fa) return;
+  fa = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+  fa.onAuthStateChanged(fa.getAuth(), function(gebruiker){
+    beheerder = gebruiker || null;
+    const poort = $("#beheerPoort");
+    if (beheerder && poort) poort.remove();
+    $("#beheerBalk").hidden = !beheerder;
+    document.body.classList.toggle("beheert", !!beheerder);
+    if (!beheerder){ tekstmodusZetten(false); luikSluiten(); }
+  });
+}
+
+/* ---------- opslaan ---------- */
+let bezigMetOpslaan = false;
+
+async function inhoudOpslaan(){
+  if (!beheerder || !db || bezigMetOpslaan) return false;
+  bezigMetOpslaan = true;
+  try {
+    await versieWegschrijven();
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "inhoud", "site"), {
+      teksten: inhoud.teksten,
+      kleuren: inhoud.kleuren,
+      verborgen: inhoud.verborgen,
+      bijgewerkt: fx.serverTimestamp()
+    });
+    return true;
+  } catch (fout){
+    melding("Opslaan lukte niet: " + (fout.code || fout.message));
+    return false;
+  } finally {
+    bezigMetOpslaan = false;
+  }
+}
+
+// Voor elke wijziging leggen we de vorige versie opzij. Tien is genoeg.
+async function versieWegschrijven(){
+  try {
+    await fx.addDoc(fx.collection(db, "koekenbakker", RUIMTE, "inhoudversies"), {
+      op: fx.serverTimestamp(),
+      teksten: inhoud.teksten,
+      kleuren: inhoud.kleuren,
+      verborgen: inhoud.verborgen
+    });
+    const alles = await fx.getDocs(fx.collection(db, "koekenbakker", RUIMTE, "inhoudversies"));
+    const rij = alles.docs.slice().sort(function(a, b){
+      return ((b.data().op && b.data().op.seconds) || 0) - ((a.data().op && a.data().op.seconds) || 0);
+    });
+    for (const oud of rij.slice(10)) await fx.deleteDoc(oud.ref);
+  } catch (nietErg){
+    console.warn("De oude versie bewaren lukte niet.", nietErg);
+  }
+}
+
+/* ---------- de panelen ---------- */
+function luikSluiten(){
+  luik = "";
+  $("#beheerLuik").hidden = true;
+  ["#bKleuren", "#bSecties", "#bHerstel"].forEach(k => $(k).classList.remove("aan"));
+}
+
+function luikWisselen(welk){
+  if (luik === welk){ luikSluiten(); return; }
+  luik = welk;
+  $("#beheerLuik").hidden = false;
+  ["kleuren", "secties", "herstel"].forEach(function(naam){
+    const knop = $("#b" + naam.charAt(0).toUpperCase() + naam.slice(1));
+    if (knop) knop.classList.toggle("aan", naam === welk);
+  });
+  luikTekenen();
+}
+
+function luikTekenen(){
+  if (luik === "kleuren") kleurenTekenen();
+  else if (luik === "secties") sectiesTekenen();
+  else if (luik === "herstel") versiesTekenen();
+}
+
+/* ---------- kleuren ---------- */
+const nuKleur = naam => getComputedStyle(document.documentElement)
+  .getPropertyValue(naam).trim() || "#000000";
+
+function kleurenTekenen(){
+  $("#beheerLuik").innerHTML = '<h4>Kleuren</h4>'
+    + '<p class="uitleg">Je ziet het meteen op de pagina. Opslaan maakt het pas blijvend.</p>'
+    + KLEUREN.map(k => '<div class="kleurrij">'
+        + '<input type="color" data-kleur="' + k.naam + '" value="' + kleurHex(nuKleur(k.naam)) + '">'
+        + '<span>' + k.wat + '</span></div>').join("")
+    + '<div id="kleurWaarschuwing"></div>'
+    + '<div style="display:flex;gap:8px;margin-top:16px">'
+    +   '<button class="knop knop--vol" id="kleurBewaar" type="button" style="flex:1">Opslaan</button>'
+    +   '<button class="knop knop--stil knop--vol" id="kleurTerug" type="button">Standaard</button>'
+    + '</div>';
+  contrastNakijken();
+}
+
+// Een kleurkiezer wil altijd #rrggbb, ook als er rgb() uit de stijl komt.
+function kleurHex(waarde){
+  if (/^#[0-9a-f]{6}$/i.test(waarde)) return waarde;
+  const m = waarde.match(/\d+/g);
+  if (!m || m.length < 3) return "#000000";
+  return "#" + m.slice(0, 3).map(n => ("0" + Number(n).toString(16)).slice(-2)).join("");
+}
+
+// Hoe goed steekt de ene kleur af tegen de andere (WCAG).
+function helderheid(hex){
+  const d = kleurHex(hex).slice(1).match(/../g).map(function(p){
+    const v = parseInt(p, 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2];
+}
+
+function contrast(a, b){
+  const l1 = helderheid(a), l2 = helderheid(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+function contrastNakijken(){
+  const paren = [
+    ["--inkt", "--room", "tekst op de achtergrond"],
+    ["--inkt", "--zand", "tekst op een paneel"],
+    ["--inkt", "--papier", "tekst op een kaart"],
+    ["--zacht", "--room", "gedempte tekst"],
+    ["--papier", "--karamel", "tekst op een knop"]
+  ];
+  const slecht = paren
+    .filter(p => contrast(nuKleur(p[0]), nuKleur(p[1])) < 4.5)
+    .map(p => p[2]);
+  const vak = $("#kleurWaarschuwing");
+  if (!vak) return;
+  vak.innerHTML = slecht.length
+    ? '<p class="waarschuw-contrast">Let op: ' + slecht.join(", ")
+      + ' is straks lastig te lezen. Kies een donkerdere of juist lichtere kleur.</p>'
+    : "";
+}
+
+/* ---------- secties ---------- */
+function sectiesTekenen(){
+  const uit = inhoud.verborgen || [];
+  $("#beheerLuik").innerHTML = '<h4>Secties</h4>'
+    + '<p class="uitleg">Het vinkje uit betekent dat de sectie van de website verdwijnt, '
+    + 'samen met de link ernaartoe in het menu. Je kunt hem altijd weer aanzetten.</p>'
+    + SECTIES.map(sec => '<label class="sectierij' + (sec.vast ? " vast" : "") + '">'
+        + '<input type="checkbox" data-sectie="' + sec.id + '"'
+        + (sec.vast || uit.indexOf(sec.id) < 0 ? " checked" : "")
+        + (sec.vast ? " disabled" : "") + '>'
+        + '<span>' + sec.wat + (sec.vast ? " (staat vast)" : "") + '</span></label>').join("");
+}
+
+/* ---------- herstellen ---------- */
+async function versiesTekenen(){
+  $("#beheerLuik").innerHTML = '<h4>Herstellen</h4>'
+    + '<p class="uitleg">Bezig met ophalen\u2026</p>';
+  let rij = [];
+  try {
+    const snap = await fx.getDocs(fx.collection(db, "koekenbakker", RUIMTE, "inhoudversies"));
+    rij = snap.docs.map(d => ({id: d.id, d: d.data()}))
+      .sort((a, b) => ((b.d.op && b.d.op.seconds) || 0) - ((a.d.op && a.d.op.seconds) || 0));
+  } catch (fout){
+    $("#beheerLuik").innerHTML = '<h4>Herstellen</h4><p class="uitleg">Ophalen lukte niet: '
+      + veiligeOpmaak(fout.code || fout.message) + '</p>';
+    return;
+  }
+  if (luik !== "herstel") return;
+  $("#beheerLuik").innerHTML = '<h4>Herstellen</h4>'
+    + '<p class="uitleg">Elke keer dat je iets opslaat bewaar ik de vorige versie. '
+    + 'De laatste tien staan hier.</p>'
+    + (rij.length
+        ? rij.map(v => '<div class="versierij"><span>' + wanneerTekst(v.d.op) + '</span>'
+            + '<button class="knop knop--stil knop--klein" data-versie="' + v.id + '" type="button">Terugzetten</button></div>').join("")
+        : '<p class="uitleg">Nog niets bewaard.</p>')
+    + '<button class="knop knop--stil knop--vol" id="allesTerug" type="button" style="margin-top:16px;width:100%">Alles terug naar origineel</button>';
+}
+
+function wanneerTekst(op){
+  if (!op || !op.seconds) return "zojuist";
+  return new Date(op.seconds * 1000).toLocaleDateString("nl-NL",
+    {day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"});
+}
+
+async function versieTerug(id){
+  try {
+    const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "inhoudversies", id));
+    if (!snap.exists()){ melding("Die versie is er niet meer."); return; }
+    const v = snap.data();
+    inhoud = {teksten: v.teksten || {}, kleuren: v.kleuren || {}, verborgen: v.verborgen || []};
+    inhoudToepassen();
+    if (await inhoudOpslaan()) melding("Teruggezet.");
+  } catch (fout){
+    melding("Terugzetten lukte niet: " + (fout.code || fout.message));
+  }
+}
+
+/* ---------- teksten aanpassen ---------- */
+function tekstmodusZetten(aan){
+  tekstmodus = !!aan && !!beheerder;
+  document.body.classList.toggle("tekstmodus", tekstmodus);
+  $("#bTeksten").classList.toggle("aan", tekstmodus);
+  $$("[data-tekst]").forEach(function(el){
+    if (tekstmodus){
+      el.setAttribute("contenteditable", "true");
+      el.setAttribute("spellcheck", "true");
+    } else {
+      el.removeAttribute("contenteditable");
+      el.removeAttribute("spellcheck");
+    }
+  });
+  if (!tekstmodus){ inZicht = null; $("#bOrigineel").disabled = true; }
+}
+
+async function tekstBewaren(el){
+  const nr = el.dataset.tekst;
+  const nieuw = veiligeOpmaak(el.innerHTML).trim();
+  const oud = inhoud.teksten[nr];
+  const zelfde = (oud === undefined ? ORIGINEEL[nr].trim() : oud) === nieuw;
+  if (zelfde) return;
+  if (!nieuw){
+    melding("Een lege tekst sla ik niet op.");
+    el.innerHTML = oud === undefined ? ORIGINEEL[nr] : veiligeOpmaak(oud);
+    return;
+  }
+  if (nieuw === ORIGINEEL[nr].trim()) delete inhoud.teksten[nr];
+  else inhoud.teksten[nr] = nieuw;
+  el.classList.toggle("gewijzigd", nr in inhoud.teksten);
+  if (await inhoudOpslaan()) melding("Opgeslagen.");
+}
+
+async function tekstTerugdraaien(){
+  if (!inZicht) return;
+  const nr = inZicht.dataset.tekst;
+  delete inhoud.teksten[nr];
+  inZicht.innerHTML = ORIGINEEL[nr];
+  inZicht.classList.remove("gewijzigd");
+  if (await inhoudOpslaan()) melding("Terug naar de originele tekst.");
+}
+
 /* ---------- opstarten ---------- */
 function start(){
+  // Eerst onthouden wat er in dit bestand staat, daarna pas de eigen
+  // teksten eroverheen. Anders is het origineel niet meer terug te halen.
+  origineelOnthouden();
+  inhoudUitKast();
+  inhoudToepassen();
+
   // Vaste koekjes tekenen. Welke dat zijn staat op naam, niet op plek in de
   // lijst, zodat een nieuwe smaak de versiering niet door elkaar gooit.
   $("#laadKoek").innerHTML = koekSVG(vind("chocchip"));
@@ -2562,6 +3057,114 @@ function weg(){
   }, wacht);
 }
 setTimeout(weg, 3000);                      // het scherm gaat altijd weg, ook als er iets misgaat
+
+/* ---------- bediening van de bewerkmodus ---------- */
+document.addEventListener("click", function(e){
+  if (e.target.closest("#bWeg")){ $("#beheerPoort").remove(); return; }
+  if (e.target.closest("#bTeksten")){ tekstmodusZetten(!tekstmodus); return; }
+  if (e.target.closest("#bKleuren")){ luikWisselen("kleuren"); return; }
+  if (e.target.closest("#bSecties")){ luikWisselen("secties"); return; }
+  if (e.target.closest("#bHerstel")){ luikWisselen("herstel"); return; }
+  if (e.target.closest("#bOrigineel")){ tekstTerugdraaien(); return; }
+  if (e.target.closest("#bKlaar")){
+    tekstmodusZetten(false);
+    luikSluiten();
+    if (fa) fa.signOut(fa.getAuth());
+    if (location.hash === "#beheer") location.hash = "";
+    return;
+  }
+  if (e.target.closest("#kleurBewaar")){
+    KLEUREN.forEach(function(k){
+      const kiezer = $('[data-kleur="' + k.naam + '"]');
+      if (kiezer) inhoud.kleuren[k.naam] = kiezer.value;
+    });
+    inhoudOpslaan().then(g => g && melding("Kleuren opgeslagen."));
+    return;
+  }
+  if (e.target.closest("#kleurTerug")){
+    inhoud.kleuren = {};
+    inhoudToepassen();
+    kleurenTekenen();
+    inhoudOpslaan().then(g => g && melding("Kleuren staan weer op standaard."));
+    return;
+  }
+  const versie = e.target.closest("[data-versie]");
+  if (versie){ versieTerug(versie.dataset.versie); return; }
+  if (e.target.closest("#allesTerug")){
+    inhoud = {teksten: {}, kleuren: {}, verborgen: []};
+    inhoudToepassen();
+    inhoudOpslaan().then(g => g && melding("De hele site staat weer op origineel."));
+    return;
+  }
+}, true);
+
+document.addEventListener("submit", function(e){
+  if (e.target.id === "beheerForm"){ e.preventDefault(); beheerInloggen(); }
+});
+
+document.addEventListener("change", function(e){
+  const sectie = e.target.closest("[data-sectie]");
+  if (sectie){
+    const id = sectie.dataset.sectie;
+    const uit = (inhoud.verborgen || []).filter(x => x !== id);
+    if (!sectie.checked) uit.push(id);
+    inhoud.verborgen = uit;
+    inhoudToepassen();
+    inhoudOpslaan().then(g => g && melding(sectie.checked ? "Sectie staat weer op de site." : "Sectie verborgen."));
+  }
+});
+
+// De kleurkiezers laten meteen zien wat je doet, nog voor het opslaan.
+document.addEventListener("input", function(e){
+  const kiezer = e.target.closest("[data-kleur]");
+  if (kiezer){
+    document.documentElement.style.setProperty(kiezer.dataset.kleur, kiezer.value);
+    contrastNakijken();
+  }
+});
+
+// Alles wat je in een tekst plakt komt er als kale tekst in, zodat er geen
+// opmaak uit een ander programma meelift.
+document.addEventListener("paste", function(e){
+  const vak = e.target.closest("[data-tekst]");
+  if (!vak || !tekstmodus) return;
+  e.preventDefault();
+  const kaal = (e.clipboardData || window.clipboardData).getData("text/plain");
+  document.execCommand("insertText", false, kaal.replace(/\s+/g, " ").slice(0, 1500));
+});
+
+document.addEventListener("focusin", function(e){
+  const vak = e.target.closest("[data-tekst]");
+  if (!tekstmodus) return;
+  inZicht = vak || null;
+  $("#bOrigineel").disabled = !vak;
+});
+
+document.addEventListener("focusout", function(e){
+  const vak = e.target.closest("[data-tekst]");
+  if (vak && tekstmodus) tekstBewaren(vak);
+});
+
+document.addEventListener("keydown", function(e){
+  const vak = e.target.closest("[data-tekst]");
+  if (!vak || !tekstmodus) return;
+  if (e.key === "Escape"){
+    const nr = vak.dataset.tekst;
+    const eigen = inhoud.teksten[nr];
+    vak.innerHTML = eigen === undefined ? ORIGINEEL[nr] : veiligeOpmaak(eigen);
+    vak.blur();
+  } else if (e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    vak.blur();
+  }
+});
+
+// De ingang naar de bewerkmodus: dekoekenbakkerzara.nl/#beheer
+window.addEventListener("hashchange", function(){
+  if (location.hash === "#beheer"){ beheerWachten(); if (!beheerder) beheerPoort(); }
+});
+if (location.hash === "#beheer") setTimeout(function(){ if (!beheerder) beheerPoort(); }, 600);
+
 try { start(); } catch (fout) { console.error(fout); }
 if (document.readyState === "complete") weg(); else window.addEventListener("load", weg);
 })();

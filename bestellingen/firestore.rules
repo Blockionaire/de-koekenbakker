@@ -31,6 +31,9 @@
        niemand ze lezen behalve jij.
      - Bij de afhaalmomenten staat per moment hoeveel klanten er al op
        staan. Een bestelling mag dat getal een omhoog doen, verder niets.
+     - De teksten en kleuren van de website mag iedereen lezen, want de
+       site bouwt zich daarmee op. Aanpassen kan alleen jij, en dat gaat
+       via de bewerkmodus op de site zelf.
      - In de winkel staat welke koekjes te koop zijn. Dat mag iedereen
        lezen (de website heeft het nodig), maar alleen jij kunt een
        koekje aan of uit zetten.
@@ -275,6 +278,25 @@ service cloud.firestore {
       allow read: if isBakker() || resource.data.goedgekeurd == true;
       allow create: if nieuweReactie() || isBakker();
       allow update, delete: if isBakker();
+    }
+
+    /* ---------------------------------------------------------------
+       De inhoud van de website
+
+       Hier staan de teksten, de kleuren en welke secties zichtbaar zijn,
+       zoals Zara ze in de bewerkmodus heeft gezet. Iedereen mag het
+       lezen, want de website heeft het nodig om de pagina op te bouwen.
+       Schrijven mag alleen jij: dat is wat de bewerkmodus afschermt.
+       --------------------------------------------------------------- */
+    match /koekenbakker/{ruimte}/inhoud/{wat} {
+      allow read: if true;
+      allow write: if isBakker();
+    }
+
+    /* De vorige versies, voor als er iets misgaat. Die hoeft een
+       bezoeker niet te kunnen lezen. */
+    match /koekenbakker/{ruimte}/inhoudversies/{versie} {
+      allow read, write: if isBakker();
     }
 
     /* ---------------------------------------------------------------
