@@ -79,8 +79,8 @@ a{color:inherit}
 .uitlog{font-family:var(--kop);font-weight:700;font-size:.8rem;color:var(--zacht);
   border-bottom:2px solid transparent}
 .uitlog:hover{color:var(--inkt);border-color:var(--karamel)}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;max-width:1060px;margin:0 auto;
-  padding:0 clamp(16px,4vw,28px) 14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;
+  width:min(100% - 28px,780px);margin-inline:auto;padding:18px 0 4px}
 .tab{font-family:var(--kop);font-weight:700;font-size:.88rem;padding:8px 14px;border:2px solid var(--inkt);
   border-radius:999px;background:var(--papier);display:flex;align-items:center;gap:7px}
 .tab.aan{background:var(--inkt);color:var(--room)}
@@ -314,7 +314,8 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 
   /* de bestemmingen naar onderen */
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;
-    grid-template-columns:repeat(5,1fr);gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    grid-template-columns:repeat(5,1fr);gap:0;width:auto;margin:0;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     background:var(--papier);border-top:2px solid var(--inkt);box-shadow:0 -3px 0 rgba(46,34,23,.08)}
   .tab{flex-direction:column;gap:3px;border:0;border-radius:12px;background:none;
     padding:7px 2px;font-size:.66rem;letter-spacing:.01em;min-height:52px;justify-content:center;
