@@ -575,12 +575,9 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </select>
         </div>
         <button class="knop knop--vol" id="sOpslaan" type="button" style="margin-top:16px">Opslaan</button>
-        <p class="uitleg" style="margin-top:12px">Het aantal bestelde koekjes telt de webshop zelf bij. Klopt het niet meer — bijvoorbeeld na een bestelling die je buiten de site om aannam — dan pas je het hieronder aan.</p>
-        <div class="veld" style="margin-top:12px">
-        <label for="sBesteld">Al besteld deze week</label>
-        <input id="sBesteld" type="number" min="0" max="5000" step="1">
-        </div>
-        <button class="knop knop--stil knop--vol" id="sTellerOpslaan" type="button" style="margin-top:10px">Teller bijwerken</button>
+        <p class="uitleg" style="margin-top:12px">Hoeveel koekjes er al besteld zijn telt de portal zelf op uit de
+          bestellingen hiernaast, geannuleerde niet meegerekend. Voer je een bestelling hier in, dan telt
+          die dus gewoon mee. Klopt het aantal niet, dan klopt er iets aan een bestelling zelf.</p>
         </div>
       </section>
 
@@ -1185,6 +1182,7 @@ function losmaken(){
 
 function luister(){
   losmaken();
+  bestellingenGeladen = false;
   $("#weekTitel").textContent = weekLabel(huidigeWeek);
   slotTellersVolgen();
 
@@ -1192,6 +1190,7 @@ function luister(){
     weekDoc = snap.exists() ? snap.data() : null;
     tekenOverzicht();
     vulInstellingen();
+    tellerGelijkzetten();
   });
 
   let eersteLading = true;
@@ -1211,17 +1210,47 @@ function luister(){
       tekenOverzicht();
       tekenLijst();
       takenTekenen();
+      bestellingenGeladen = true;
+      tellerGelijkzetten();
     },
     function(fout){ melden("Lezen lukt niet: " + fout.code); }
   );
 }
 
+/* De website mag de bestellingen niet lezen, dus die heeft het getal wel
+   nodig. Hier zetten we het recht zodra het afwijkt van wat er werkelijk
+   besteld is. Dit draait alleen vanuit de bestellingenluisteraar, want pas
+   daar weten we zeker dat we alles van deze week binnen hebben. */
+let tellerBezig = false;
+let bestellingenGeladen = false;
+
+async function tellerGelijkzetten(){
+  if (!db || !weekDoc || !bestellingenGeladen || tellerBezig) return;
+  const echt = bestedeKoekjes();
+  if (weekDoc.besteld === echt) return;
+  tellerBezig = true;
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "weken", huidigeWeek),
+                    {besteld: echt}, {merge: true});
+  } catch (fout){
+    console.warn("De weekteller gelijkzetten lukte niet.", fout);
+  } finally {
+    tellerBezig = false;
+  }
+}
+
 /* ---------- overzicht ---------- */
 const lopend = () => bestellingen.filter(b => b.status !== "geannuleerd");
 
+/* Hoeveel koekjes er deze week besteld zijn. Dat tellen we uit de
+   bestellingen zelf en niet uit een los getalletje, want dat laatste kon
+   gaan afwijken: een bestelling die je hier invoerde of annuleerde liep
+   niet altijd mee. Geannuleerde bestellingen bezetten geen oven. */
+const bestedeKoekjes = () => lopend().reduce((n, b) => n + (b.koekjes || 0), 0);
+
 function tekenOverzicht(){
   const limiet = weekDoc && typeof weekDoc.limiet === "number" ? weekDoc.limiet : (INST.weekLimiet || 100);
-  const besteld = weekDoc && typeof weekDoc.besteld === "number" ? weekDoc.besteld : 0;
+  const besteld = bestedeKoekjes();
   const deel = limiet > 0 ? Math.min(100, (besteld / limiet) * 100) : 0;
 
   $("#limietTekst").textContent = besteld + " / " + limiet + " koekjes";
@@ -1235,7 +1264,7 @@ function tekenOverzicht(){
   $("#telNieuw").textContent = lopend().length;
   $("#telNieuw").classList.toggle("nieuw", nieuw > 0);
   titelBijwerken(nieuw);
-  $("#cKoekjes").textContent = lopend().reduce((n, b) => n + (b.koekjes || 0), 0);
+  $("#cKoekjes").textContent = besteld;
   $("#cOmzet").textContent = euro(lopend().reduce((n, b) => n + (b.bedrag || 0), 0));
   $("#cVrij").textContent = Math.max(0, limiet - besteld);
 
@@ -2754,7 +2783,6 @@ function weekVerderop(code, stappen){
 
 function vulInstellingen(){
   $("#sLimiet").value = weekDoc && typeof weekDoc.limiet === "number" ? weekDoc.limiet : (INST.weekLimiet || 100);
-  $("#sBesteld").value = weekDoc && typeof weekDoc.besteld === "number" ? weekDoc.besteld : 0;
   $("#sOpen").value = (weekDoc && weekDoc.open === false) ? "nee" : "ja";
   Object.keys(STANDAARD).forEach(function(naam){
     const veld = {bakdag: "#sBakdag", bakuur: "#sBakuur", sluitdag: "#sSluitdag", sluituur: "#sSluituur"}[naam];
@@ -2907,10 +2935,6 @@ document.addEventListener("click", function(e){
   const slotNul = e.target.closest("[data-slotnul]");
   if (slotNul){ e.preventDefault(); slotTellerNul(Number(slotNul.dataset.slotnul)); return; }
   if (e.target.closest("#sStandenKnop")){ standenGelijkzetten(); return; }
-  if (e.target.closest("#sTellerOpslaan")){
-    weekOpslaan({besteld: Math.max(0, parseInt($("#sBesteld").value, 10) || 0)});
-    return;
-  }
   if (e.target.closest("#uitlogKnop")){ fa.signOut(auth); return; }
 
   if (e.target.closest("#nieuweBestelling")){ openFormulier(null); return; }
