@@ -2,7 +2,7 @@
 """
 Het weekbericht van De Koekenbakker.
 
-Draait donderdagavond om 20:00 Nederlandse tijd, leest alle bestellingen van de
+Draait van donderdagavond tot vrijdagochtend, leest alle bestellingen van de
 komende bakdag uit Firestore en stuurt daar één overzicht van per mail: eerst het
 bakbriefje (wat moet er de oven in), daarna elke bestelling apart.
 
@@ -301,18 +301,34 @@ def verstuur(onderwerp, html, plat):
     raise SystemExit("Versturen lukte via geen van beide poorten.\n  " + "\n  ".join(fouten))
 
 
+def in_het_venster(nu):
+    """Mag het bericht nu de deur uit?
+
+    GitHub plant taken op een gedeelde wachtrij en start ze soms uren te laat.
+    In november kwamen ze pas rond middernacht aan, en dan was het in Nederland
+    al vrijdag: het bericht ging toen helemaal niet meer weg. Daarom loopt het
+    venster door tot vrijdagmiddag, ruim voorbij elke vertraging. Dubbel kan
+    niet, want een verstuurd bericht laat een merkteken achter.
+    """
+    if nu.weekday() == 3 and nu.hour >= 18:   # donderdagavond
+        return True
+    if nu.weekday() == 4 and nu.hour < 12:    # vrijdagochtend, voor het ophalen
+        return True
+    return False
+
+
 def main():
     nu = datetime.datetime.now(HIER)
     met_de_hand = os.environ.get("FORCEER", "").lower() in ("ja", "true", "1")
     week, vrijdag = weekcode(nu.date())
     kop = verbinding()
 
-    # GitHub start een geplande taak soms een half uur tot een uur te laat. Daarom
-    # draait deze taak meerdere keren op donderdagavond en kijkt hij hier zelf of
-    # het bericht van deze week al weg is. Zo komt hij altijd, en nooit dubbel.
+    # De taak draait meerdere keren, van donderdagavond tot vrijdagochtend, en
+    # kijkt hier zelf of het bericht van deze week al weg is. Zo komt hij altijd,
+    # ook als GitHub uren te laat start, en nooit dubbel.
     if not met_de_hand:
-        if nu.weekday() != 3 or nu.hour < 20:
-            print("Het is nu %s in Nederland — nog geen donderdagavond, dus niets te doen."
+        if not in_het_venster(nu):
+            print("Het is nu %s in Nederland — buiten het verzendvenster, dus niets te doen."
                   % nu.strftime("%A %H:%M"))
             return
         if al_verstuurd(kop, week):
