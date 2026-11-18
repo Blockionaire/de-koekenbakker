@@ -1152,7 +1152,11 @@ function koekjeOpmaken(k, i){
     korst: k.korst || oud.korst || "#A3713C",
     brokken: (k.brokken && k.brokken.length) ? k.brokken : (oud.brokken || ["#8A5A33", "#FBF3E5", "#6E4524"]),
     aan: k.aan !== false,
-    reden: String(k.reden || "").slice(0, 60)
+    reden: String(k.reden || "").slice(0, 60),
+    binnenkort: !!k.binnenkort,
+    kop: String(k.kop || "").slice(0, 60),
+    wanneer: String(k.wanneer || "").slice(0, 80),
+    etiket: String(k.etiket || "").slice(0, 24)
   };
 }
 
@@ -1487,10 +1491,10 @@ let KOEKJES = [
 // Het koekje van volgende maand: wel te zien, nog niet te bestellen.
 // Weghalen doe je met één regel: zet `binnenkort` op false en vul de
 // omschrijving en de prijs in, dan doet hij gewoon mee met de rest.
-// Een koekje dat je alvast laat zien maar nog niet verkoopt: vervaagd, met een
-// slotje erop. Zet het hier neer en het verschijnt als laatste kaart; op null
-// is er niets om te laten zien. Zo stond de pistache er in oktober bij.
-const BINNENKORT = null;
+// Een koekje dat je alvast laat zien maar nog niet verkoopt staat vervaagd
+// met een slotje erop. Dat zet je in de portal aan bij het koekje zelf; het
+// krijgt dan binnenkort: true mee en komt achteraan in het assortiment.
+const komtNog = k => !!(k && k.binnenkort);
 
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 // De koekjes en de prijzen zoals ze in dit bestand staan, als het netwerk
@@ -1543,7 +1547,8 @@ let uitAssortiment = false;
 let pauze = null;
 const koekje = id => KOEKJES.filter(k => k.id === id)[0];
 const stand = id => uitAssortiment ? (koekje(id) || {}) : (winkel[id] || {});
-const teKoop = id => stand(id).aan !== false;
+// Wat nog moet komen kun je niet bestellen, net zomin als wat uitstaat.
+const teKoop = id => !komtNog(koekje(id)) && stand(id).aan !== false;
 const uitReden = id => stand(id).reden || "Tijdelijk niet te bestellen";
 
 // Ligt er iets in je mandje dat ondertussen uitverkocht is, dan haal ik het eruit.
@@ -1594,13 +1599,13 @@ function binnenkortKaart(k){
     +   '<span class="slotje" aria-hidden="true">\uD83D\uDD12</span>'
     + '</div>'
     + '<div class="kaart-tekst">'
-    +   '<h3>' + k.kop + '</h3>'
-    +   '<p class="omschrijving">' + k.kort + '</p>'
-    +   '<p class="binnenkort-datum">' + k.wanneer + '</p>'
+    +   '<h3>' + vrijeTekst(k.kop || k.naam, 60) + '</h3>'
+    +   '<p class="omschrijving">' + vrijeTekst(k.kort, 300) + '</p>'
+    +   (k.wanneer ? '<p class="binnenkort-datum">' + vrijeTekst(k.wanneer, 80) + '</p>' : "")
     + '</div>'
     + '<div class="kaart-voet">'
     +   '<span class="prijs prijs--stil">Binnenkort<small>nog even geduld</small></span>'
-    +   '<span class="sticker sticker--karamel">' + k.etiket + '</span>'
+    +   (k.etiket ? '<span class="sticker sticker--karamel">' + vrijeTekst(k.etiket, 24) + '</span>' : "")
     + '</div>'
     + '</article>';
 }
@@ -1629,7 +1634,7 @@ function uitKaart(k){
 const TELWOORD = ["geen", "\u00e9\u00e9n", "twee", "drie", "vier", "vijf", "zes",
                   "zeven", "acht", "negen", "tien", "elf", "twaalf"];
 const telwoord = n => TELWOORD[n] || String(n);
-const smakenTeKoop = () => KOEKJES.filter(k => teKoop(k.id)).length;
+const smakenTeKoop = () => KOEKJES.filter(k => !komtNog(k) && teKoop(k.id)).length;
 
 function aantallenBijwerken(){
   const n = smakenTeKoop();
@@ -1646,8 +1651,11 @@ function aantallenBijwerken(){
 
 function tekenKaarten(){
   aantallenBijwerken();
-  $("#koekjes").classList.toggle("gelijk", (KOEKJES.length + (BINNENKORT ? 1 : 0)) % 3 === 0);
-  $("#koekjes").innerHTML = KOEKJES.map(function(k){
+  // Wat nog niet te koop is komt achteraan, na alles wat je wel kunt bestellen.
+  const rij = KOEKJES.filter(k => !komtNog(k)).concat(KOEKJES.filter(komtNog));
+  $("#koekjes").classList.toggle("gelijk", rij.length % 3 === 0);
+  $("#koekjes").innerHTML = rij.map(function(k){
+    if (komtNog(k)) return binnenkortKaart(k);
     if (!teKoop(k.id)) return uitKaart(k);
     const smaakRijen = Object.keys(k.smaak).map(function(naam){
       return '<div class="smaak-rij"><span>' + naam + '</span>' + bolletjes(k.smaak[naam]) + '</div>';
@@ -1670,12 +1678,11 @@ function tekenKaarten(){
       +   '<span class="kaartknop" data-knop="' + k.id + '"></span>'
       + '</div>'
       + '</article>';
-  }).join("") + (BINNENKORT ? binnenkortKaart(BINNENKORT) : "");
+  }).join("");
   $$(".koek-plek").forEach(function(el){
     const k = vind(el.dataset.koek);
-    if (k) el.innerHTML = koekSVG(k, {happen: happenPer[k.id] || []});
+    if (k) el.innerHTML = koekSVG(k, {happen: komtNog(k) ? [] : (happenPer[k.id] || [])});
   });
-  if (BINNENKORT) $('[data-koek="' + BINNENKORT.id + '"]').innerHTML = koekSVG(BINNENKORT);
 }
 
 const happenKlok = {};

@@ -192,6 +192,13 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .koekkaart{border:2px solid var(--lijn);border-radius:14px;padding:12px 14px;margin-bottom:10px;
   background:var(--room)}
 .koekkaart.uit{opacity:.72;border-style:dashed}
+.koekkaart.komt{border-color:var(--karamel);background:var(--zand)}
+.koekwie .komtje{font-style:normal;color:var(--karamel-diep);font-weight:600}
+.standkiezer{border:2px solid var(--lijn);border-radius:999px;padding:7px 10px;background:var(--papier);
+  font-family:var(--tekst);font-size:.82rem;color:var(--inkt)}
+.klaarzet{margin-top:14px;padding:14px;border:2px dashed var(--karamel);border-radius:14px;
+  background:var(--zand);display:grid;gap:10px}
+.klaarzet b{font-family:var(--kop);font-size:.9rem}
 .koekkop{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center}
 .koekkop svg{width:40px}
 .koekwie b{font-family:var(--kop);font-weight:700;display:block}
@@ -971,6 +978,13 @@ const EERSTEOPZET = [
    kort: "Pistachepasta door het deeg, gehakte pistachenoten erdoor en witte chocolade die wegsmelt. Alleen in november, op = op.",
    tags: ["Pistache", "Witte chocolade", "Noten"], smaak: {Choco: 2, Zoet: 4, Krokant: 3},
    seed: 53, deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E", brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"]},
+  {id: "pepernoot", naam: "Pepernoot", prijs: 3.25, gram: 120,
+   binnenkort: true, kop: "December special!",
+   kort: "Een koek vol pepernoten en speculaaskruiden. Alleen in december, op = op, dus wees er snel bij.",
+   wanneer: "Te bestellen vanaf dinsdag 1 december!", etiket: "1 december",
+   tags: ["Speculaas", "Pepernoten"], smaak: {Choco: 1, Zoet: 4, Krokant: 4},
+   seed: 31, deeg: ["#E0B378", "#C9974F"], korst: "#9A6B2F",
+   brokken: ["#8A5A28", "#6B4420", "#C99A5C"]},
   {id: "chocchip", naam: "Chocolate chip", prijs: 3.25, gram: 120, foto: "koek-chocchip.webp",
    vlag: "Bestseller",
    kort: "De klassieker: roomboterdeeg dat 48 uur heeft gerust en grove brokken chocolade erdoor.",
@@ -2046,26 +2060,34 @@ function nieuwKoekNummer(naam){
   return nr;
 }
 
+const STANDEN = [["aan", "Te koop"], ["uit", "Niet te bestellen"], ["binnenkort", "Binnenkort"]];
+const standVan = k => k.binnenkort ? "binnenkort" : (k.aan === false ? "uit" : "aan");
+
 function koekjesTekenen(){
   if (!$("#koekjesBeheer")) return;
   $("#koekjesBeheer").innerHTML = assortiment.map(function(k, i){
-    const uit = k.aan === false;
+    const staat = standVan(k);
+    const uit = staat === "uit";
+    const komt = staat === "binnenkort";
     const labels = (k.tags || []).join(", ");
     const kleurNr = DEEGKLEUREN.map(d => d.korst).indexOf(k.korst);
-    return '<div class="koekkaart' + (uit ? " uit" : "") + '">'
+    return '<div class="koekkaart' + (uit ? " uit" : "") + (komt ? " komt" : "") + '">'
       + '<div class="koekkop">'
       +   koekSVG(KOEKJES[k.id])
       +   '<div class="koekwie"><b>' + veilig(k.naam) + '</b>'
       +     '<span>' + euro(k.prijs) + ' \u00b7 ' + (k.gram || 120) + ' g'
       +       (uit ? ' \u00b7 <i class="uitje">' + veilig(k.reden || REDENEN[0]) + '</i>' : "")
+      +       (komt ? ' \u00b7 <i class="komtje">met slotje op de site</i>' : "")
       +     '</span></div>'
       +   '<div class="koekknoppen">'
+      +     '<select class="standkiezer" data-koekveld="stand" data-id="' + k.id + '" aria-label="Stand">'
+      +       STANDEN.map(st => '<option value="' + st[0] + '"' + (st[0] === staat ? " selected" : "") + '>'
+            + st[1] + '</option>').join("")
+      +     '</select>'
       +     '<button class="knopje" data-koekop="omhoog" data-id="' + k.id + '" type="button"'
       +       (i === 0 ? " disabled" : "") + ' aria-label="Omhoog">\u2191</button>'
       +     '<button class="knopje" data-koekop="omlaag" data-id="' + k.id + '" type="button"'
       +       (i === assortiment.length - 1 ? " disabled" : "") + ' aria-label="Omlaag">\u2193</button>'
-      +     '<button class="knopje' + (uit ? " uit" : "") + '" data-koekop="schakel" data-id="' + k.id + '" type="button">'
-      +       (uit ? "Zet aan" : "Zet uit") + '</button>'
       +     '<button class="knopje" data-koekop="weg" data-id="' + k.id + '" type="button" aria-label="Weghalen">\u2715</button>'
       +   '</div>'
       + '</div>'
@@ -2085,6 +2107,10 @@ function koekjesTekenen(){
       +     DEEGKLEUREN.map((d, n) => '<option value="' + n + '"' + (n === kleurNr ? " selected" : "") + '>'
             + d.wat + '</option>').join("")
       +     '</select></div>'
+      +   (komt ? veld(k.id, "kop", "Kop op de kaart", k.kop || "")
+            + veld(k.id, "etiket", "Sticker", k.etiket || "")
+            + '<div class="koekveld breed">' + veld(k.id, "wanneer", "Wanneer te bestellen", k.wanneer || "")
+            + '</div>' : "")
       +   (uit ? '<div class="koekveld"><label for="v-reden-' + k.id + '">Waarom niet te bestellen</label>'
       +     '<select id="v-reden-' + k.id + '" data-koekveld="reden" data-id="' + k.id + '">'
       +     REDENEN.map(r => '<option value="' + r + '"' + (r === (k.reden || REDENEN[0]) ? " selected" : "") + '>'
@@ -2093,8 +2119,32 @@ function koekjesTekenen(){
       + '</div></details>'
       + '</div>';
   }).join("")
+  + ontbrekendeKoekjes()
   + '<p class="uitleg" style="margin-top:14px">Een nieuw koekje krijgt een getekend koekje op de '
-  + 'website, geen foto. Stuur me de foto, dan zet ik die erbij.</p>';
+  + 'website, geen foto. Stuur me de foto, dan zet ik die erbij. Zet je een koekje op '
+  + '<b>Binnenkort</b>, dan staat hij vervaagd met een slotje op de site en kan niemand hem bestellen.</p>';
+}
+
+// Staat er een koekje in de opzet dat nog niet in de winkel zit, dan bied ik
+// het hier aan. Zo hoeft een smaak die ik heb voorbereid alleen nog maar
+// aangezet te worden.
+function ontbrekendeKoekjes(){
+  const weg = EERSTEOPZET.filter(k => !koekVan(k.id));
+  if (!weg.length) return "";
+  return '<div class="klaarzet"><b>Klaargezet voor je</b>'
+    + weg.map(k => '<button class="knop knop--stil knop--vol" data-opzet="' + k.id + '" type="button">'
+        + veilig(k.naam) + ' toevoegen</button>').join("")
+    + '</div>';
+}
+
+function opzetToevoegen(id){
+  const k = EERSTEOPZET.filter(x => x.id === id)[0];
+  if (!k || koekVan(id)) return;
+  assortiment.push(JSON.parse(JSON.stringify(k)));
+  winkelOpbouwen();
+  koekjesTekenen();
+  assortimentOpslaan();
+  melden(k.naam + " staat erbij.");
 }
 
 function veld(id, naam, wat, waarde, soort){
@@ -2116,6 +2166,12 @@ function koekVeldZetten(id, veldnaam, waarde){
   } else if (veldnaam === "kleur"){
     const d = DEEGKLEUREN[Number(waarde)] || DEEGKLEUREN[0];
     k.deeg = d.deeg; k.korst = d.korst; k.brokken = d.brokken;
+  } else if (veldnaam === "stand"){
+    k.binnenkort = waarde === "binnenkort";
+    k.aan = waarde !== "uit";
+    if (k.aan) k.reden = "";
+    else if (!k.reden) k.reden = REDENEN[0];
+    if (k.binnenkort && !k.kop) k.kop = "Binnenkort!";
   } else if (veldnaam === "naam"){
     const naam = String(waarde).trim().slice(0, 40);
     if (!naam){ melden("Een koekje moet een naam hebben."); koekjesTekenen(); return; }
@@ -2136,10 +2192,6 @@ async function koekOp(id, wat){
     assortiment.splice(i - 1, 0, assortiment.splice(i, 1)[0]);
   } else if (wat === "omlaag" && i < assortiment.length - 1){
     assortiment.splice(i + 1, 0, assortiment.splice(i, 1)[0]);
-  } else if (wat === "schakel"){
-    k.aan = k.aan === false;
-    if (k.aan) k.reden = "";
-    else if (!k.reden) k.reden = REDENEN[0];
   } else if (wat === "weg"){
     if (assortiment.length <= 1){ melden("Er moet minstens \u00e9\u00e9n koekje blijven."); return; }
     const zeker = await bevestig("Dit koekje weghalen?",
@@ -2947,6 +2999,8 @@ document.addEventListener("click", function(e){
   const koekknop = e.target.closest("[data-koekop]");
   if (koekknop){ koekOp(koekknop.dataset.id, koekknop.dataset.koekop); return; }
   if (e.target.closest("#koekErbij")){ koekErbij(); return; }
+  const opzet = e.target.closest("[data-opzet]");
+  if (opzet){ opzetToevoegen(opzet.dataset.opzet); return; }
   if (e.target.closest("#prijsOpslaan")){ prijsveldenLezen(); return; }
   if (e.target.closest("#pauzeOpslaan")){ pauzeOpslaan(); return; }
   if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
