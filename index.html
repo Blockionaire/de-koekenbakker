@@ -156,6 +156,12 @@ button{font:inherit;color:inherit}
   .mandje-knop{padding:8px 13px;font-size:.88rem;gap:7px}
 }
 
+/* ---------- de vakantiebalk ---------- */
+.pauzebalk{background:var(--inkt);color:var(--room);border-bottom:2px solid var(--inkt);
+  padding:12px 0;text-align:center;font-size:.95rem}
+.pauzebalk b{font-family:var(--kop);font-weight:800;display:block;font-size:1.05rem;margin-bottom:2px}
+.pauzebalk span{color:var(--klei)}
+
 /* ---------- de actiebalk ---------- */
 .actiebalk{background:var(--karamel);color:var(--room);border-bottom:2px solid var(--inkt);
   padding:clamp(12px,2vw,18px) 0;text-align:center;position:relative;overflow:hidden}
@@ -685,6 +691,13 @@ body.tekstmodus [data-tekst]:focus{outline:3px solid var(--karamel-diep);outline
     <button class="mandje-knop" id="mandjeKnop" aria-haspopup="dialog">Mandje <b id="mandjeTeller">0</b></button>
   </div>
 
+  <div class="pauzebalk" id="pauzeBalk" hidden>
+    <div class="wrap">
+      <b id="pauzeKop">Even dicht</b>
+      <span id="pauzeTekst"></span>
+    </div>
+  </div>
+
   <div class="actiebalk" id="actieBalk" hidden>
     <div class="wrap actiebalk-in">
       <span class="actiebalk-blad" aria-hidden="true">&#127810;</span>
@@ -1069,7 +1082,7 @@ const CONFIG = {
    verdwijnt, de prijzen zijn weer gewoon, en de combideal doet het weer.
    Dat is de enige regel die je hoeft aan te raken.
    ===================================================================== */
-const ACTIE = {
+let ACTIE = {
   aan: true,
   tot: "2026-10-24",                  // laatste dag; leeg laten = tot je 'm zelf uitzet
   naam: "Herfstactie",
@@ -1086,9 +1099,104 @@ const ACTIE = {
 };
 
 // Na de laatste dag stopt de actie vanzelf, zodat niemand eraan hoeft te denken.
-if (ACTIE.aan && ACTIE.tot){
+function actieVerlopen(){
+  if (!ACTIE.aan || !ACTIE.tot) return;
   const eind = new Date(ACTIE.tot + "T23:59:59");
   if (!isNaN(eind.getTime()) && new Date() > eind) ACTIE.aan = false;
+}
+actieVerlopen();
+
+/* =====================================================================
+   Wat er uit de portal komt
+
+   De prijzen, de actie, het assortiment en een eventuele vakantie staan
+   in Firestore. Staat daar niets, dan gelden de waarden uit dit bestand,
+   zodat de site het altijd doet.
+   ===================================================================== */
+function prijzenBinnen(d){
+  if (d && typeof d === "object"){
+    ["stukPrijs", "bundelAantal", "bundelPrijs", "maxPerBestelling"].forEach(function(veld){
+      if (typeof d[veld] === "number" && d[veld] > 0) CONFIG[veld] = d[veld];
+    });
+    const dozen = (d.boxen || []).filter(b => b && b.koekjes > 0 && b.prijs > 0);
+    if (dozen.length) CONFIG.boxen = dozen;
+    if (d.actie && typeof d.actie === "object") ACTIE = Object.assign({}, ACTIE, d.actie);
+  }
+  BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
+  BOXEN = boxenBouwen();
+  actieVerlopen();
+  dealTonen();
+  tekenKaarten();
+  boxRijTekenen();
+  ververs();
+}
+
+// Een koekje uit de portal, aangevuld met wat het nodig heeft om getekend
+// te kunnen worden als er geen foto bij zit.
+function koekjeOpmaken(k, i){
+  if (!k || !k.id || !k.naam) return null;
+  const oud = STANDAARDKOEKJES.filter(x => x.id === k.id)[0] || {};
+  const deeg = (k.deeg && k.deeg.length === 2) ? k.deeg : (oud.deeg || ["#E7C491", "#D2A469"]);
+  return {
+    id: String(k.id).slice(0, 24),
+    naam: String(k.naam).slice(0, 40),
+    kort: String(k.kort || oud.kort || "").slice(0, 300),
+    prijs: typeof k.prijs === "number" && k.prijs > 0 ? k.prijs : CONFIG.stukPrijs,
+    gram: typeof k.gram === "number" && k.gram > 0 ? k.gram : 120,
+    tags: (k.tags || oud.tags || []).slice(0, 4).map(t => String(t).slice(0, 28)),
+    vlag: k.vlag ? String(k.vlag).slice(0, 24) : "",
+    foto: k.foto || oud.foto || "",
+    smaak: k.smaak || oud.smaak || {Choco: 3, Zoet: 3, Krokant: 3},
+    seed: typeof k.seed === "number" ? k.seed : (oud.seed || (11 + i * 17)),
+    deeg: deeg,
+    korst: k.korst || oud.korst || "#A3713C",
+    brokken: (k.brokken && k.brokken.length) ? k.brokken : (oud.brokken || ["#8A5A33", "#FBF3E5", "#6E4524"]),
+    aan: k.aan !== false,
+    reden: String(k.reden || "").slice(0, 60)
+  };
+}
+
+function assortimentBinnen(d){
+  const rij = (d && Array.isArray(d.koekjes) ? d.koekjes : [])
+    .map(koekjeOpmaken).filter(Boolean);
+  // Een leeg of kapot lijstje negeren we: dan blijft de site gewoon staan.
+  if (rij.length){
+    KOEKJES = rij;
+    uitAssortiment = true;
+  }
+  uitverkochtOpruimen();
+  tekenKaarten();
+  ververs();
+}
+
+function pauzeBinnen(d){
+  pauze = (d && d.aan) ? d : null;
+  pauzeTonen();
+  ververs();
+}
+
+// Loopt de vakantie op een datum af, dan telt hij vanzelf niet meer mee.
+function inPauze(){
+  if (!pauze || !pauze.aan) return false;
+  const nu = new Date();
+  if (pauze.van){
+    const start = new Date(pauze.van + "T00:00:00");
+    if (!isNaN(start.getTime()) && nu < start) return false;
+  }
+  if (pauze.tot){
+    const eind = new Date(pauze.tot + "T23:59:59");
+    if (!isNaN(eind.getTime()) && nu > eind) return false;
+  }
+  return true;
+}
+
+function pauzeTonen(){
+  const aan = inPauze();
+  $("#pauzeBalk").hidden = !aan;
+  $(".top").classList.toggle("met-pauze", aan);
+  if (!aan) return;
+  $("#pauzeKop").textContent = pauze.kop || "Even dicht";
+  $("#pauzeTekst").textContent = pauze.tekst || "Ik bak er deze periode even niet. Tot snel!";
 }
 
 /* ---------- kleine hulpjes ---------- */
@@ -1173,6 +1281,21 @@ async function verbind(){
 
     if (location.hash === "#beheer") beheerWachten();
 
+    // De prijzen en de actie, zoals ze in de portal staan.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "prijzen"), function(snap){
+      prijzenBinnen(snap.exists() ? snap.data() : null);
+    }, function(){ /* dan gelden de prijzen uit dit bestand */ });
+
+    // Het assortiment: welke koekjes er zijn en wat erover verteld wordt.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "assortiment"), function(snap){
+      assortimentBinnen(snap.exists() ? snap.data() : null);
+    }, function(){ /* dan staat het lijstje uit dit bestand er */ });
+
+    // Even geen bakdagen, bijvoorbeeld met vakantie.
+    fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "pauze"), function(snap){
+      pauzeBinnen(snap.exists() ? snap.data() : null);
+    }, function(){ /* geen pauze dan */ });
+
     recensiesLaden();
     bezoekTellen();
   } catch (fout){
@@ -1211,6 +1334,7 @@ let uid = 0;
 // dezelfde vorm door dezelfde maskers heen, zodat de happen er ook op werken.
 function koekSVG(k, opties){
   opties = opties || {};
+  if (!k) return "<span></span>";          // smaak bestaat niet meer
   const happen = opties.happen || [];
   const id = "k" + (++uid);
   if (k.foto) return koekFotoSVG(k, happen, id);
@@ -1319,7 +1443,7 @@ function bezoekTellen(){
 }
 
 /* ---------- het assortiment ---------- */
-const KOEKJES = [
+let KOEKJES = [
   { id: "oreo", naam: "Oreo", prijs: 3.25, gram: 120, foto: "koek-oreo.webp",
     kort: "Deeg met witte chocolade en grove brokken Oreo erdoor, en een halve koek bovenop. Zwart-wit, lekker knapperig.",
     tags: ["Witte chocolade", "Oreo"],
@@ -1369,25 +1493,41 @@ const KOEKJES = [
 const BINNENKORT = null;
 
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
-const BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
+// De koekjes en de prijzen zoals ze in dit bestand staan, als het netwerk
+// wegvalt of als er nog niets in de portal is gezet.
+const STANDAARDKOEKJES = JSON.parse(JSON.stringify(KOEKJES));
+let BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
 const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
   * (BUNDEL.aantal * CONFIG.stukPrijs - BUNDEL.prijs) * 100) / 100;
 // De verrassingsbox in drie maten, elk met een eigen ronde prijs. Een box heeft
 // die prijs al in zich, dus de combideal telt er niet nog een keer overheen.
 const isBox = id => id.indexOf("box") === 0;
-const BOXEN = CONFIG.boxen.map(function(b){
-  const n = b.koekjes;
-  return {id: "box" + n, naam: "Verrassingsbox", koekjes: n, prijs: b.prijs,
-          kort: n + " koekjes, door mij uitgezocht: wat er die week het lekkerst uit de oven komt."};
-});
+function boxenBouwen(){
+  return CONFIG.boxen.map(function(b){
+    const n = b.koekjes;
+    return {id: "box" + n, naam: "Verrassingsbox", koekjes: n, prijs: b.prijs,
+            kort: n + " koekjes, door mij uitgezocht: wat er die week het lekkerst uit de oven komt."};
+  });
+}
+let BOXEN = boxenBouwen();
 const vind = id => isBox(id) ? BOXEN.filter(b => b.id === id)[0] : KOEKJES.filter(k => k.id === id)[0];
 // Een koekje is te koop tenzij Zara het heeft uitgezet.
-const stand = id => winkel[id] || {};
+// Zodra het assortiment uit de portal komt, is dat de baas. Tot die tijd
+// geldt het oude lijstje met wat er aan- en uitstaat.
+let uitAssortiment = false;
+let pauze = null;
+const koekje = id => KOEKJES.filter(k => k.id === id)[0];
+const stand = id => uitAssortiment ? (koekje(id) || {}) : (winkel[id] || {});
 const teKoop = id => stand(id).aan !== false;
 const uitReden = id => stand(id).reden || "Tijdelijk niet te bestellen";
 
 // Ligt er iets in je mandje dat ondertussen uitverkocht is, dan haal ik het eruit.
 function uitverkochtOpruimen(){
+  // Eerst wat helemaal niet meer bestaat, zonder melding: dat is geen
+  // nieuws voor de klant, het stond er immers al niet meer.
+  Object.keys(mandje).forEach(function(id){
+    if (!isBox(id) && !vind(id)) delete mandje[id];
+  });
   const weg = Object.keys(mandje).filter(id => !isBox(id) && !teKoop(id));
   if (!weg.length) return;
   weg.forEach(id => delete mandje[id]);
@@ -1667,13 +1807,16 @@ const instel = (naam) => (weekStand && typeof weekStand[naam] === "number") ? we
 const DAGEN = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
 const uurTekst = u => String(u).padStart(2, "0") + ":00";
 const weekBesteld = () => (weekStand && typeof weekStand.besteld === "number") ? weekStand.besteld : CONFIG.alBesteld;
-const weekOpen = () => !weekStand || weekStand.open !== false;
+const weekOpen = () => !inPauze() && (!weekStand || weekStand.open !== false);
 const ruimteDezeWeek = () => Math.max(0, weekLimiet() - weekBesteld());
 
 // Wat houdt deze bestelling tegen? Lege tekst betekent: niets aan de hand.
 function grensTekst(){
   const n = koekjesTotaal(), vrij = ruimteDezeWeek();
   if (n === 0) return "";
+  if (inPauze())
+    return (pauze && pauze.kop ? pauze.kop + ". " : "Ik bak er even niet. ")
+      + "Zodra de oven weer aangaat kun je gewoon weer bestellen.";
   if (!weekOpen())
     return "Ik heb de bestellingen voor deze week gesloten. Stuur me een berichtje, dan zet ik je op de lijst voor de volgende batch.";
   if (CONFIG.weekLimiet && vrij === 0)
@@ -2811,12 +2954,12 @@ function start(){
 
   // Vaste koekjes tekenen. Welke dat zijn staat op naam, niet op plek in de
   // lijst, zodat een nieuwe smaak de versiering niet door elkaar gooit.
-  $("#laadKoek").innerHTML = koekSVG(vind("chocchip"));
-  $("#heroKoek").innerHTML = koekSVG(vind("chocchip"));
+  $("#laadKoek").innerHTML = koekSVG(versierKoek("chocchip"));
+  $("#heroKoek").innerHTML = koekSVG(versierKoek("chocchip"));
   ["#orbit1", "#orbit2", "#orbit3", "#orbit4", "#orbit5"].forEach(function(sel, i){
     $(sel).innerHTML = koekSVG(KOEKJES[i % KOEKJES.length]);
   });
-  $("#cursor").innerHTML = koekSVG(vind("stroopwafel"));
+  $("#cursor").innerHTML = koekSVG(versierKoek("stroopwafel"));
 
   // Staat er een foto van Zara in de map? Dan komt die in de polaroid te staan.
   // Hij kan al binnen zijn voordat dit draait, vandaar de check op complete.
@@ -2827,20 +2970,16 @@ function start(){
     $("#polaroidVlak").classList.add("met-foto");
   };
   if (foto.complete) fotoAan(); else foto.addEventListener("load", fotoAan);
-  $("#polaroidKoek").innerHTML = koekSVG(vind("lotus"));
-  $("#bedanktKoek").innerHTML = koekSVG(vind("kinder"));
+  $("#polaroidKoek").innerHTML = koekSVG(versierKoek("lotus"));
+  $("#bedanktKoek").innerHTML = koekSVG(versierKoek("kinder"));
 
   // de drie maten van de verrassingsbox
-  $("#boxRij").innerHTML = BOXEN.map(function(b){
-    return '<button class="boxmaat" type="button" data-add="' + b.id + '">'
-      + '<b>' + b.koekjes + ' koekjes</b><span>'
-      + (afgeprijsd(b) ? '<s class="prijs-oud">' + euroNet(gewonePrijs(b)) + '</s> ' : "")
-      + euro(nuPrijs(b)) + '</span></button>';
-  }).join("");
+  boxRijTekenen();
 
   // de rij vakjes bij de deal: vier koekjes
   $("#dealRij").innerHTML = ["oreo", "stroopwafel", "lotus", "chocchip"].map(function(id, i){
-    return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">' + koekSVG(vind(id)) + '</div>';
+    return '<div class="gleuf' + (i === 3 ? " gleuf--deal" : "") + '">'
+      + koekSVG(versierKoek(id)) + '</div>';
   }).join("");
 
   tekenKaarten();
@@ -2850,7 +2989,7 @@ function start(){
   cursorInstellen();
   verbind();
   $("#jaar").textContent = new Date().getFullYear();
-  actieTonen();
+  dealTonen();
 
   // Met een link als dekoekenbakkerzara.nl/?code=K7P2 kom je meteen bij je status uit.
   const uitLink = (new URLSearchParams(location.search).get("code") || "").trim();
@@ -2881,20 +3020,52 @@ function start(){
 // Loopt er een actie? Dan de balk erbij, en de teksten die over de combideal
 // gaan vervangen door de actie. Staat ACTIE.aan op false, dan gebeurt hier niets
 // en ziet de site er weer precies zo uit als altijd.
-function actieTonen(){
-  if (!ACTIE.aan) return;
-  $("#actieBalkTekst").textContent = ACTIE.banner;
-  $("#actieBalk").hidden = false;
-  $(".top").classList.add("met-actie");
-  $("#dealEyebrow").textContent = ACTIE.naam;
-  $("#dealKop").innerHTML = ACTIE.kop;
-  $("#dealLead").textContent = ACTIE.lead;
-  $("#dealSticker").textContent = ACTIE.sticker;
-  $("#faqActie").textContent = ACTIE.faq;
-  $("#faqActie").hidden = false;
+// Loopt er een actie, dan vertelt deze sectie daarover. Zo niet, dan gaat
+// het over de combideal, met de getallen die in de portal staan.
+// Welk koekje we als versiering gebruiken. Haalt Zara die smaak weg, dan
+// pakken we gewoon het eerste koekje dat er nog wel is.
+function versierKoek(id){
+  return vind(id) || KOEKJES[0] || null;
+}
+
+function boxRijTekenen(){
+  $("#boxRij").innerHTML = BOXEN.map(function(b){
+    return '<button class="boxmaat" type="button" data-add="' + b.id + '">'
+      + '<b>' + b.koekjes + ' koekjes</b><span>'
+      + (afgeprijsd(b) ? '<s class="prijs-oud">' + euroNet(gewonePrijs(b)) + '</s> ' : "")
+      + euro(nuPrijs(b)) + '</span></button>';
+  }).join("");
+}
+
+function dealTonen(){
   const telrij = $("#dealRij").closest(".toon");
-  if (telrij) telrij.hidden = true;
-  document.title = ACTIE.naam + " \u00b7 De Koekenbakker";
+  if (ACTIE.aan){
+    $("#actieBalkTekst").textContent = ACTIE.banner;
+    $("#actieBalk").hidden = false;
+    $(".top").classList.add("met-actie");
+    $("#dealEyebrow").textContent = ACTIE.naam;
+    $("#dealKop").innerHTML = ACTIE.kop;
+    $("#dealLead").textContent = ACTIE.lead;
+    $("#dealSticker").textContent = ACTIE.sticker;
+    $("#faqActie").textContent = ACTIE.faq;
+    $("#faqActie").hidden = false;
+    if (telrij) telrij.hidden = true;
+    document.title = ACTIE.naam + " \u00b7 De Koekenbakker";
+    return;
+  }
+  const woord = telwoord(BUNDEL.aantal);
+  $("#actieBalk").hidden = true;
+  $(".top").classList.remove("met-actie");
+  $("#dealEyebrow").textContent = "Combideal";
+  $("#dealKop").innerHTML = woord.charAt(0).toUpperCase() + woord.slice(1)
+    + " in je mandje?<br>Dan betaal je " + euroNet(BUNDEL.prijs) + ".";
+  $("#dealLead").textContent = "Los kost een koekje " + euro(CONFIG.stukPrijs)
+    + ". Neem je er " + woord + ", dan reken ik " + euroNet(BUNDEL.prijs)
+    + ". Je kunt de smaken zelf kiezen of kiezen voor een verrassingsbox, dan kies ik ze voor je!";
+  $("#dealSticker").textContent = BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs);
+  $("#faqActie").hidden = true;
+  if (telrij) telrij.hidden = false;
+  document.title = "De Koekenbakker \u00b7 verse koekjes uit Oud-Beijerland";
 }
 
 // De teksten over bakken en bestellen volgen wat Zara in de portal heeft gezet.
