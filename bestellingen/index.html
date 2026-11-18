@@ -79,10 +79,12 @@ a{color:inherit}
 .uitlog{font-family:var(--kop);font-weight:700;font-size:.8rem;color:var(--zacht);
   border-bottom:2px solid transparent}
 .uitlog:hover{color:var(--inkt);border-color:var(--karamel)}
-.tabs{display:flex;gap:8px;padding:0 0 12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;max-width:1060px;margin:0 auto;
+  padding:0 clamp(16px,4vw,28px) 14px}
 .tab{font-family:var(--kop);font-weight:700;font-size:.88rem;padding:8px 14px;border:2px solid var(--inkt);
-  border-radius:999px;background:var(--papier)}
+  border-radius:999px;background:var(--papier);display:flex;align-items:center;gap:7px}
 .tab.aan{background:var(--inkt);color:var(--room)}
+.tabicoon{width:17px;height:17px;flex:0 0 auto}
 .tab b{background:var(--karamel);color:var(--room);border-radius:99px;padding:0 6px;margin-left:6px;font-size:.78rem}
 .tab.aan b{background:var(--room);color:var(--inkt)}
 .tab b{background:var(--lijn);color:var(--inkt)}
@@ -298,6 +300,75 @@ main{padding:18px 0 80px;display:grid;gap:16px}
   font-size:.9rem;transition:transform .3s,opacity .2s,visibility .2s;max-width:88vw;text-align:center}
 .melding.aan{transform:translate(-50%,0);opacity:1;visibility:visible}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.001ms !important;animation-duration:.001ms !important}}
+
+/* ---------- op de telefoon ----------
+   Daar wordt dit een app: de bestemmingen staan onderin, binnen duimbereik,
+   en alles eronder houdt rekening met de balk en met de rand van het scherm. */
+.kaartlijf{overflow:hidden}
+.vouwknop{display:none}
+
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  .top-in{padding:10px 0;gap:10px}
+  .top .merk{font-size:.98rem}
+
+  /* de bestemmingen naar onderen */
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;
+    grid-template-columns:repeat(5,1fr);gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    background:var(--papier);border-top:2px solid var(--inkt);box-shadow:0 -3px 0 rgba(46,34,23,.08)}
+  .tab{flex-direction:column;gap:3px;border:0;border-radius:12px;background:none;
+    padding:7px 2px;font-size:.66rem;letter-spacing:.01em;min-height:52px;justify-content:center;
+    color:var(--zacht);position:relative}
+  .tab.aan{background:var(--zand);color:var(--inkt)}
+  .tabicoon{width:22px;height:22px}
+  .tablabel{line-height:1.1;text-align:center}
+  .tab b{position:absolute;top:2px;right:calc(50% - 22px);margin:0;font-size:.64rem;
+    min-width:16px;text-align:center;padding:1px 4px}
+  body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+
+  /* alles onder elkaar in plaats van naast elkaar */
+  .tweeluik,.knoprij{grid-template-columns:1fr !important}
+  .cijfers{grid-template-columns:repeat(2,1fr) !important;gap:8px}
+  .kaart{padding:16px 14px}
+  .weekbalk{padding:10px 0 0}
+
+  /* kaarten die je zelden nodig hebt, staan dicht */
+  .vouwknop{display:flex;align-items:center;gap:12px;width:100%;min-height:30px;
+    background:none;border:0;padding:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .vouwknop > :first-child{flex:1;min-width:0}
+  .vouwknop .pijlpunt{flex:0 0 auto;width:22px;height:22px;display:grid;place-items:center;
+    color:var(--zacht);transition:transform .2s}
+  .vouwknop .pijlpunt svg{width:16px;height:16px}
+  .kaart.dicht .kaartlijf{display:none}
+  .kaart.dicht .vouwknop .pijlpunt{transform:rotate(-90deg)}
+  .vouwknop .kaartkop{margin-bottom:0}
+
+  /* langere lijsten mogen zijwaarts, de pagina zelf niet */
+  .filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .filters::-webkit-scrollbar{display:none}
+  .staafjes{height:120px}
+  .balkrij{grid-template-columns:5.5rem 1fr auto;font-size:.86rem}
+  .koekkop{grid-template-columns:34px 1fr;row-gap:8px}
+  .koekknoppen{grid-column:1 / -1}
+  .reactieknoppen .knopje,.koekknoppen .knopje{flex:1 1 auto}
+}
+
+@media (max-width:420px){
+  .tab{font-size:.6rem}
+  .tabicoon{width:20px;height:20px}
+}
+
+/* wat er nu te doen staat */
+.taken{display:grid;gap:8px;margin-top:4px}
+.taak{display:flex;align-items:center;gap:10px;padding:11px 13px;border:2px solid var(--lijn);
+  border-radius:12px;background:var(--room);cursor:pointer;text-align:left;font:inherit;width:100%}
+.taak:hover{border-color:var(--inkt)}
+.taak b{font-family:var(--kop);font-weight:800;font-size:1.15rem;min-width:1.6rem;
+  font-variant-numeric:tabular-nums}
+.taak span{flex:1}
+.taak .pijlpunt{color:var(--zacht)}
+.taak.rustig{opacity:.6;cursor:default}
+.taak.rustig:hover{border-color:var(--lijn)}
 </style>
 </head>
 <body>
@@ -437,16 +508,16 @@ main{padding:18px 0 80px;display:grid;gap:16px}
                 style="margin-left:auto">Meldingen aan</button>
         <button class="uitlog" id="uitlogKnop" type="button">Uitloggen</button>
       </div>
-      <div class="tabs">
-        <button class="tab aan" data-tab="overzicht" type="button">Deze week</button>
-        <button class="tab" data-tab="lijst" type="button">Bestellingen <b id="telNieuw">0</b></button>
-        <button class="tab" data-tab="koekjes" type="button">Koekjes</button>
-        <button class="tab" data-tab="recensies" type="button">Reacties <b id="telReacties">0</b></button>
-        <button class="tab" data-tab="data" type="button">Data</button>
-        <button class="tab" data-tab="instellingen" type="button">Instellingen</button>
-      </div>
     </div>
   </header>
+
+  <nav class="tabs" aria-label="Onderdelen">
+    <button class="tab aan" data-tab="overzicht" type="button"><svg class="tabicoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M7 3v4M17 3v4M5 7h14v13H5z"/></svg><span class="tablabel">Deze week</span></button>
+    <button class="tab" data-tab="lijst" type="button"><svg class="tabicoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg><span class="tablabel">Bestellingen</span><b id="telNieuw">0</b></button>
+    <button class="tab" data-tab="winkel" type="button"><svg class="tabicoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1.2 12H5.2zM8.5 8a3.5 3.5 0 0 1 7 0"/><circle cx="10" cy="13" r="1"/><circle cx="14.5" cy="16" r="1"/></svg><span class="tablabel">Winkel</span></button>
+    <button class="tab" data-tab="recensies" type="button"><svg class="tabicoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 15a2 2 0 0 1-2 2H8l-4 3V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg><span class="tablabel">Reacties</span><b id="telReacties">0</b></button>
+    <button class="tab" data-tab="meer" type="button"><svg class="tabicoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="7" cy="17" r="1.6" fill="currentColor" stroke="none"/></svg><span class="tablabel">Meer</span></button>
+  </nav>
 
   <div class="wrap">
     <div class="weekbalk">
@@ -457,6 +528,11 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 
     <main>
       <section id="vlakOverzicht">
+        <div class="kaart" style="margin-bottom:16px">
+          <div class="kaartkop"><h3>Wat staat er te doen</h3><span class="etiket" id="takenWeek">deze week</span></div>
+          <div class="taken" id="taken"></div>
+        </div>
+
         <div class="kaart">
           <div class="kaartkop"><h3>Baklimiet</h3><span class="etiket" id="limietTekst">0 / 100</span></div>
           <div class="meter"><i id="limietBalk" style="width:0%"></i></div>
@@ -481,6 +557,29 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         <div class="kaart" style="margin-top:16px">
           <div class="kaartkop"><h3>Afhalen en bezorgen</h3><span class="etiket">per moment</span></div>
           <div id="momentenLijst"></div>
+        </div>
+      
+
+        <div class="kaart">
+        <h3>Deze week</h3>
+        <div class="veld" style="margin-top:12px">
+        <label for="sLimiet">Hoeveel koekjes kun je deze week bakken?</label>
+        <input id="sLimiet" type="number" min="0" max="2000" step="1">
+        </div>
+        <div class="veld" style="margin-top:12px">
+        <label for="sOpen">Bestellingen</label>
+        <select id="sOpen">
+        <option value="ja">Open — klanten kunnen bestellen</option>
+        <option value="nee">Gesloten — de webshop zegt dat het vol is</option>
+        </select>
+        </div>
+        <button class="knop knop--vol" id="sOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+        <p class="uitleg" style="margin-top:12px">Het aantal bestelde koekjes telt de webshop zelf bij. Klopt het niet meer — bijvoorbeeld na een bestelling die je buiten de site om aannam — dan pas je het hieronder aan.</p>
+        <div class="veld" style="margin-top:12px">
+        <label for="sBesteld">Al besteld deze week</label>
+        <input id="sBesteld" type="number" min="0" max="5000" step="1">
+        </div>
+        <button class="knop knop--stil knop--vol" id="sTellerOpslaan" type="button" style="margin-top:10px">Teller bijwerken</button>
         </div>
       </section>
 
@@ -508,7 +607,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         <div id="bestelLijst" style="display:grid;gap:12px;margin-top:12px"></div>
       </section>
 
-      <section id="vlakKoekjes" hidden>
+      <section id="vlakWinkel" hidden>
         <div class="kaart">
           <div class="kaartkop"><h3>Wat is er te koop</h3><span class="etiket">op de website</span></div>
           <p class="uitleg">Hier staat alles wat je verkoopt. <b>Zet uit</b> laat het koekje op de
@@ -518,6 +617,97 @@ main{padding:18px 0 80px;display:grid;gap:16px}
             te zien.</p>
           <div id="koekjesBeheer" style="margin-top:14px"></div>
           <button class="knop knop--stil knop--vol" id="koekErbij" type="button" style="margin-top:14px">Koekje toevoegen</button>
+        </div>
+      
+
+        <div class="kaart" style="margin-top:16px">
+        <div class="kaartkop"><h3>Prijzen en acties</h3><span class="etiket">site en portal</span></div>
+        <p class="uitleg">Dit geldt voor de website en voor de bestellingen die je hier invoert,
+        dus je hoeft het maar op één plek te zetten.</p>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="pStuk">Prijs per koekje</label>
+        <input id="pStuk" type="number" min="0" step="0.05"></div>
+        <div class="veld"><label for="pMax">Meer dan dit aantal: eerst overleggen</label>
+        <input id="pMax" type="number" min="1" step="1"></div>
+        </div>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="pBundelAantal">Combideal: vanaf hoeveel koekjes</label>
+        <input id="pBundelAantal" type="number" min="2" step="1"></div>
+        <div class="veld"><label for="pBundelPrijs">En dan kosten ze samen</label>
+        <input id="pBundelPrijs" type="number" min="0" step="0.05"></div>
+        </div>
+        <div class="veld" style="margin-top:12px">
+        <label for="pBoxen">Verrassingsboxen, bijvoorbeeld 4=12, 5=15, 6=18</label>
+        <input id="pBoxen" type="text" placeholder="4=12, 5=15, 6=18">
+        </div>
+
+        <label class="vinkje" style="margin-top:16px">
+        <input type="checkbox" id="pActieAan">
+        <span>Er loopt een actie</span>
+        </label>
+        <div id="pActieVelden" hidden>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="pActieNaam">Naam van de actie</label>
+        <input id="pActieNaam" type="text" maxlength="40" placeholder="Kerstactie"></div>
+        <div class="veld"><label for="pActiePrijs">Prijs per koekje tijdens de actie</label>
+        <input id="pActiePrijs" type="number" min="0" step="0.05"></div>
+        </div>
+        <div class="veld" style="margin-top:12px"><label for="pActieTot">Loopt tot en met</label>
+        <input id="pActieTot" type="date"></div>
+        <div class="veld" style="margin-top:12px"><label for="pActieBanner">Balk bovenaan de site</label>
+        <input id="pActieBanner" type="text" maxlength="90"></div>
+        <div class="veld" style="margin-top:12px"><label for="pActieKop">Kop in de actiesectie</label>
+        <input id="pActieKop" type="text" maxlength="60"></div>
+        <div class="veld" style="margin-top:12px"><label for="pActieLead">Tekst in de actiesectie</label>
+        <textarea id="pActieLead" rows="3" maxlength="400"></textarea></div>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="pActieSticker">Sticker</label>
+        <input id="pActieSticker" type="text" maxlength="30"></div>
+        <div class="veld"><label for="pActieMandje">Regel in het mandje</label>
+        <input id="pActieMandje" type="text" maxlength="90"></div>
+        </div>
+        <div class="veld" style="margin-top:12px"><label for="pActieFaq">Extra zin bij de vragen</label>
+        <textarea id="pActieFaq" rows="2" maxlength="300"></textarea></div>
+        </div>
+        <button class="knop knop--vol" id="prijsOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+        <div class="kaartkop"><h3>Afhaalmomenten</h3><span class="etiket" id="slotEtiket">—</span></div>
+        <p class="uitleg">Dit zijn de tijden die klanten in hun mandje te zien krijgen. Vul je bij
+        <b>max</b> niets in, dan mogen er zoveel klanten op als je wil. Zit een moment vol, dan
+        blijft het staan maar kan niemand het meer kiezen. Staan er meer dan drie momenten open,
+        dan maakt de website er vanzelf een keuzelijstje van in plaats van een rij knoppen.</p>
+        <div id="slotLijst" style="margin-top:14px"></div>
+        <button class="knop knop--stil knop--vol" id="slotErbij" type="button" style="margin-top:12px">Moment toevoegen</button>
+        <label class="vinkje" style="margin-top:14px">
+        <input type="checkbox" id="slotOverleg" checked>
+        <span>Klanten mogen ook "Maakt me niet uit" kiezen</span>
+        </label>
+        <button class="knop knop--vol" id="slotOpslaan" type="button" style="margin-top:14px">Opslaan</button>
+        <p class="uitleg" style="margin-top:12px">De tellers lopen per week mee. Klopt er een niet
+        meer, bijvoorbeeld na een bestelling die je zelf hebt aangepast, dan zet je hem hier terug
+        op nul.</p>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+        <div class="kaartkop"><h3>Even geen bakdagen</h3><span class="etiket" id="pauzeEtiket">—</span></div>
+        <p class="uitleg">Voor een vakantie of een week zonder oven. Op de website komt er een balk
+        bovenaan en bestellen kan niet meer. Vul je een periode in, dan gaat het vanzelf weer
+        open als die voorbij is.</p>
+        <label class="vinkje" style="margin-top:14px">
+        <input type="checkbox" id="vAan">
+        <span>Ik bak er even niet</span>
+        </label>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="vVan">Van</label><input id="vVan" type="date"></div>
+        <div class="veld"><label for="vTot">Tot en met</label><input id="vTot" type="date"></div>
+        </div>
+        <div class="veld" style="margin-top:12px"><label for="vKop">Kop</label>
+        <input id="vKop" type="text" maxlength="40" placeholder="Kerstvakantie"></div>
+        <div class="veld" style="margin-top:12px"><label for="vTekst">Tekst eronder</label>
+        <textarea id="vTekst" rows="2" maxlength="200" placeholder="Van 20 december tot 5 januari staat de oven uit. Daarna ben ik er weer!"></textarea></div>
+        <button class="knop knop--vol" id="pauzeOpslaan" type="button" style="margin-top:14px">Opslaan</button>
         </div>
       </section>
 
@@ -545,7 +735,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         </div>
       </section>
 
-      <section id="vlakData" hidden>
+      <section id="vlakMeer" hidden>
         <div class="kaart">
           <div class="kaartkop"><h3>Deze week</h3><span class="etiket" id="dataPeriode">maandag t/m vandaag</span></div>
           <div class="cijfers">
@@ -575,171 +765,59 @@ main{padding:18px 0 80px;display:grid;gap:16px}
             is, hoe vaak er een mandje openging en hoe vaak er besteld is. Geen namen, geen
             IP-adressen, en niemand wordt gevolgd naar andere websites.</p>
         </div>
-      </section>
+      
 
-      <section id="vlakInstellingen" hidden>
         <div class="kaart" style="margin-bottom:16px">
-          <div class="kaartkop"><h3>Meldingen</h3><span class="etiket" id="meldStand">—</span></div>
-          <p class="uitleg">Zet dit aan en je krijgt een melding zodra er een bestelling
-            binnenkomt, ook als de portal op de achtergrond staat. Op een iPhone werkt dat
-            alleen als je de portal eerst via Deel → <em>Zet op beginscherm</em> installeert.</p>
-          <button class="knop knop--vol" id="meldAanzetten" type="button" style="margin-top:14px">Meldingen aanzetten</button>
-          <button class="knop knop--stil knop--vol" id="meldProef" type="button" style="margin-top:8px">Stuur een proefmelding</button>
-        </div>
-        <div class="kaart">
-          <h3>Deze week</h3>
-          <div class="veld" style="margin-top:12px">
-            <label for="sLimiet">Hoeveel koekjes kun je deze week bakken?</label>
-            <input id="sLimiet" type="number" min="0" max="2000" step="1">
-          </div>
-          <div class="veld" style="margin-top:12px">
-            <label for="sOpen">Bestellingen</label>
-            <select id="sOpen">
-              <option value="ja">Open — klanten kunnen bestellen</option>
-              <option value="nee">Gesloten — de webshop zegt dat het vol is</option>
-            </select>
-          </div>
-          <button class="knop knop--vol" id="sOpslaan" type="button" style="margin-top:16px">Opslaan</button>
-          <p class="uitleg" style="margin-top:12px">Het aantal bestelde koekjes telt de webshop zelf bij. Klopt het niet meer — bijvoorbeeld na een bestelling die je buiten de site om aannam — dan pas je het hieronder aan.</p>
-          <div class="veld" style="margin-top:12px">
-            <label for="sBesteld">Al besteld deze week</label>
-            <input id="sBesteld" type="number" min="0" max="5000" step="1">
-          </div>
-          <button class="knop knop--stil knop--vol" id="sTellerOpslaan" type="button" style="margin-top:10px">Teller bijwerken</button>
+        <div class="kaartkop"><h3>Meldingen</h3><span class="etiket" id="meldStand">—</span></div>
+        <p class="uitleg">Zet dit aan en je krijgt een melding zodra er een bestelling
+        binnenkomt, ook als de portal op de achtergrond staat. Op een iPhone werkt dat
+        alleen als je de portal eerst via Deel → <em>Zet op beginscherm</em> installeert.</p>
+        <button class="knop knop--vol" id="meldAanzetten" type="button" style="margin-top:14px">Meldingen aanzetten</button>
+        <button class="knop knop--stil knop--vol" id="meldProef" type="button" style="margin-top:8px">Stuur een proefmelding</button>
         </div>
 
         <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>Volgen door de klant</h3><span class="etiket">deze week</span></div>
-          <p class="uitleg">Elke bestelling heeft een eigen standje waarmee de klant op de website
-            kan volgen hoe ver zijn koekjes zijn. Dat loopt vanzelf mee met de stap die je hier
-            zet. Klopt er iets niet, of mist er een naam bij een bestelling van voor een
-            verandering, zet ze dan in één keer gelijk.</p>
-          <button class="knop knop--stil knop--vol" id="sStandenKnop" type="button" style="margin-top:12px">
-            Volgstanden gelijkzetten
-          </button>
+        <div class="kaartkop"><h3>Bakdag en bestellen</h3><span class="etiket">deze week</span></div>
+        <p class="uitleg">Wat je hier zet, gebruikt de webshop meteen: de aftelklok, de teksten
+        over bakken en bestellen, en het moment waarop bestellingen doorschuiven naar de
+        week erna.</p>
+        <div class="tweeluik">
+        <div class="veld"><label for="sBakdag">Bakdag</label>
+        <select id="sBakdag"></select></div>
+        <div class="veld"><label for="sBakuur">Oven aan om</label>
+        <select id="sBakuur"></select></div>
+        </div>
+        <div class="tweeluik" style="margin-top:12px">
+        <div class="veld"><label for="sSluitdag">Bestellen kan tot</label>
+        <select id="sSluitdag"></select></div>
+        <div class="veld"><label for="sSluituur">Om</label>
+        <select id="sSluituur"></select></div>
+        </div>
+        <label class="vinkje" style="margin-top:14px">
+        <input type="checkbox" id="sVolgende" checked>
+        <span>Ook instellen voor de komende vier weken</span>
+        </label>
+        <button class="knop knop--vol" id="sTijdenOpslaan" type="button" style="margin-top:14px">Opslaan</button>
         </div>
 
         <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>Prijzen en acties</h3><span class="etiket">site en portal</span></div>
-          <p class="uitleg">Dit geldt voor de website en voor de bestellingen die je hier invoert,
-            dus je hoeft het maar op één plek te zetten.</p>
-          <div class="tweeluik" style="margin-top:12px">
-            <div class="veld"><label for="pStuk">Prijs per koekje</label>
-              <input id="pStuk" type="number" min="0" step="0.05"></div>
-            <div class="veld"><label for="pMax">Meer dan dit aantal: eerst overleggen</label>
-              <input id="pMax" type="number" min="1" step="1"></div>
-          </div>
-          <div class="tweeluik" style="margin-top:12px">
-            <div class="veld"><label for="pBundelAantal">Combideal: vanaf hoeveel koekjes</label>
-              <input id="pBundelAantal" type="number" min="2" step="1"></div>
-            <div class="veld"><label for="pBundelPrijs">En dan kosten ze samen</label>
-              <input id="pBundelPrijs" type="number" min="0" step="0.05"></div>
-          </div>
-          <div class="veld" style="margin-top:12px">
-            <label for="pBoxen">Verrassingsboxen, bijvoorbeeld 4=12, 5=15, 6=18</label>
-            <input id="pBoxen" type="text" placeholder="4=12, 5=15, 6=18">
-          </div>
-
-          <label class="vinkje" style="margin-top:16px">
-            <input type="checkbox" id="pActieAan">
-            <span>Er loopt een actie</span>
-          </label>
-          <div id="pActieVelden" hidden>
-            <div class="tweeluik" style="margin-top:12px">
-              <div class="veld"><label for="pActieNaam">Naam van de actie</label>
-                <input id="pActieNaam" type="text" maxlength="40" placeholder="Kerstactie"></div>
-              <div class="veld"><label for="pActiePrijs">Prijs per koekje tijdens de actie</label>
-                <input id="pActiePrijs" type="number" min="0" step="0.05"></div>
-            </div>
-            <div class="veld" style="margin-top:12px"><label for="pActieTot">Loopt tot en met</label>
-              <input id="pActieTot" type="date"></div>
-            <div class="veld" style="margin-top:12px"><label for="pActieBanner">Balk bovenaan de site</label>
-              <input id="pActieBanner" type="text" maxlength="90"></div>
-            <div class="veld" style="margin-top:12px"><label for="pActieKop">Kop in de actiesectie</label>
-              <input id="pActieKop" type="text" maxlength="60"></div>
-            <div class="veld" style="margin-top:12px"><label for="pActieLead">Tekst in de actiesectie</label>
-              <textarea id="pActieLead" rows="3" maxlength="400"></textarea></div>
-            <div class="tweeluik" style="margin-top:12px">
-              <div class="veld"><label for="pActieSticker">Sticker</label>
-                <input id="pActieSticker" type="text" maxlength="30"></div>
-              <div class="veld"><label for="pActieMandje">Regel in het mandje</label>
-                <input id="pActieMandje" type="text" maxlength="90"></div>
-            </div>
-            <div class="veld" style="margin-top:12px"><label for="pActieFaq">Extra zin bij de vragen</label>
-              <textarea id="pActieFaq" rows="2" maxlength="300"></textarea></div>
-          </div>
-          <button class="knop knop--vol" id="prijsOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+        <div class="kaartkop"><h3>Volgen door de klant</h3><span class="etiket">deze week</span></div>
+        <p class="uitleg">Elke bestelling heeft een eigen standje waarmee de klant op de website
+        kan volgen hoe ver zijn koekjes zijn. Dat loopt vanzelf mee met de stap die je hier
+        zet. Klopt er iets niet, of mist er een naam bij een bestelling van voor een
+        verandering, zet ze dan in één keer gelijk.</p>
+        <button class="knop knop--stil knop--vol" id="sStandenKnop" type="button" style="margin-top:12px">
+        Volgstanden gelijkzetten
+        </button>
         </div>
 
         <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>Even geen bakdagen</h3><span class="etiket" id="pauzeEtiket">—</span></div>
-          <p class="uitleg">Voor een vakantie of een week zonder oven. Op de website komt er een balk
-            bovenaan en bestellen kan niet meer. Vul je een periode in, dan gaat het vanzelf weer
-            open als die voorbij is.</p>
-          <label class="vinkje" style="margin-top:14px">
-            <input type="checkbox" id="vAan">
-            <span>Ik bak er even niet</span>
-          </label>
-          <div class="tweeluik" style="margin-top:12px">
-            <div class="veld"><label for="vVan">Van</label><input id="vVan" type="date"></div>
-            <div class="veld"><label for="vTot">Tot en met</label><input id="vTot" type="date"></div>
-          </div>
-          <div class="veld" style="margin-top:12px"><label for="vKop">Kop</label>
-            <input id="vKop" type="text" maxlength="40" placeholder="Kerstvakantie"></div>
-          <div class="veld" style="margin-top:12px"><label for="vTekst">Tekst eronder</label>
-            <textarea id="vTekst" rows="2" maxlength="200" placeholder="Van 20 december tot 5 januari staat de oven uit. Daarna ben ik er weer!"></textarea></div>
-          <button class="knop knop--vol" id="pauzeOpslaan" type="button" style="margin-top:14px">Opslaan</button>
-        </div>
-
-        <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>De website aanpassen</h3><span class="etiket">bewerkmodus</span></div>
-          <p class="uitleg">Op de website zelf kun je de teksten, de kleuren en welke secties
-            zichtbaar zijn aanpassen. Je logt daar in met dit zelfde account, en klikt dan gewoon
-            op een tekst om hem te veranderen. Elke wijziging is terug te draaien.</p>
-          <a class="knop knop--vol" href="https://dekoekenbakkerzara.nl/#beheer" target="_blank"
-             rel="noopener" style="margin-top:14px;display:inline-block">Website bewerken</a>
-        </div>
-
-        <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>Afhaalmomenten</h3><span class="etiket" id="slotEtiket">—</span></div>
-          <p class="uitleg">Dit zijn de tijden die klanten in hun mandje te zien krijgen. Vul je bij
-            <b>max</b> niets in, dan mogen er zoveel klanten op als je wil. Zit een moment vol, dan
-            blijft het staan maar kan niemand het meer kiezen. Staan er meer dan drie momenten open,
-            dan maakt de website er vanzelf een keuzelijstje van in plaats van een rij knoppen.</p>
-          <div id="slotLijst" style="margin-top:14px"></div>
-          <button class="knop knop--stil knop--vol" id="slotErbij" type="button" style="margin-top:12px">Moment toevoegen</button>
-          <label class="vinkje" style="margin-top:14px">
-            <input type="checkbox" id="slotOverleg" checked>
-            <span>Klanten mogen ook "Maakt me niet uit" kiezen</span>
-          </label>
-          <button class="knop knop--vol" id="slotOpslaan" type="button" style="margin-top:14px">Opslaan</button>
-          <p class="uitleg" style="margin-top:12px">De tellers lopen per week mee. Klopt er een niet
-            meer, bijvoorbeeld na een bestelling die je zelf hebt aangepast, dan zet je hem hier terug
-            op nul.</p>
-        </div>
-
-        <div class="kaart" style="margin-top:16px">
-          <div class="kaartkop"><h3>Bakdag en bestellen</h3><span class="etiket">deze week</span></div>
-          <p class="uitleg">Wat je hier zet, gebruikt de webshop meteen: de aftelklok, de teksten
-            over bakken en bestellen, en het moment waarop bestellingen doorschuiven naar de
-            week erna.</p>
-          <div class="tweeluik">
-            <div class="veld"><label for="sBakdag">Bakdag</label>
-              <select id="sBakdag"></select></div>
-            <div class="veld"><label for="sBakuur">Oven aan om</label>
-              <select id="sBakuur"></select></div>
-          </div>
-          <div class="tweeluik" style="margin-top:12px">
-            <div class="veld"><label for="sSluitdag">Bestellen kan tot</label>
-              <select id="sSluitdag"></select></div>
-            <div class="veld"><label for="sSluituur">Om</label>
-              <select id="sSluituur"></select></div>
-          </div>
-          <label class="vinkje" style="margin-top:14px">
-            <input type="checkbox" id="sVolgende" checked>
-            <span>Ook instellen voor de komende vier weken</span>
-          </label>
-          <button class="knop knop--vol" id="sTijdenOpslaan" type="button" style="margin-top:14px">Opslaan</button>
+        <div class="kaartkop"><h3>De website aanpassen</h3><span class="etiket">bewerkmodus</span></div>
+        <p class="uitleg">Op de website zelf kun je de teksten, de kleuren en welke secties
+        zichtbaar zijn aanpassen. Je logt daar in met dit zelfde account, en klikt dan gewoon
+        op een tekst om hem te veranderen. Elke wijziging is terug te draaien.</p>
+        <a class="knop knop--vol" href="https://dekoekenbakkerzara.nl/#beheer" target="_blank"
+        rel="noopener" style="margin-top:14px;display:inline-block">Website bewerken</a>
         </div>
       </section>
     </main>
@@ -1053,6 +1131,8 @@ function actieStrookTonen(){
 
 async function start(){
   winkelOpbouwen();
+  kaartenVouwbaar();
+  vlakkenTonen();
   actieStrookTonen();
   // Twee koekjes als versiering. Via SOORTEN, zodat een andere smaaknaam
   // dit nooit meer onderuit kan halen.
@@ -1129,6 +1209,7 @@ function luister(){
       bestellingen.sort((a, b) => (b.gemaakt && b.gemaakt.seconds || 0) - (a.gemaakt && a.gemaakt.seconds || 0));
       tekenOverzicht();
       tekenLijst();
+      takenTekenen();
     },
     function(fout){ melden("Lezen lukt niet: " + fout.code); }
   );
@@ -1765,6 +1846,7 @@ function reactiesTekenen(){
   const geplaatst = recensies.filter(r => r.behandeld && r.goedgekeurd);
   const opzij = recensies.filter(r => r.behandeld && !r.goedgekeurd);
 
+  takenTekenen();
   $("#telReacties").textContent = nieuw.length;
   $("#telReacties").classList.toggle("nieuw", nieuw.length > 0);
   $("#reactiesEtiket").textContent = nieuw.length + (nieuw.length === 1 ? " nieuw" : " nieuw");
@@ -2057,6 +2139,75 @@ function koekErbij(){
   koekjesTekenen();
   assortimentOpslaan();
   melden("Toegevoegd. Hij staat nog uit, zet hem aan als hij klaar is.");
+}
+
+/* Een kort lijstje met wat er nu aandacht vraagt. Het rekent met de
+   bestellingen die er al zijn, dus er komt geen nieuwe gegevens bij. */
+function takenTekenen(){
+  if (!$("#taken")) return;
+  const rij = zoekRij || bestellingen;
+  const tel = st => rij.filter(b => b.status === st).length;
+  const nieuw = tel("nieuw"), bakken = tel("bevestigd"), klaar = tel("ingepakt");
+  const reacties = nogTeZien().length;
+
+  const taken = [
+    {n: nieuw,    wat: nieuw === 1 ? "bestelling te bevestigen" : "bestellingen te bevestigen",
+     naar: "lijst", filter: "nieuw"},
+    {n: bakken,   wat: bakken === 1 ? "bestelling te bakken" : "bestellingen te bakken",
+     naar: "lijst", filter: "bevestigd"},
+    {n: klaar,    wat: klaar === 1 ? "doosje klaar voor de klant" : "doosjes klaar voor de klant",
+     naar: "lijst", filter: "ingepakt"},
+    {n: reacties, wat: reacties === 1 ? "reactie na te kijken" : "reacties na te kijken",
+     naar: "recensies"}
+  ].filter(t => t.n > 0);
+
+  $("#taken").innerHTML = taken.length
+    ? taken.map(t => '<button class="taak" type="button" data-taak="' + t.naar + '"'
+        + (t.filter ? ' data-taakfilter="' + t.filter + '"' : "") + '>'
+        + '<b>' + t.n + '</b><span>' + t.wat + '</span>'
+        + '<span class="pijlpunt">\u203a</span></button>').join("")
+    : '<div class="taak rustig"><b>\u2713</b><span>Alles is bij. Niets wat nu moet.</span></div>';
+}
+
+/* Op de telefoon zijn Winkel en Meer lange pagina's. Daarom krijgt elke
+   kaart daar een kop waar je op kunt tikken; alleen de eerste staat open.
+   Op een breed scherm doet dat niets, dan past alles toch. */
+function kaartenVouwbaar(){
+  ["#vlakWinkel", "#vlakMeer"].forEach(function(waar){
+    $$(waar + " > .kaart").forEach(function(kaart, i){
+      const kop = kaart.firstElementChild;
+      if (!kop || kaart.querySelector(".kaartlijf")) return;
+      const lijf = document.createElement("div");
+      lijf.className = "kaartlijf";
+      while (kop.nextElementSibling) lijf.appendChild(kop.nextElementSibling);
+      kaart.appendChild(lijf);
+
+      const knop = document.createElement("button");
+      knop.className = "vouwknop";
+      knop.type = "button";
+      knop.setAttribute("data-vouw", "");
+      kaart.insertBefore(knop, kop);
+      knop.appendChild(kop);
+      const punt = document.createElement("span");
+      punt.className = "pijlpunt";
+      punt.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"'
+        + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+      knop.appendChild(punt);
+
+      if (i > 0) kaart.classList.add("dicht");
+    });
+  });
+}
+
+// Welke bestemming je ziet. De weekbalk hoort alleen bij het weekoverzicht
+// en bij de bestellingen, want de rest gaat niet over een bepaalde week.
+function vlakkenTonen(){
+  [["vlakOverzicht", "overzicht"], ["vlakLijst", "lijst"], ["vlakWinkel", "winkel"],
+   ["vlakRecensies", "recensies"], ["vlakMeer", "meer"]].forEach(function(p){
+    const el = $("#" + p[0]);
+    if (el) el.hidden = tab !== p[1];
+  });
+  $(".weekbalk").hidden = (tab !== "overzicht" && tab !== "lijst");
 }
 
 /* ---------- prijzen, acties en vakantie ---------- */
@@ -2691,16 +2842,27 @@ document.addEventListener("click", function(e){
   if (tabKnop){
     tab = tabKnop.dataset.tab;
     $$(".tab").forEach(t => t.classList.toggle("aan", t === tabKnop));
-    $("#vlakOverzicht").hidden = tab !== "overzicht";
-    $("#vlakLijst").hidden = tab !== "lijst";
-    $("#vlakKoekjes").hidden = tab !== "koekjes";
-    $("#vlakRecensies").hidden = tab !== "recensies";
-    $("#vlakData").hidden = tab !== "data";
-    $("#vlakInstellingen").hidden = tab !== "instellingen";
-    if (tab === "data") dataLaden();
-    if (tab === "koekjes") assortimentVolgen();
+    vlakkenTonen();
+    if (tab === "meer") dataLaden();
+    if (tab === "winkel") assortimentVolgen();
+    window.scrollTo({top: 0, behavior: "instant"});
     return;
   }
+  const taak = e.target.closest("[data-taak]");
+  if (taak){
+    tab = taak.dataset.taak;
+    $$(".tab").forEach(t => t.classList.toggle("aan", t.dataset.tab === tab));
+    vlakkenTonen();
+    if (taak.dataset.taakfilter){
+      filter = taak.dataset.taakfilter;
+      $$(".filter").forEach(x => x.classList.toggle("aan", x.dataset.filter === filter));
+      tekenLijst();
+    }
+    window.scrollTo({top: 0, behavior: "instant"});
+    return;
+  }
+  const vouw = e.target.closest("[data-vouw]");
+  if (vouw){ vouw.closest(".kaart").classList.toggle("dicht"); return; }
   if (e.target.closest("#zoekWis")){ zoek = ""; $("#zoekVeld").value = ""; zoekUitvoeren(); return; }
   const f = e.target.closest("[data-filter]");
   if (f){
