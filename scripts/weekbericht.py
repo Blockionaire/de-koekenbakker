@@ -32,6 +32,8 @@ RUIMTE = os.environ.get("RUIMTE", "zara")
 PORTAL = os.environ.get("PORTAL_URL", "https://dekoekenbakkerzara.nl/bestellingen/")
 HIER = ZoneInfo("Europe/Amsterdam")
 
+# De namen worden uit het assortiment in Firestore gehaald. Lukt dat niet,
+# dan vallen we terug op dit lijstje, zodat het bericht altijd leesbaar is.
 NAMEN = {
     "oreo": "Oreo", "stroopwafel": "Stroopwafel", "lotus": "Lotus Biscoff",
     "kinder": "Kinderchocolade", "chocchip": "Chocolate chip",
@@ -98,6 +100,20 @@ def haal_week(kop, week):
     if antwoord.status_code != 200:
         return {}
     return {k: waarde(v) for k, v in antwoord.json().get("fields", {}).items()}
+
+
+def haal_namen(kop):
+    """De namen van de koekjes zoals ze nu in de winkel staan."""
+    url = ("https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents"
+           "/koekenbakker/%s/winkel/assortiment" % (PROJECT, RUIMTE))
+    try:
+        antwoord = requests.get(url, headers=kop, timeout=30)
+        if antwoord.status_code != 200:
+            return {}
+        rij = waarde(antwoord.json().get("fields", {}).get("koekjes", {})) or []
+        return {k["id"]: k.get("naam", k["id"]) for k in rij if isinstance(k, dict) and k.get("id")}
+    except Exception:
+        return {}
 
 
 def al_verstuurd(kop, week):
@@ -304,6 +320,7 @@ def main():
             return
 
     bestellingen = haal_bestellingen(kop, week)
+    NAMEN.update(haal_namen(kop))
     weekdoc = haal_week(kop, week)
     print("Week %s: %d bestellingen gevonden." % (week, len(bestellingen)))
     verstuur(*bouw_bericht(bestellingen, weekdoc, vrijdag))

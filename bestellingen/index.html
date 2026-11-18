@@ -66,7 +66,7 @@ a{color:inherit}
 .tweeluik{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .vinkje{display:flex;align-items:center;gap:10px;font-size:.94rem;cursor:pointer}
 .vinkje input{width:20px;height:20px;accent-color:#8E5A3B}
-.veld input,.veld select{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;background:var(--room);
+.veld input,.veld select,.veld textarea{padding:11px 13px;border:2px solid var(--inkt);border-radius:12px;background:var(--room);
   font-family:var(--tekst);font-size:.96rem;width:100%}
 .fout{color:var(--karamel-diep);font-size:.88rem;font-weight:600}
 .uitleg{font-size:.85rem;color:var(--zacht)}
@@ -187,6 +187,24 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .actiestrook{background:var(--karamel);color:var(--room);text-align:center;
   font-family:var(--kop);font-weight:700;font-size:.86rem;letter-spacing:.04em;
   text-transform:uppercase;padding:8px 14px;line-height:1.3}
+.koekkaart{border:2px solid var(--lijn);border-radius:14px;padding:12px 14px;margin-bottom:10px;
+  background:var(--room)}
+.koekkaart.uit{opacity:.72;border-style:dashed}
+.koekkop{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center}
+.koekkop svg{width:40px}
+.koekwie b{font-family:var(--kop);font-weight:700;display:block}
+.koekwie span{font-size:.82rem;color:var(--zacht)}
+.koekwie .uitje{font-style:normal;color:#8E3B2E;font-weight:600}
+.koekknoppen{display:flex;flex-wrap:wrap;gap:6px}
+.koekmeer{margin-top:10px}
+.koekmeer summary{cursor:pointer;font-size:.84rem;color:var(--karamel-diep);font-weight:600}
+.koekvelden{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.koekveld.breed{grid-column:1 / -1}
+.koekveld label{display:block;font-size:.74rem;color:var(--zacht);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:4px}
+.koekveld input,.koekveld select,.koekveld textarea{width:100%;padding:9px 10px;border:2px solid var(--lijn);
+  border-radius:10px;font-family:var(--tekst);font-size:.9rem;background:var(--papier);color:var(--inkt)}
+@media (max-width:620px){ .koekvelden{grid-template-columns:1fr} }
 .slotrij{display:grid;grid-template-columns:1fr 112px 112px 86px auto;gap:10px;align-items:end;
   padding:12px 0;border-bottom:1px dashed var(--lijn)}
 .slotrij:last-child{border-bottom:0}
@@ -241,6 +259,7 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .balkrij .baan{height:10px;background:var(--zand);border-radius:99px;overflow:hidden}
 .balkrij .baan i{display:block;height:100%;background:var(--karamel);border-radius:99px}
 .balkrij b{font-family:var(--kop);font-weight:700;font-variant-numeric:tabular-nums;font-size:.9rem}
+.veld textarea{min-height:64px;resize:vertical;font-size:.97rem}
 .knoprij{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .knoprij .knop{width:100%;padding:11px 10px;font-size:.88rem}
 @media(max-width:420px){.knoprij{grid-template-columns:1fr}}
@@ -492,11 +511,13 @@ main{padding:18px 0 80px;display:grid;gap:16px}
       <section id="vlakKoekjes" hidden>
         <div class="kaart">
           <div class="kaartkop"><h3>Wat is er te koop</h3><span class="etiket">op de website</span></div>
-          <p class="uitleg">Zet een koekje uit als het op is of als je het deze week even niet
-            bakt. Op de website blijft hij staan, maar grijs en met een bandje erover, en
-            niemand kan hem nog in zijn mandje leggen. Ligt hij al in iemands mandje, dan haalt
-            de site hem er vanzelf uit.</p>
+          <p class="uitleg">Hier staat alles wat je verkoopt. <b>Zet uit</b> laat het koekje op de
+            website staan, maar grijs en met een bandje erover; niemand kan hem dan nog bestellen.
+            <b>Weghalen</b> verwijdert hem helemaal. Onder Bewerken pas je de naam, de prijs en de
+            omschrijving aan, en met de pijltjes bepaal je de volgorde op de site. Alles is meteen
+            te zien.</p>
           <div id="koekjesBeheer" style="margin-top:14px"></div>
+          <button class="knop knop--stil knop--vol" id="koekErbij" type="button" style="margin-top:14px">Koekje toevoegen</button>
         </div>
       </section>
 
@@ -596,6 +617,78 @@ main{padding:18px 0 80px;display:grid;gap:16px}
           <button class="knop knop--stil knop--vol" id="sStandenKnop" type="button" style="margin-top:12px">
             Volgstanden gelijkzetten
           </button>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Prijzen en acties</h3><span class="etiket">site en portal</span></div>
+          <p class="uitleg">Dit geldt voor de website en voor de bestellingen die je hier invoert,
+            dus je hoeft het maar op één plek te zetten.</p>
+          <div class="tweeluik" style="margin-top:12px">
+            <div class="veld"><label for="pStuk">Prijs per koekje</label>
+              <input id="pStuk" type="number" min="0" step="0.05"></div>
+            <div class="veld"><label for="pMax">Meer dan dit aantal: eerst overleggen</label>
+              <input id="pMax" type="number" min="1" step="1"></div>
+          </div>
+          <div class="tweeluik" style="margin-top:12px">
+            <div class="veld"><label for="pBundelAantal">Combideal: vanaf hoeveel koekjes</label>
+              <input id="pBundelAantal" type="number" min="2" step="1"></div>
+            <div class="veld"><label for="pBundelPrijs">En dan kosten ze samen</label>
+              <input id="pBundelPrijs" type="number" min="0" step="0.05"></div>
+          </div>
+          <div class="veld" style="margin-top:12px">
+            <label for="pBoxen">Verrassingsboxen, bijvoorbeeld 4=12, 5=15, 6=18</label>
+            <input id="pBoxen" type="text" placeholder="4=12, 5=15, 6=18">
+          </div>
+
+          <label class="vinkje" style="margin-top:16px">
+            <input type="checkbox" id="pActieAan">
+            <span>Er loopt een actie</span>
+          </label>
+          <div id="pActieVelden" hidden>
+            <div class="tweeluik" style="margin-top:12px">
+              <div class="veld"><label for="pActieNaam">Naam van de actie</label>
+                <input id="pActieNaam" type="text" maxlength="40" placeholder="Kerstactie"></div>
+              <div class="veld"><label for="pActiePrijs">Prijs per koekje tijdens de actie</label>
+                <input id="pActiePrijs" type="number" min="0" step="0.05"></div>
+            </div>
+            <div class="veld" style="margin-top:12px"><label for="pActieTot">Loopt tot en met</label>
+              <input id="pActieTot" type="date"></div>
+            <div class="veld" style="margin-top:12px"><label for="pActieBanner">Balk bovenaan de site</label>
+              <input id="pActieBanner" type="text" maxlength="90"></div>
+            <div class="veld" style="margin-top:12px"><label for="pActieKop">Kop in de actiesectie</label>
+              <input id="pActieKop" type="text" maxlength="60"></div>
+            <div class="veld" style="margin-top:12px"><label for="pActieLead">Tekst in de actiesectie</label>
+              <textarea id="pActieLead" rows="3" maxlength="400"></textarea></div>
+            <div class="tweeluik" style="margin-top:12px">
+              <div class="veld"><label for="pActieSticker">Sticker</label>
+                <input id="pActieSticker" type="text" maxlength="30"></div>
+              <div class="veld"><label for="pActieMandje">Regel in het mandje</label>
+                <input id="pActieMandje" type="text" maxlength="90"></div>
+            </div>
+            <div class="veld" style="margin-top:12px"><label for="pActieFaq">Extra zin bij de vragen</label>
+              <textarea id="pActieFaq" rows="2" maxlength="300"></textarea></div>
+          </div>
+          <button class="knop knop--vol" id="prijsOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+        </div>
+
+        <div class="kaart" style="margin-top:16px">
+          <div class="kaartkop"><h3>Even geen bakdagen</h3><span class="etiket" id="pauzeEtiket">—</span></div>
+          <p class="uitleg">Voor een vakantie of een week zonder oven. Op de website komt er een balk
+            bovenaan en bestellen kan niet meer. Vul je een periode in, dan gaat het vanzelf weer
+            open als die voorbij is.</p>
+          <label class="vinkje" style="margin-top:14px">
+            <input type="checkbox" id="vAan">
+            <span>Ik bak er even niet</span>
+          </label>
+          <div class="tweeluik" style="margin-top:12px">
+            <div class="veld"><label for="vVan">Van</label><input id="vVan" type="date"></div>
+            <div class="veld"><label for="vTot">Tot en met</label><input id="vTot" type="date"></div>
+          </div>
+          <div class="veld" style="margin-top:12px"><label for="vKop">Kop</label>
+            <input id="vKop" type="text" maxlength="40" placeholder="Kerstvakantie"></div>
+          <div class="veld" style="margin-top:12px"><label for="vTekst">Tekst eronder</label>
+            <textarea id="vTekst" rows="2" maxlength="200" placeholder="Van 20 december tot 5 januari staat de oven uit. Daarna ben ik er weer!"></textarea></div>
+          <button class="knop knop--vol" id="pauzeOpslaan" type="button" style="margin-top:14px">Opslaan</button>
         </div>
 
         <div class="kaart" style="margin-top:16px">
@@ -776,27 +869,87 @@ function doosSVG(){
     + '</svg>';
 }
 
-const KOEKJES = {
-  oreo:        {naam: "Oreo",            seed: 11, deeg: ["#EFE3CB", "#DCCAAD"], korst: "#B6A07B", brokken: ["#241F1E", "#15110F", "#F7F2E7"]},
-  stroopwafel: {naam: "Stroopwafel",     seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E", brokken: ["#B5762C", "#8A5420", "#E3AB5E"]},
-  lotus:       {naam: "Lotus Biscoff",   seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A", brokken: ["#C07F3C", "#995E26", "#F0DCC0"]},
-  kinder:      {naam: "Kinderchocolade", seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C", brokken: ["#8A5A33", "#FBF3E5", "#6E4524"]},
-  chocchip:    {naam: "Chocolate chip",  seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]},
-  pistache:    {naam: "Pistache",        seed: 53, deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E", brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"]}
-};
-// Prijzen en hoeveel koekjes één stuk telt — de verrassingsbox is er zes.
-const PRIJZEN = {oreo: 3.25, stroopwafel: 3.25, lotus: 3.25, kinder: 3.25, chocchip: 3.25,
-                 pistache: 3.25, box4: 12.00, box5: 15.00, box6: 18.00};
-const STUKS = {box4: 4, box5: 5, box6: 6};
-const SOORTEN = ["oreo", "stroopwafel", "lotus", "kinder", "chocchip", "pistache",
-                 "box4", "box5", "box6"];
+/* Het assortiment en de prijzen staan in de winkel in Firestore, zodat de
+   website en deze portal met dezelfde gegevens rekenen. Het lijstje
+   hieronder wordt alleen gebruikt om die winkel de allereerste keer te
+   vullen; daarna wordt er niet meer naar gekeken. */
+const EERSTEOPZET = [
+  {id: "oreo", naam: "Oreo", prijs: 3.25, gram: 120, foto: "koek-oreo.webp",
+   kort: "Deeg met witte chocolade en grove brokken Oreo erdoor, en een halve koek bovenop. Zwart-wit, lekker knapperig.",
+   tags: ["Witte chocolade", "Oreo"], smaak: {Choco: 3, Zoet: 4, Krokant: 4},
+   seed: 11, deeg: ["#EFE3CB", "#DCCAAD"], korst: "#B6A07B", brokken: ["#241F1E", "#15110F", "#F7F2E7"]},
+  {id: "stroopwafel", naam: "Stroopwafel", prijs: 3.25, gram: 120, foto: "koek-stroopwafel.webp",
+   kort: "Karamel-kanneeldeeg met stukjes stroopwafel erdoor en een laagje stroop dat in de oven uitloopt.",
+   tags: ["Stroopwafel", "Karamel"], smaak: {Choco: 1, Zoet: 5, Krokant: 3},
+   seed: 23, deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E", brokken: ["#B5762C", "#8A5420", "#E3AB5E"]},
+  {id: "lotus", naam: "Lotus Biscoff", prijs: 3.25, gram: 120, foto: "koek-lotus.webp",
+   kort: "Speculoospasta door het deeg, kruimels van de koek erdoor en een hele Biscoff op de bovenkant.",
+   tags: ["Biscoff", "Speculoos"], smaak: {Choco: 2, Zoet: 5, Krokant: 4},
+   seed: 41, deeg: ["#DFA96F", "#C68A4B"], korst: "#95602A", brokken: ["#C07F3C", "#995E26", "#F0DCC0"]},
+  {id: "kinder", naam: "Kinderchocolade", prijs: 3.25, gram: 120, foto: "koek-kinder.webp",
+   kort: "Melkchocoladedeeg met stukken Kinderchocolade die smelten tot een wit-bruine kern.",
+   tags: ["Kinderchocolade", "Melk"], smaak: {Choco: 4, Zoet: 5, Krokant: 1},
+   seed: 67, deeg: ["#E7C491", "#D2A469"], korst: "#A3713C", brokken: ["#8A5A33", "#FBF3E5", "#6E4524"]},
+  {id: "pistache", naam: "Pistache", prijs: 3.25, gram: 120, foto: "koek-pistache.webp",
+   vlag: "November special",
+   kort: "Pistachepasta door het deeg, gehakte pistachenoten erdoor en witte chocolade die wegsmelt. Alleen in november, op = op.",
+   tags: ["Pistache", "Witte chocolade", "Noten"], smaak: {Choco: 2, Zoet: 4, Krokant: 3},
+   seed: 53, deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E", brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"]},
+  {id: "chocchip", naam: "Chocolate chip", prijs: 3.25, gram: 120, foto: "koek-chocchip.webp",
+   vlag: "Bestseller",
+   kort: "De klassieker: roomboterdeeg dat 48 uur heeft gerust en grove brokken chocolade erdoor.",
+   tags: ["Melkchocolade"], smaak: {Choco: 4, Zoet: 4, Krokant: 2},
+   seed: 89, deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]}
+];
+const EERSTEPRIJZEN = {stukPrijs: 3.25, bundelAantal: 4, bundelPrijs: 12.00,
+  maxPerBestelling: 20,
+  boxen: [{koekjes: 4, prijs: 12.00}, {koekjes: 5, prijs: 15.00}, {koekjes: 6, prijs: 18.00}],
+  actie: {aan: false, naam: "", banner: "", stukPrijs: 0, tot: "",
+          kop: "", lead: "", mandje: "", sticker: "", faq: ""}};
+
+// Vier deegkleuren om uit te kiezen voor een nieuw koekje.
+const DEEGKLEUREN = [
+  {wat: "Licht",      deeg: ["#EFE3CB", "#DCCAAD"], korst: "#B6A07B", brokken: ["#241F1E", "#15110F", "#F7F2E7"]},
+  {wat: "Goudbruin",  deeg: ["#E7BE85", "#D3A165"], korst: "#A9743C", brokken: ["#6B4423", "#7C4F2A", "#5A3517"]},
+  {wat: "Karamel",    deeg: ["#E9BC80", "#D29C56"], korst: "#A26C2E", brokken: ["#B5762C", "#8A5420", "#E3AB5E"]},
+  {wat: "Groen",      deeg: ["#DCD9A4", "#C3C280"], korst: "#9C9A4E", brokken: ["#7C8F43", "#FBF6E6", "#5E6F2E"]}
+];
+
+let assortiment = EERSTEOPZET.map(k => Object.assign({}, k));
+let prijsBlad = JSON.parse(JSON.stringify(EERSTEPRIJZEN));
+
+let KOEKJES = {};
+let PRIJZEN = {};
+let STUKS = {};
+let SOORTEN = [];
 const isBox = id => id.indexOf("box") === 0;
+
+// Uit het assortiment en het prijsblad bouwen we de lijstjes waar de rest
+// van de portal mee rekent.
+function winkelOpbouwen(){
+  KOEKJES = {}; PRIJZEN = {}; STUKS = {}; SOORTEN = [];
+  assortiment.forEach(function(k){
+    KOEKJES[k.id] = {naam: k.naam, seed: k.seed, deeg: k.deeg, korst: k.korst, brokken: k.brokken};
+    PRIJZEN[k.id] = k.prijs;
+    SOORTEN.push(k.id);
+  });
+  (prijsBlad.boxen || []).forEach(function(b){
+    const id = "box" + b.koekjes;
+    PRIJZEN[id] = b.prijs;
+    STUKS[id] = b.koekjes;
+    SOORTEN.push(id);
+  });
+  BUNDEL = {aantal: prijsBlad.bundelAantal, prijs: prijsBlad.bundelPrijs, stuk: prijsBlad.stukPrijs};
+  ACTIE = Object.assign({aan: false}, prijsBlad.actie || {});
+  actieVerlopen();
+}
 
 /* De actie van de week — moet hetzelfde staan als op de website, anders reken
    je hier een ander bedrag dan wat de klant daar zag. Op false zetten en alles
    is weer gewoon. */
-const ACTIE = {aan: true, tot: "2026-10-24", naam: "Herfstactie", stukPrijs: 2.95};
-if (ACTIE.aan && ACTIE.tot){
+let ACTIE = {aan: false};
+function actieVerlopen(){
+  if (!ACTIE.aan || !ACTIE.tot) return;
   const eindActie = new Date(ACTIE.tot + "T23:59:59");
   if (!isNaN(eindActie.getTime()) && new Date() > eindActie) ACTIE.aan = false;
 }
@@ -805,9 +958,31 @@ const nuPrijs = id => ACTIE.aan
   : (PRIJZEN[id] || 0);
 // De combideal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
 // Een verrassingsbox heeft een eigen prijs en telt daar dus niet in mee.
-const BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
-const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
-  * (BUNDEL.aantal * BUNDEL.stuk - BUNDEL.prijs) * 100) / 100;
+let BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
+// De combideal rekent met de echte prijzen in het mandje. Sinds elk koekje
+// zijn eigen prijs kan hebben, kan een groepje van vier niet meer zomaar op
+// een vaste prijs worden gezet: we tellen per groepje de goedkoopste eerst,
+// zodat de korting nooit meer is dan wat die koekjes samen kosten.
+function kortingOverPrijzen(prijzen){
+  if (!BUNDEL.aantal || BUNDEL.aantal < 1) return 0;
+  const rij = prijzen.slice().sort((a, b) => a - b);
+  let kort = 0;
+  for (let i = 0; i + BUNDEL.aantal <= rij.length; i += BUNDEL.aantal){
+    const som = rij.slice(i, i + BUNDEL.aantal).reduce((n, p) => n + p, 0);
+    if (som > BUNDEL.prijs) kort += som - BUNDEL.prijs;
+  }
+  return Math.round(kort * 100) / 100;
+}
+
+// Een rijtje prijzen uit aantallen per soort, boxen tellen niet mee.
+function prijzenUitAantallen(aantallen){
+  const rij = [];
+  Object.keys(aantallen || {}).forEach(function(id){
+    if (isBox(id)) return;
+    for (let i = 0; i < (aantallen[id] || 0); i++) rij.push(PRIJZEN[id] || 0);
+  });
+  return rij;
+}
 const NAAMVAN = id => isBox(id)
   ? "Verrassingsbox" + (STUKS[id] ? " (" + STUKS[id] + " koekjes)" : "")
   : (KOEKJES[id] ? KOEKJES[id].naam : id);
@@ -867,8 +1042,8 @@ const VOLGENDE = {nieuw: "bevestigd", bevestigd: "gebakken", gebakken: "ingepakt
 // Loopt er een actie, dan ziet Zara dat meteen: de prijzen in het formulier
 // staan doorgestreept en bovenin staat een strookje.
 function actieStrookTonen(){
-  if (!ACTIE.aan) return;
   const strook = $("#actieStrook");
+  if (!ACTIE.aan){ strook.hidden = true; return; }
   strook.textContent = ACTIE.naam + ": elk koekje " + euro(ACTIE.stukPrijs)
     + " in plaats van " + euro(BUNDEL.stuk)
     + (ACTIE.tot ? " \u00b7 t/m " + new Date(ACTIE.tot + "T12:00:00")
@@ -877,6 +1052,7 @@ function actieStrookTonen(){
 }
 
 async function start(){
+  winkelOpbouwen();
   actieStrookTonen();
   // Twee koekjes als versiering. Via SOORTEN, zodat een andere smaaknaam
   // dit nooit meer onderuit kan halen.
@@ -906,8 +1082,16 @@ async function start(){
   fa.onAuthStateChanged(auth, function(gebruiker){
     $("#inlogScherm").hidden = !!gebruiker;
     $("#app").hidden = !gebruiker;
-    if (gebruiker){ luister(); recensiesVolgen(); slotsLaden(); }
-    else { losmaken(); recensiesLosmaken(); }
+    if (gebruiker){ luister(); recensiesVolgen(); slotsLaden(); assortimentVolgen(); pauzeLaden(); }
+    else {
+      losmaken();
+      recensiesLosmaken();
+      if (stopAssortiment) stopAssortiment();
+      if (stopPrijzen) stopPrijzen();
+      if (stopVakantie) stopVakantie();
+      stopAssortiment = stopPrijzen = stopVakantie = null;
+      winkelGeladen = false;
+    }
   });
 }
 
@@ -1213,7 +1397,7 @@ function formulierSom(){
   });
   koekjes += formulier.gratisAantal || 0;
   // Loopt er een actie, dan die; anders de combideal van vier voor € 12.
-  if (!ACTIE.aan) kort = bundelKorting(los);
+  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(aantallen));
   kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
@@ -1663,55 +1847,322 @@ async function reactieDoen(id, wat){
   }
 }
 
-/* ---------- wat er te koop is ----------
-   In één documentje staat per koekje of het aan of uit staat, en waarom.
-   De webshop luistert daar live naar, dus een koekje uitzetten is meteen
-   te zien op de site. */
+/* ---------- het assortiment ----------
+   Alles wat er te koop is staat in winkel/assortiment, en de prijzen in
+   winkel/prijzen. De website leest diezelfde twee documentjes, dus wat je
+   hier verandert is daar meteen te zien. */
 const REDENEN = ["Uitverkocht", "Deze week niet", "Tijdelijk niet te bestellen", "Even geen voorraad"];
-let winkel = {};
 let winkelGeladen = false;
+let stopAssortiment = null, stopPrijzen = null;
 
-async function winkelLaden(){
+function assortimentVolgen(){
   if (winkelGeladen || !db) return;
+  winkelGeladen = true;
+
+  stopAssortiment = fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "assortiment"),
+    function(snap){
+      const d = snap.exists() ? snap.data() : null;
+      if (d && Array.isArray(d.koekjes) && d.koekjes.length){
+        assortiment = d.koekjes.map(k => Object.assign({}, k));
+      } else if (!snap.exists()){
+        eersteKeerVullen();                 // nog nooit opgeslagen: zet het klaar
+      }
+      winkelOpbouwen();
+      koekjesTekenen();
+      tekenOverzicht();
+      tekenLijst();
+    },
+    function(fout){
+      $("#koekjesBeheer").innerHTML = '<p class="leeg">Het assortiment ophalen lukte niet: '
+        + veilig(fout.code || fout.message) + '</p>';
+    });
+
+  stopPrijzen = fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "prijzen"),
+    function(snap){
+      if (snap.exists()) prijsBlad = Object.assign({}, EERSTEPRIJZEN, snap.data() || {});
+      winkelOpbouwen();
+      vulPrijsvelden();
+      koekjesTekenen();
+      tekenOverzicht();
+      tekenLijst();
+    },
+    function(){ /* dan rekenen we met wat we hebben */ });
+}
+
+async function eersteKeerVullen(){
   try {
-    const snap = await fx.getDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "koekjes"));
-    winkel = snap.exists() ? (snap.data() || {}) : {};
-    winkelGeladen = true;
+    await assortimentOpslaan(true);
+    await prijzenOpslaan(true);
+    melden("Het assortiment staat nu in de database.");
   } catch (fout){
-    melden("De koekjes ophalen lukte niet: " + (fout.code || fout.message));
+    melden("Klaarzetten lukte niet: " + (fout.code || fout.message));
   }
-  koekjesTekenen();
+}
+
+async function assortimentOpslaan(stil){
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "assortiment"),
+                    {koekjes: assortiment, bijgewerkt: fx.serverTimestamp()});
+    if (!stil) melden("Opgeslagen.");
+    return true;
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+    return false;
+  }
+}
+
+async function prijzenOpslaan(stil){
+  try {
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "prijzen"),
+                    Object.assign({}, prijsBlad, {bijgewerkt: fx.serverTimestamp()}));
+    if (!stil) melden("Prijzen opgeslagen.");
+    return true;
+  } catch (fout){
+    melden("Opslaan lukte niet: " + (fout.code || fout.message));
+    return false;
+  }
+}
+
+const koekVan = id => assortiment.filter(k => k.id === id)[0];
+
+// Een nieuw koekje krijgt een eigen nummertje dat niet botst met de rest.
+function nieuwKoekNummer(naam){
+  let kaal = String(naam || "koekje").toLowerCase()
+    .normalize("NFD").replace(/[^a-z0-9]/g, "").slice(0, 14) || "koekje";
+  let nr = kaal, n = 2;
+  while (koekVan(nr)) nr = kaal + n++;
+  return nr;
 }
 
 function koekjesTekenen(){
-  const soorten = SOORTEN.filter(id => !isBox(id));
-  $("#koekjesBeheer").innerHTML = soorten.map(function(id){
-    const stand = winkel[id] || {};
-    const uit = stand.aan === false;
-    const reden = stand.reden || REDENEN[0];
-    return '<div class="beheerrij">'
-      + koekSVG(KOEKJES[id])
-      + '<div><div class="naam">' + NAAMVAN(id) + '</div>'
-      +   '<div class="stand' + (uit ? " uit" : "") + '">'
-      +     (uit ? veilig(reden) : "Gewoon te bestellen") + '</div>'
-      +   (uit ? '<select data-reden="' + id + '">'
-            + REDENEN.map(r => '<option value="' + r + '"' + (r === reden ? " selected" : "") + '>'
-                + r + '</option>').join("")
-            + '</select>' : "")
+  if (!$("#koekjesBeheer")) return;
+  $("#koekjesBeheer").innerHTML = assortiment.map(function(k, i){
+    const uit = k.aan === false;
+    const labels = (k.tags || []).join(", ");
+    const kleurNr = DEEGKLEUREN.map(d => d.korst).indexOf(k.korst);
+    return '<div class="koekkaart' + (uit ? " uit" : "") + '">'
+      + '<div class="koekkop">'
+      +   koekSVG(KOEKJES[k.id])
+      +   '<div class="koekwie"><b>' + veilig(k.naam) + '</b>'
+      +     '<span>' + euro(k.prijs) + ' \u00b7 ' + (k.gram || 120) + ' g'
+      +       (uit ? ' \u00b7 <i class="uitje">' + veilig(k.reden || REDENEN[0]) + '</i>' : "")
+      +     '</span></div>'
+      +   '<div class="koekknoppen">'
+      +     '<button class="knopje" data-koekop="omhoog" data-id="' + k.id + '" type="button"'
+      +       (i === 0 ? " disabled" : "") + ' aria-label="Omhoog">\u2191</button>'
+      +     '<button class="knopje" data-koekop="omlaag" data-id="' + k.id + '" type="button"'
+      +       (i === assortiment.length - 1 ? " disabled" : "") + ' aria-label="Omlaag">\u2193</button>'
+      +     '<button class="knopje' + (uit ? " uit" : "") + '" data-koekop="schakel" data-id="' + k.id + '" type="button">'
+      +       (uit ? "Zet aan" : "Zet uit") + '</button>'
+      +     '<button class="knopje" data-koekop="weg" data-id="' + k.id + '" type="button" aria-label="Weghalen">\u2715</button>'
+      +   '</div>'
       + '</div>'
-      + '<button class="knopje' + (uit ? " uit" : "") + '" data-schakel="' + id + '" type="button">'
-      +   (uit ? "Zet aan" : "Zet uit") + '</button>'
+      + '<details class="koekmeer"><summary>Bewerken</summary><div class="koekvelden">'
+      +   veld(k.id, "naam", "Naam", k.naam)
+      +   veld(k.id, "prijs", "Prijs", k.prijs, "number")
+      +   veld(k.id, "gram", "Gram deeg", k.gram || 120, "number")
+      +   veld(k.id, "vlag", "Vlaggetje op de foto", k.vlag || "")
+      +   '<div class="koekveld breed"><label for="v-kort-' + k.id + '">Omschrijving</label>'
+      +     '<textarea id="v-kort-' + k.id + '" data-koekveld="kort" data-id="' + k.id + '" rows="3" maxlength="300">'
+      +     veilig(k.kort || "") + '</textarea></div>'
+      +   '<div class="koekveld breed"><label for="v-tags-' + k.id + '">Labels, met komma\u2019s ertussen</label>'
+      +     '<input id="v-tags-' + k.id + '" data-koekveld="tags" data-id="' + k.id + '" value="'
+      +     veilig(labels) + '" maxlength="90"></div>'
+      +   '<div class="koekveld"><label for="v-kleur-' + k.id + '">Kleur van het tekeningetje</label>'
+      +     '<select id="v-kleur-' + k.id + '" data-koekveld="kleur" data-id="' + k.id + '">'
+      +     DEEGKLEUREN.map((d, n) => '<option value="' + n + '"' + (n === kleurNr ? " selected" : "") + '>'
+            + d.wat + '</option>').join("")
+      +     '</select></div>'
+      +   (uit ? '<div class="koekveld"><label for="v-reden-' + k.id + '">Waarom niet te bestellen</label>'
+      +     '<select id="v-reden-' + k.id + '" data-koekveld="reden" data-id="' + k.id + '">'
+      +     REDENEN.map(r => '<option value="' + r + '"' + (r === (k.reden || REDENEN[0]) ? " selected" : "") + '>'
+            + r + '</option>').join("")
+      +     '</select></div>' : "")
+      + '</div></details>'
       + '</div>';
-  }).join("");
+  }).join("")
+  + '<p class="uitleg" style="margin-top:14px">Een nieuw koekje krijgt een getekend koekje op de '
+  + 'website, geen foto. Stuur me de foto, dan zet ik die erbij.</p>';
 }
 
-async function winkelOpslaan(id, stand){
-  winkel[id] = stand;
+function veld(id, naam, wat, waarde, soort){
+  return '<div class="koekveld"><label for="v-' + naam + '-' + id + '">' + wat + '</label>'
+    + '<input id="v-' + naam + '-' + id + '" data-koekveld="' + naam + '" data-id="' + id + '"'
+    + ' type="' + (soort || "text") + '"' + (soort === "number" ? ' step="0.05" min="0"' : ' maxlength="60"')
+    + ' value="' + veilig(String(waarde)) + '"></div>';
+}
+
+function koekVeldZetten(id, veldnaam, waarde){
+  const k = koekVan(id);
+  if (!k) return;
+  if (veldnaam === "prijs" || veldnaam === "gram"){
+    const n = parseFloat(String(waarde).replace(",", "."));
+    if (isNaN(n) || n <= 0){ melden("Vul daar een getal in."); koekjesTekenen(); return; }
+    k[veldnaam] = veldnaam === "gram" ? Math.round(n) : Math.round(n * 100) / 100;
+  } else if (veldnaam === "tags"){
+    k.tags = String(waarde).split(",").map(t => t.trim()).filter(Boolean).slice(0, 4);
+  } else if (veldnaam === "kleur"){
+    const d = DEEGKLEUREN[Number(waarde)] || DEEGKLEUREN[0];
+    k.deeg = d.deeg; k.korst = d.korst; k.brokken = d.brokken;
+  } else if (veldnaam === "naam"){
+    const naam = String(waarde).trim().slice(0, 40);
+    if (!naam){ melden("Een koekje moet een naam hebben."); koekjesTekenen(); return; }
+    k.naam = naam;
+  } else {
+    k[veldnaam] = String(waarde).trim().slice(0, 300);
+  }
+  winkelOpbouwen();
   koekjesTekenen();
+  assortimentOpslaan();
+}
+
+async function koekOp(id, wat){
+  const i = assortiment.findIndex(k => k.id === id);
+  if (i < 0) return;
+  const k = assortiment[i];
+  if (wat === "omhoog" && i > 0){
+    assortiment.splice(i - 1, 0, assortiment.splice(i, 1)[0]);
+  } else if (wat === "omlaag" && i < assortiment.length - 1){
+    assortiment.splice(i + 1, 0, assortiment.splice(i, 1)[0]);
+  } else if (wat === "schakel"){
+    k.aan = k.aan === false;
+    if (k.aan) k.reden = "";
+    else if (!k.reden) k.reden = REDENEN[0];
+  } else if (wat === "weg"){
+    if (assortiment.length <= 1){ melden("Er moet minstens \u00e9\u00e9n koekje blijven."); return; }
+    const zeker = await bevestig("Dit koekje weghalen?",
+      k.naam + " verdwijnt helemaal van de website. Wil je hem alleen even niet verkopen, "
+      + "gebruik dan Zet uit: dan blijft hij staan met uitverkocht erover.", "Weghalen");
+    if (!zeker) return;
+    assortiment.splice(i, 1);
+  } else {
+    return;
+  }
+  winkelOpbouwen();
+  koekjesTekenen();
+  assortimentOpslaan();
+}
+
+function koekErbij(){
+  const nr = nieuwKoekNummer("nieuw koekje");
+  const d = DEEGKLEUREN[1];
+  assortiment.push({
+    id: nr, naam: "Nieuw koekje", kort: "Vertel hier wat erin zit.",
+    prijs: prijsBlad.stukPrijs || 3.25, gram: 120, tags: [], vlag: "", foto: "",
+    smaak: {Choco: 3, Zoet: 3, Krokant: 3},
+    seed: 10 + Math.floor(Math.random() * 90),
+    deeg: d.deeg, korst: d.korst, brokken: d.brokken, aan: false, reden: REDENEN[2]
+  });
+  winkelOpbouwen();
+  koekjesTekenen();
+  assortimentOpslaan();
+  melden("Toegevoegd. Hij staat nog uit, zet hem aan als hij klaar is.");
+}
+
+/* ---------- prijzen, acties en vakantie ---------- */
+const getal = (sel, standaard) => {
+  const n = parseFloat(String($(sel).value).replace(",", "."));
+  return isNaN(n) || n <= 0 ? standaard : n;
+};
+
+function vulPrijsvelden(){
+  if (!$("#pStuk")) return;
+  $("#pStuk").value = prijsBlad.stukPrijs;
+  $("#pMax").value = prijsBlad.maxPerBestelling || 20;
+  $("#pBundelAantal").value = prijsBlad.bundelAantal;
+  $("#pBundelPrijs").value = prijsBlad.bundelPrijs;
+  $("#pBoxen").value = (prijsBlad.boxen || []).map(b => b.koekjes + "=" + b.prijs).join(", ");
+  const a = prijsBlad.actie || {};
+  $("#pActieAan").checked = !!a.aan;
+  $("#pActieVelden").hidden = !a.aan;
+  $("#pActieNaam").value = a.naam || "";
+  $("#pActiePrijs").value = a.stukPrijs || "";
+  $("#pActieTot").value = a.tot || "";
+  $("#pActieBanner").value = a.banner || "";
+  $("#pActieKop").value = a.kop || "";
+  $("#pActieLead").value = a.lead || "";
+  $("#pActieSticker").value = a.sticker || "";
+  $("#pActieMandje").value = a.mandje || "";
+  $("#pActieFaq").value = a.faq || "";
+}
+
+// "4=12, 5=15" wordt een rijtje verrassingsboxen.
+function boxenLezen(tekst){
+  return String(tekst).split(",").map(function(stuk){
+    const d = stuk.split("=");
+    const n = parseInt(d[0], 10), p = parseFloat(String(d[1] || "").replace(",", "."));
+    return (n > 0 && p > 0) ? {koekjes: n, prijs: Math.round(p * 100) / 100} : null;
+  }).filter(Boolean).slice(0, 6);
+}
+
+function prijsveldenLezen(){
+  const dozen = boxenLezen($("#pBoxen").value);
+  if (!dozen.length){ melden("Vul de boxen in als 4=12, 5=15."); return; }
+  const aan = $("#pActieAan").checked;
+  const actiePrijs = getal("#pActiePrijs", 0);
+  if (aan && !actiePrijs){ melden("Vul een actieprijs in."); return; }
+  prijsBlad = {
+    stukPrijs: getal("#pStuk", prijsBlad.stukPrijs),
+    maxPerBestelling: Math.round(getal("#pMax", 20)),
+    bundelAantal: Math.round(getal("#pBundelAantal", 4)),
+    bundelPrijs: getal("#pBundelPrijs", 12),
+    boxen: dozen,
+    actie: {
+      aan: aan,
+      naam: $("#pActieNaam").value.trim().slice(0, 40) || "Actie",
+      stukPrijs: actiePrijs,
+      tot: $("#pActieTot").value || "",
+      banner: $("#pActieBanner").value.trim().slice(0, 90),
+      kop: $("#pActieKop").value.trim().slice(0, 60),
+      lead: $("#pActieLead").value.trim().slice(0, 400),
+      sticker: $("#pActieSticker").value.trim().slice(0, 30),
+      mandje: $("#pActieMandje").value.trim().slice(0, 90),
+      faq: $("#pActieFaq").value.trim().slice(0, 300)
+    }
+  };
+  winkelOpbouwen();
+  vulPrijsvelden();
+  actieStrookTonen();
+  tekenLijst();
+  if (formulier) tekenFormulierItems();
+  prijzenOpslaan();
+}
+
+/* ---------- even geen bakdagen ---------- */
+let vakantie = {aan: false};
+let stopVakantie = null;
+
+function pauzeLaden(){
+  if (stopVakantie || !db) return;
+  stopVakantie = fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "pauze"), function(snap){
+    vakantie = snap.exists() ? (snap.data() || {aan: false}) : {aan: false};
+    vulPauzevelden();
+  }, function(){ /* niet erg */ });
+}
+
+function vulPauzevelden(){
+  if (!$("#vAan")) return;
+  $("#vAan").checked = !!vakantie.aan;
+  $("#vVan").value = vakantie.van || "";
+  $("#vTot").value = vakantie.tot || "";
+  $("#vKop").value = vakantie.kop || "";
+  $("#vTekst").value = vakantie.tekst || "";
+  $("#pauzeEtiket").textContent = vakantie.aan
+    ? (vakantie.van || vakantie.tot ? (vakantie.van || "nu") + " t/m " + (vakantie.tot || "verder") : "staat aan")
+    : "oven staat aan";
+}
+
+async function pauzeOpslaan(){
+  const aan = $("#vAan").checked;
+  const van = $("#vVan").value, tot = $("#vTot").value;
+  if (aan && van && tot && van > tot){ melden("De einddatum ligt voor de begindatum."); return; }
+  vakantie = {aan: aan, van: van, tot: tot,
+              kop: $("#vKop").value.trim().slice(0, 40),
+              tekst: $("#vTekst").value.trim().slice(0, 200)};
   try {
-    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "koekjes"),
-                    {[id]: stand}, {merge: true});
-    melden(NAAMVAN(id) + (stand.aan === false ? " staat uit." : " staat weer aan."));
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "pauze"), vakantie);
+    vulPauzevelden();
+    melden(aan ? "De website zegt nu dat je er even niet bent." : "De oven staat weer aan.");
   } catch (fout){
     melden("Opslaan lukte niet: " + (fout.code || fout.message));
   }
@@ -1966,7 +2417,7 @@ function lijstSom(aantallen){
     if (!isBox(id)) los += n;
     if (ACTIE.aan) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
   });
-  if (!ACTIE.aan) kort = bundelKorting(los);
+  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(aantallen));
   kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
@@ -2190,10 +2641,11 @@ async function weekOpslaan(velden){
 
 /* ---------- klikken ---------- */
 document.addEventListener("change", function(e){
+  if (e.target.id === "pActieAan"){ $("#pActieVelden").hidden = !e.target.checked; return; }
+  const koekveld = e.target.closest("[data-koekveld]");
+  if (koekveld){ koekVeldZetten(koekveld.dataset.id, koekveld.dataset.koekveld, koekveld.value); return; }
   const slotVak = e.target.closest("[data-slot]");
   if (slotVak){ slotVeld(Number(slotVak.dataset.i), slotVak.dataset.slot, slotVak.value); return; }
-  const reden = e.target.closest("[data-reden]");
-  if (reden){ winkelOpslaan(reden.dataset.reden, {aan: false, reden: reden.value}); return; }
   const stap = e.target.closest("[data-stap]");
   if (stap){ statusZetten(stap.dataset.stap, stap.value); return; }
   if (e.target.id === "kanaalFilter"){ kanaalFilter = e.target.value; tekenLijst(); }
@@ -2246,7 +2698,7 @@ document.addEventListener("click", function(e){
     $("#vlakData").hidden = tab !== "data";
     $("#vlakInstellingen").hidden = tab !== "instellingen";
     if (tab === "data") dataLaden();
-    if (tab === "koekjes") winkelLaden();
+    if (tab === "koekjes") assortimentVolgen();
     return;
   }
   if (e.target.closest("#zoekWis")){ zoek = ""; $("#zoekVeld").value = ""; zoekUitvoeren(); return; }
@@ -2305,14 +2757,11 @@ document.addEventListener("click", function(e){
   if (e.target.closest("#bakmailKnop")){ bakoverzichtMailen(); return; }
   const reactie = e.target.closest("[data-reactie]");
   if (reactie){ reactieDoen(reactie.dataset.id, reactie.dataset.reactie); return; }
-  const schakel = e.target.closest("[data-schakel]");
-  if (schakel){
-    const id = schakel.dataset.schakel, nu = winkel[id] || {};
-    winkelOpslaan(id, nu.aan === false
-      ? {aan: true, reden: ""}
-      : {aan: false, reden: nu.reden || REDENEN[0]});
-    return;
-  }
+  const koekknop = e.target.closest("[data-koekop]");
+  if (koekknop){ koekOp(koekknop.dataset.id, koekknop.dataset.koekop); return; }
+  if (e.target.closest("#koekErbij")){ koekErbij(); return; }
+  if (e.target.closest("#prijsOpslaan")){ prijsveldenLezen(); return; }
+  if (e.target.closest("#pauzeOpslaan")){ pauzeOpslaan(); return; }
   if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
   if (e.target.closest("#lijstMaken")){ lijstAanmaken(); return; }
   if (e.target.closest("#lijstDicht")){ lijstSluiten(); return; }

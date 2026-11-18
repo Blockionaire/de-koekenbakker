@@ -1497,8 +1497,33 @@ const BINNENKORT = null;
 // wegvalt of als er nog niets in de portal is gezet.
 const STANDAARDKOEKJES = JSON.parse(JSON.stringify(KOEKJES));
 let BUNDEL = {aantal: CONFIG.bundelAantal, prijs: CONFIG.bundelPrijs};
-const bundelKorting = n => Math.round(Math.floor(n / BUNDEL.aantal)
-  * (BUNDEL.aantal * CONFIG.stukPrijs - BUNDEL.prijs) * 100) / 100;
+// De combideal rekent met de echte prijzen in het mandje. Sinds elk koekje
+// zijn eigen prijs kan hebben, kan een groepje van vier niet meer zomaar op
+// een vaste prijs worden gezet: we tellen per groepje de goedkoopste eerst,
+// zodat de korting nooit meer is dan wat die koekjes samen kosten.
+function kortingOverPrijzen(prijzen){
+  if (!BUNDEL.aantal || BUNDEL.aantal < 1) return 0;
+  const rij = prijzen.slice().sort((a, b) => a - b);
+  let kort = 0;
+  for (let i = 0; i + BUNDEL.aantal <= rij.length; i += BUNDEL.aantal){
+    const som = rij.slice(i, i + BUNDEL.aantal).reduce((n, p) => n + p, 0);
+    if (som > BUNDEL.prijs) kort += som - BUNDEL.prijs;
+  }
+  return Math.round(kort * 100) / 100;
+}
+
+// Alle losse koekjes in het mandje, elk met zijn eigen prijs.
+function mandjePrijzen(){
+  const rij = [];
+  Object.keys(mandje).forEach(function(id){
+    if (isBox(id)) return;
+    const k = vind(id);
+    if (!k) return;
+    for (let i = 0; i < mandje[id]; i++) rij.push(k.prijs);
+  });
+  return rij;
+}
+const bundelKorting = () => kortingOverPrijzen(mandjePrijzen());
 // De verrassingsbox in drie maten, elk met een eigen ronde prijs. Een box heeft
 // die prijs al in zich, dus de combideal telt er niet nog een keer overheen.
 const isBox = id => id.indexOf("box") === 0;
@@ -1836,7 +1861,7 @@ const losseSom = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vi
 // Tijdens een actie is de korting het verschil met de gewone prijs; anders
 // is het de combideal.
 function korting(){
-  if (!ACTIE.aan) return bundelKorting(losseKoekjes());
+  if (!ACTIE.aan) return bundelKorting();
   const uit = Object.keys(mandje).reduce(function(n, id){
     const k = vind(id);
     return n + mandje[id] * Math.max(0, gewonePrijs(k) - nuPrijs(k));
