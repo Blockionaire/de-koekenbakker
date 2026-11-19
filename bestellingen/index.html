@@ -1522,7 +1522,7 @@ function formulierSom(){
   });
   koekjes += formulier.gratisAantal || 0;
   // Loopt er een actie, dan die; anders de combideal van vier voor € 12.
-  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(aantallen));
+  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(formulier.aantallen));
   kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
