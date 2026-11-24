@@ -194,6 +194,12 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .koekkaart.uit{opacity:.72;border-style:dashed}
 .koekkaart.komt{border-color:var(--karamel);background:var(--zand)}
 .koekwie .komtje{font-style:normal;color:var(--karamel-diep);font-weight:600}
+.fotoveld{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.fotoveld label:first-child{grid-column:1 / -1}
+.koekfoto{width:68px;height:68px;object-fit:cover;border-radius:12px;border:2px solid var(--lijn)}
+.geenfoto{font-size:.84rem;color:var(--zacht)}
+.fotoknoppen{display:flex;gap:8px;flex-wrap:wrap}
+.fotokies{display:inline-flex;align-items:center;cursor:pointer}
 .standkiezer{border:2px solid var(--lijn);border-radius:999px;padding:7px 10px;background:var(--papier);
   font-family:var(--tekst);font-size:.82rem;color:var(--inkt)}
 .klaarzet{margin-top:14px;padding:14px;border:2px dashed var(--karamel);border-radius:14px;
@@ -2003,6 +2009,8 @@ function assortimentVolgen(){
         + veilig(fout.code || fout.message) + '</p>';
     });
 
+  fotosVolgen();
+
   stopPrijzen = fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "prijzen"),
     function(snap){
       if (snap.exists()) prijsBlad = Object.assign({}, EERSTEPRIJZEN, snap.data() || {});
@@ -2051,6 +2059,85 @@ async function prijzenOpslaan(stil){
 
 const koekVan = id => assortiment.filter(k => k.id === id)[0];
 
+/* ---------- foto's ----------
+   Een foto gaat niet in het assortiment zelf: dat document heeft een
+   grens van een megabyte en daar passen zeven foto's niet in. Elke foto
+   krijgt een eigen documentje in de winkel. Voor het opslaan maken we hem
+   eerst kleiner, zodat hij nooit te groot wordt en de site snel blijft. */
+let koekFotos = {};
+let stopFotos = null;
+const FOTOGRENS = 220 * 1024;   // zoveel mag een foto maximaal worden
+
+function fotosVolgen(){
+  if (stopFotos || !db) return;
+  stopFotos = fx.onSnapshot(fx.collection(db, "koekenbakker", RUIMTE, "winkel"), function(snap){
+    const nieuw = {};
+    snap.docs.forEach(function(d){
+      if (d.id.indexOf("foto-") !== 0) return;
+      const plaatje = (d.data() || {}).data;
+      if (plaatje) nieuw[d.id.slice(5)] = plaatje;
+    });
+    koekFotos = nieuw;
+    koekjesTekenen();
+  }, function(){ /* dan staat er geen foto bij */ });
+}
+
+// Verkleinen en comprimeren in de browser zelf. We proberen een paar
+// kwaliteiten tot hij klein genoeg is.
+function fotoKlaarmaken(bestand){
+  return new Promise(function(klaar, mis){
+    const lezer = new FileReader();
+    lezer.onerror = () => mis(new Error("Het bestand kon niet gelezen worden."));
+    lezer.onload = function(){
+      const plaatje = new Image();
+      plaatje.onerror = () => mis(new Error("Dat lijkt geen afbeelding."));
+      plaatje.onload = function(){
+        const maat = 700;
+        const schaal = Math.min(1, maat / Math.max(plaatje.width, plaatje.height));
+        const doek = document.createElement("canvas");
+        doek.width = Math.round(plaatje.width * schaal);
+        doek.height = Math.round(plaatje.height * schaal);
+        doek.getContext("2d").drawImage(plaatje, 0, 0, doek.width, doek.height);
+        let uit = "";
+        for (const kwaliteit of [0.82, 0.7, 0.6, 0.5, 0.4]){
+          uit = doek.toDataURL("image/webp", kwaliteit);
+          if (uit.length <= FOTOGRENS) break;
+        }
+        if (uit.length > FOTOGRENS) mis(new Error("Die foto blijft te groot, probeer een kleinere."));
+        else klaar(uit);
+      };
+      plaatje.src = lezer.result;
+    };
+    lezer.readAsDataURL(bestand);
+  });
+}
+
+async function fotoOpslaan(id, bestand){
+  if (!bestand) return;
+  melden("Bezig met de foto\u2026");
+  try {
+    const plaatje = await fotoKlaarmaken(bestand);
+    await fx.setDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "foto-" + id),
+                    {data: plaatje, bijgewerkt: fx.serverTimestamp()});
+    melden("Foto staat erop.");
+  } catch (fout){
+    melden(fout.message || "De foto opslaan lukte niet.");
+  }
+}
+
+async function fotoWeghalen(id){
+  const k = koekVan(id);
+  if (!await bevestig("Foto weghalen?",
+      "De site tekent dan weer een koekje in plaats van de foto van "
+      + ((k && k.naam) || "dit koekje") + ".", "Weghalen")) return;
+  try {
+    await fx.deleteDoc(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "foto-" + id));
+    melden("Foto weggehaald.");
+  } catch (fout){
+    melden("Dat lukte niet: " + (fout.code || fout.message));
+  }
+}
+
 // Een nieuw koekje krijgt een eigen nummertje dat niet botst met de rest.
 function nieuwKoekNummer(naam){
   let kaal = String(naam || "koekje").toLowerCase()
@@ -2061,10 +2148,35 @@ function nieuwKoekNummer(naam){
 }
 
 const STANDEN = [["aan", "Te koop"], ["uit", "Niet te bestellen"], ["binnenkort", "Binnenkort"]];
-const standVan = k => k.binnenkort ? "binnenkort" : (k.aan === false ? "uit" : "aan");
+
+// Is het ingestelde moment voorbij, dan is het koekje gewoon te koop. De
+// website rekent dat zelf ook zo uit, dus hier zien we hetzelfde.
+const slotVoorbij = k => !!(k.binnenkort && k.vanaf
+  && !isNaN(new Date(k.vanaf).getTime()) && new Date() >= new Date(k.vanaf));
+const standVan = k => (k.binnenkort && !slotVoorbij(k)) ? "binnenkort"
+  : (k.aan === false ? "uit" : "aan");
+
+// Een slot dat afgelopen is ruimen we op, zodat de gegevens kloppen met
+// wat er op de site staat.
+function afgelopenSlotenOpruimen(){
+  const klaar = assortiment.filter(slotVoorbij);
+  if (!klaar.length) return false;
+  klaar.forEach(function(k){
+    k.binnenkort = false;
+    k.vanaf = "";
+    k.aan = true;
+  });
+  winkelOpbouwen();
+  assortimentOpslaan(true);   // stil, de melding hieronder zegt het al
+  melden(klaar.length === 1
+    ? klaar[0].naam + " staat nu gewoon in de winkel."
+    : "Een paar koekjes staan nu gewoon in de winkel.");
+  return true;
+}
 
 function koekjesTekenen(){
   if (!$("#koekjesBeheer")) return;
+  afgelopenSlotenOpruimen();   // past het assortiment aan voordat we tekenen
   $("#koekjesBeheer").innerHTML = assortiment.map(function(k, i){
     const staat = standVan(k);
     const uit = staat === "uit";
@@ -2102,6 +2214,16 @@ function koekjesTekenen(){
       +   '<div class="koekveld breed"><label for="v-tags-' + k.id + '">Labels, met komma\u2019s ertussen</label>'
       +     '<input id="v-tags-' + k.id + '" data-koekveld="tags" data-id="' + k.id + '" value="'
       +     veilig(labels) + '" maxlength="90"></div>'
+      +   '<div class="koekveld breed fotoveld"><label>Foto</label>'
+      +     (koekFotos[k.id]
+              ? '<img class="koekfoto" src="' + koekFotos[k.id] + '" alt="">'
+              : '<span class="geenfoto">Nog geen foto, de site tekent dan een koekje</span>')
+      +     '<div class="fotoknoppen">'
+      +       '<label class="knopje fotokies">Foto kiezen'
+      +         '<input type="file" accept="image/*" data-foto="' + k.id + '" hidden></label>'
+      +       (koekFotos[k.id] ? '<button class="knopje" data-fotoweg="' + k.id
+              + '" type="button">Weghalen</button>' : "")
+      +     '</div></div>'
       +   '<div class="koekveld"><label for="v-kleur-' + k.id + '">Kleur van het tekeningetje</label>'
       +     '<select id="v-kleur-' + k.id + '" data-koekveld="kleur" data-id="' + k.id + '">'
       +     DEEGKLEUREN.map((d, n) => '<option value="' + n + '"' + (n === kleurNr ? " selected" : "") + '>'
@@ -2109,8 +2231,18 @@ function koekjesTekenen(){
       +     '</select></div>'
       +   (komt ? veld(k.id, "kop", "Kop op de kaart", k.kop || "")
             + veld(k.id, "etiket", "Sticker", k.etiket || "")
-            + '<div class="koekveld breed">' + veld(k.id, "wanneer", "Wanneer te bestellen", k.wanneer || "")
-            + '</div>' : "")
+            + '<div class="koekveld"><label for="v-vanaf-' + k.id + '">Gaat vanzelf live op</label>'
+            +   '<input id="v-vanaf-' + k.id + '" type="datetime-local" data-koekveld="vanaf" data-id="'
+            +   k.id + '" value="' + veilig(k.vanaf || "") + '"></div>'
+            + '<div class="koekveld"><label>Of een eigen tekst</label>'
+            +   '<input data-koekveld="wanneer" data-id="' + k.id + '" maxlength="80" value="'
+            +   veilig(k.wanneer || "") + '"></div>'
+            + '<p class="koekveld breed uitleg" style="margin:0">'
+            +   (k.vanaf ? 'Op dat moment gaat het slot er vanzelf af en is hij te bestellen. '
+                  + 'De site telt tot die tijd af.'
+                : 'Vul een moment in en het slot gaat er vanzelf af. Laat je het leeg, dan '
+                  + 'zet je hem zelf op Te koop wanneer je wil.')
+            + '</p>' : "")
       +   (uit ? '<div class="koekveld"><label for="v-reden-' + k.id + '">Waarom niet te bestellen</label>'
       +     '<select id="v-reden-' + k.id + '" data-koekveld="reden" data-id="' + k.id + '">'
       +     REDENEN.map(r => '<option value="' + r + '"' + (r === (k.reden || REDENEN[0]) ? " selected" : "") + '>'
@@ -2166,6 +2298,8 @@ function koekVeldZetten(id, veldnaam, waarde){
   } else if (veldnaam === "kleur"){
     const d = DEEGKLEUREN[Number(waarde)] || DEEGKLEUREN[0];
     k.deeg = d.deeg; k.korst = d.korst; k.brokken = d.brokken;
+  } else if (veldnaam === "vanaf"){
+    k.vanaf = String(waarde || "").slice(0, 20);
   } else if (veldnaam === "stand"){
     k.binnenkort = waarde === "binnenkort";
     k.aan = waarde !== "uit";
@@ -2873,6 +3007,12 @@ async function weekOpslaan(velden){
 
 /* ---------- klikken ---------- */
 document.addEventListener("change", function(e){
+  const fotoVak = e.target.closest("[data-foto]");
+  if (fotoVak){
+    fotoOpslaan(fotoVak.dataset.foto, fotoVak.files && fotoVak.files[0]);
+    fotoVak.value = "";
+    return;
+  }
   if (e.target.id === "pActieAan"){ $("#pActieVelden").hidden = !e.target.checked; return; }
   const koekveld = e.target.closest("[data-koekveld]");
   if (koekveld){ koekVeldZetten(koekveld.dataset.id, koekveld.dataset.koekveld, koekveld.value); return; }
@@ -2999,6 +3139,8 @@ document.addEventListener("click", function(e){
   const koekknop = e.target.closest("[data-koekop]");
   if (koekknop){ koekOp(koekknop.dataset.id, koekknop.dataset.koekop); return; }
   if (e.target.closest("#koekErbij")){ koekErbij(); return; }
+  const fotoWeg = e.target.closest("[data-fotoweg]");
+  if (fotoWeg){ fotoWeghalen(fotoWeg.dataset.fotoweg); return; }
   const opzet = e.target.closest("[data-opzet]");
   if (opzet){ opzetToevoegen(opzet.dataset.opzet); return; }
   if (e.target.closest("#prijsOpslaan")){ prijsveldenLezen(); return; }

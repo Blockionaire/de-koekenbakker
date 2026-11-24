@@ -334,6 +334,7 @@ button{font:inherit;color:inherit}
   background:var(--papier);border:2px solid var(--inkt);display:grid;place-items:center;
   font-size:1.1rem;box-shadow:3px 3px 0 rgba(46,34,23,.2)}
 .prijs--stil{color:var(--zacht);font-size:1.15rem}
+.binnenkort-datum .aftel{display:block;font-weight:400;color:var(--zacht);font-size:.86rem;margin-top:2px}
 .binnenkort-datum{font-family:var(--kop);font-weight:700;color:var(--karamel-diep);font-size:.98rem}
 /* het vlaggetje linksboven op de foto, bijvoorbeeld Bestseller */
 .vlag{position:absolute;top:10px;left:10px;background:var(--karamel-diep);color:var(--room);
@@ -1145,7 +1146,7 @@ function koekjeOpmaken(k, i){
     gram: typeof k.gram === "number" && k.gram > 0 ? k.gram : 120,
     tags: (k.tags || oud.tags || []).slice(0, 4).map(t => String(t).slice(0, 28)),
     vlag: k.vlag ? String(k.vlag).slice(0, 24) : "",
-    foto: k.foto || oud.foto || "",
+    foto: fotos[k.id] || k.foto || oud.foto || "",
     smaak: k.smaak || oud.smaak || {Choco: 3, Zoet: 3, Krokant: 3},
     seed: typeof k.seed === "number" ? k.seed : (oud.seed || (11 + i * 17)),
     deeg: deeg,
@@ -1154,6 +1155,7 @@ function koekjeOpmaken(k, i){
     aan: k.aan !== false,
     reden: String(k.reden || "").slice(0, 60),
     binnenkort: !!k.binnenkort,
+    vanaf: String(k.vanaf || "").slice(0, 20),
     kop: String(k.kop || "").slice(0, 60),
     wanneer: String(k.wanneer || "").slice(0, 80),
     etiket: String(k.etiket || "").slice(0, 24)
@@ -1161,8 +1163,8 @@ function koekjeOpmaken(k, i){
 }
 
 function assortimentBinnen(d){
-  const rij = (d && Array.isArray(d.koekjes) ? d.koekjes : [])
-    .map(koekjeOpmaken).filter(Boolean);
+  if (d && Array.isArray(d.koekjes)) ruwAssortiment = d.koekjes;
+  const rij = (ruwAssortiment || []).map(koekjeOpmaken).filter(Boolean);
   // Een leeg of kapot lijstje negeren we: dan blijft de site gewoon staan.
   if (rij.length){
     KOEKJES = rij;
@@ -1294,6 +1296,19 @@ async function verbind(){
     fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "assortiment"), function(snap){
       assortimentBinnen(snap.exists() ? snap.data() : null);
     }, function(){ /* dan staat het lijstje uit dit bestand er */ });
+
+    // De foto's die Zara zelf heeft geupload. Die staan per koekje in een
+    // eigen documentje, want samen zouden ze niet in \u00e9\u00e9n document passen.
+    fx.onSnapshot(fx.collection(db, "koekenbakker", RUIMTE, "winkel"), function(snap){
+      const nieuw = {};
+      snap.docs.forEach(function(d){
+        if (d.id.indexOf("foto-") !== 0) return;
+        const plaatje = (d.data() || {}).data;
+        if (plaatje) nieuw[d.id.slice(5)] = plaatje;
+      });
+      fotos = nieuw;
+      assortimentBinnen(null);
+    }, function(){ /* dan blijven de foto's uit de map staan */ });
 
     // Even geen bakdagen, bijvoorbeeld met vakantie.
     fx.onSnapshot(fx.doc(db, "koekenbakker", RUIMTE, "winkel", "pauze"), function(snap){
@@ -1494,7 +1509,31 @@ let KOEKJES = [
 // Een koekje dat je alvast laat zien maar nog niet verkoopt staat vervaagd
 // met een slotje erop. Dat zet je in de portal aan bij het koekje zelf; het
 // krijgt dan binnenkort: true mee en komt achteraan in het assortiment.
-const komtNog = k => !!(k && k.binnenkort);
+// Een koekje dat nog moet komen. Staat er een moment bij, dan telt dat:
+// zodra dat voorbij is gaat het slot er vanzelf af, zonder dat iemand er
+// iets voor hoeft te doen.
+function komtNog(k){
+  if (!k || !k.binnenkort) return false;
+  if (!k.vanaf) return true;
+  const moment = new Date(k.vanaf);
+  if (isNaN(moment.getTime())) return true;
+  return new Date() < moment;
+}
+
+// Hoe lang het nog duurt, in woorden.
+function nogTeGaan(wanneer){
+  const over = wanneer - new Date();
+  if (over <= 0) return "";
+  const min = Math.floor(over / 60000);
+  const dagen = Math.floor(min / 1440);
+  const uren = Math.floor((min % 1440) / 60);
+  const minuten = min % 60;
+  if (dagen > 0) return dagen + (dagen === 1 ? " dag" : " dagen")
+    + (uren ? " en " + uren + (uren === 1 ? " uur" : " uur") : "");
+  if (uren > 0) return uren + (uren === 1 ? " uur" : " uur")
+    + (minuten ? " en " + minuten + " min" : "");
+  return minuten + (minuten === 1 ? " minuut" : " minuten");
+}
 
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 // De koekjes en de prijzen zoals ze in dit bestand staan, als het netwerk
@@ -1544,6 +1583,8 @@ const vind = id => isBox(id) ? BOXEN.filter(b => b.id === id)[0] : KOEKJES.filte
 // Zodra het assortiment uit de portal komt, is dat de baas. Tot die tijd
 // geldt het oude lijstje met wat er aan- en uitstaat.
 let uitAssortiment = false;
+let fotos = {};            // foto's die Zara zelf heeft geupload
+let ruwAssortiment = null; // het assortiment zoals het binnenkwam
 let pauze = null;
 const koekje = id => KOEKJES.filter(k => k.id === id)[0];
 const stand = id => uitAssortiment ? (koekje(id) || {}) : (winkel[id] || {});
@@ -1592,6 +1633,23 @@ function bolletjes(n){
   for (let i = 1; i <= 5; i++) s += '<b class="' + (i <= n ? "aan" : "") + '"></b>';
   return s + '</span>';
 }
+// Staat er een moment bij, dan tellen we af. Anders staat er wat Zara
+// zelf heeft ingetypt.
+function aftelRegel(k){
+  if (k.vanaf){
+    const moment = new Date(k.vanaf);
+    if (!isNaN(moment.getTime())){
+      const over = nogTeGaan(moment);
+      const wanneer = moment.toLocaleDateString("nl-NL",
+        {weekday: "long", day: "numeric", month: "long"})
+        + " om " + moment.toLocaleTimeString("nl-NL", {hour: "2-digit", minute: "2-digit"});
+      return '<p class="binnenkort-datum">' + wanneer
+        + (over ? '<span class="aftel">nog ' + over + '</span>' : "") + '</p>';
+    }
+  }
+  return k.wanneer ? '<p class="binnenkort-datum">' + vrijeTekst(k.wanneer, 80) + '</p>' : "";
+}
+
 function binnenkortKaart(k){
   return '<article class="kaart kaart--binnenkort toon">'
     + '<div class="koek-slot koek-slot--wazig">'
@@ -1601,7 +1659,7 @@ function binnenkortKaart(k){
     + '<div class="kaart-tekst">'
     +   '<h3>' + vrijeTekst(k.kop || k.naam, 60) + '</h3>'
     +   '<p class="omschrijving">' + vrijeTekst(k.kort, 300) + '</p>'
-    +   (k.wanneer ? '<p class="binnenkort-datum">' + vrijeTekst(k.wanneer, 80) + '</p>' : "")
+    +   aftelRegel(k)
     + '</div>'
     + '<div class="kaart-voet">'
     +   '<span class="prijs prijs--stil">Binnenkort<small>nog even geduld</small></span>'
@@ -2525,7 +2583,20 @@ function sluitMoment(bakdagDatum){
   d.setHours(sluituur, 0, 0, 0);
   return d;
 }
+// Loopt er een slot af terwijl iemand op de site zit, dan tekenen we de
+// kaarten opnieuw zodat het koekje vanzelf te bestellen wordt.
+let slotStand = "";
+
+function slotenNakijken(){
+  const nu = KOEKJES.filter(k => k.binnenkort).map(k => k.id + (komtNog(k) ? ":dicht" : ":open")).join(",");
+  if (nu === slotStand) return;
+  const eerste = slotStand === "";
+  slotStand = nu;
+  if (!eerste){ tekenKaarten(); ververs(); }
+}
+
 function tikTak(){
+  slotenNakijken();
   const over = Math.max(0, volgendeBakdag() - new Date());
   const s = Math.floor(over / 1000);
   $("#kD").textContent = Math.floor(s / 86400);
