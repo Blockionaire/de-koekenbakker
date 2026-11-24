@@ -1623,12 +1623,24 @@ function uitverkochtOpruimen(){
     ? vind(weg[0]).naam + " is helaas niet meer te bestellen."
     : "Een paar koekjes uit je mandje zijn niet meer te bestellen.");
 }
+/* Een actie komt in twee soorten.
+
+   "prijs"  : elk koekje kost deze week minder. De prijs op de kaart gaat
+              omlaag en de oude prijs staat doorgestreept.
+   "gratis" : bij elke zoveel koekjes is er eentje gratis. De prijs per
+              koekje blijft dan gewoon staan; de korting zie je in het
+              mandje, want hij hangt af van hoeveel je er neemt. */
+const actieSoort = () => ACTIE.soort === "gratis" ? "gratis" : "prijs";
+const actieGroep = () => Math.max(2, (ACTIE.koop || 3) + (ACTIE.gratis || 1));
+const prijsActie = () => ACTIE.aan && actieSoort() === "prijs";
+const gratisActie = () => ACTIE.aan && actieSoort() === "gratis";
+
 // Wat iets normaal kost, en wat het deze week kost.
 const gewonePrijs = k => k.prijs;
-const nuPrijs = k => ACTIE.aan
+const nuPrijs = k => prijsActie()
   ? Math.round((k.koekjes || 1) * ACTIE.stukPrijs * 100) / 100
   : k.prijs;
-const afgeprijsd = k => ACTIE.aan && nuPrijs(k) < gewonePrijs(k);
+const afgeprijsd = k => prijsActie() && nuPrijs(k) < gewonePrijs(k);
 const koekjesVan = id => isBox(id) ? vind(id).koekjes : 1;
 
 function doosSVG(){
@@ -1942,8 +1954,22 @@ const koekjesTotaal = () => Object.keys(mandje).reduce((n, id) => n + mandje[id]
 const losseSom = () => Object.keys(mandje).reduce((n, id) => n + mandje[id] * vind(id).prijs, 0);
 // Tijdens een actie is de korting het verschil met de gewone prijs; anders
 // is het de combideal.
+// Bij elke groep is de goedkoopste gratis. We sorteren van goedkoop naar
+// duur en geven per groep de eerste weg, zodat de korting nooit groter is
+// dan wat die koekjes samen kosten.
+function gratisKorting(){
+  const rij = mandjePrijzen().sort((a, b) => a - b);
+  const groep = actieGroep(), weg = Math.max(1, ACTIE.gratis || 1);
+  let kort = 0;
+  for (let i = 0; i + groep <= rij.length; i += groep){
+    for (let n = 0; n < weg; n++) kort += rij[i + n];
+  }
+  return Math.round(kort * 100) / 100;
+}
+
 function korting(){
   if (!ACTIE.aan) return bundelKorting();
+  if (gratisActie()) return gratisKorting();
   const uit = Object.keys(mandje).reduce(function(n, id){
     const k = vind(id);
     return n + mandje[id] * Math.max(0, gewonePrijs(k) - nuPrijs(k));
@@ -1983,21 +2009,33 @@ function ververs(){
     : alles + " koekje" + (alles === 1 ? "" : "s")
       + (boxen ? " · " + boxen + " verrassingsbox" + (boxen === 1 ? "" : "en") : "");
 
-  // Hoeveel losse koekjes nog tot de volgende vier? Dat laat de spaarbalk zien.
-  const inRij = los % BUNDEL.aantal;
-  const totDeal = los === 0 ? BUNDEL.aantal : (BUNDEL.aantal - inRij) % BUNDEL.aantal;
-  const spaar = ACTIE.aan ? ACTIE.mandje : totDeal === 0 && los > 0
-    ? Math.floor(los / BUNDEL.aantal) + "× de combideal, je bespaart " + euro(kort) + "."
-    : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " tot "
-      + (kort > 0 ? "de volgende " : "") + BUNDEL.aantal + " voor " + euroNet(BUNDEL.prijs) + ".";
+  // Hoeveel losse koekjes nog tot de volgende groep? Dat laat de spaarbalk
+  // zien. Bij een actie met een gratis koekje telt die gewoon mee, want daar
+  // spaar je ook naartoe.
+  const maat = gratisActie() ? actieGroep() : BUNDEL.aantal;
+  const inRij = los % maat;
+  const totDeal = los === 0 ? maat : (maat - inRij) % maat;
+  let spaar;
+  if (gratisActie()){
+    spaar = totDeal === 0 && los > 0
+      ? Math.floor(los / maat) + "\u00d7 gratis erbij, je bespaart " + euro(kort) + "."
+      : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " en de volgende is gratis.";
+  } else if (ACTIE.aan){
+    spaar = ACTIE.mandje;
+  } else {
+    spaar = totDeal === 0 && los > 0
+      ? Math.floor(los / maat) + "\u00d7 de combideal, je bespaart " + euro(kort) + "."
+      : "Nog " + totDeal + " koekje" + (totDeal === 1 ? "" : "s") + " tot "
+        + (kort > 0 ? "de volgende " : "") + maat + " voor " + euroNet(BUNDEL.prijs) + ".";
+  }
   $("#spaarTekst").textContent = spaar;
   $("#dealTekst").textContent = spaar;
-  $(".baan-bar").hidden = ACTIE.aan;
+  $(".baan-bar").hidden = prijsActie();
   $("#spaarBalk").style.width = (los === 0 ? 0
-    : ((inRij === 0 ? BUNDEL.aantal : inRij) / BUNDEL.aantal) * 100) + "%";
+    : ((inRij === 0 ? maat : inRij) / maat) * 100) + "%";
 
   $$("#dealRij .gleuf").forEach(function(g, i){
-    g.classList.toggle("vol", (inRij === 0 && los > 0 ? BUNDEL.aantal : inRij) > i);
+    g.classList.toggle("vol", (inRij === 0 && los > 0 ? maat : inRij) > i);
   });
 
   // regels in de lade
@@ -2006,8 +2044,10 @@ function ververs(){
   if (ids.length === 0){
     body.innerHTML = '<div class="leeg"><span class="koek-plek" data-koek="chocchip"></span>'
       + '<p>Je mandje is nog leeg. '
-      + (ACTIE.aan ? "Deze week kost elk koekje " + euro(ACTIE.stukPrijs) + "."
-                   : BUNDEL.aantal + " koekjes kost " + euroNet(BUNDEL.prijs) + ".") + '</p>'
+      + (gratisActie()
+            ? "Deze week krijg je bij elke " + actieGroep() + " koekjes er \u00e9\u00e9n gratis."
+            : prijsActie() ? "Deze week kost elk koekje " + euro(ACTIE.stukPrijs) + "."
+            : BUNDEL.aantal + " koekjes kost " + euroNet(BUNDEL.prijs) + ".") + '</p>'
       + '<button class="knop" type="button" data-sluit-naar="#assortiment">Kies je koekjes</button></div>';
   } else {
     body.innerHTML = ids.map(function(id){
@@ -2025,7 +2065,8 @@ function ververs(){
       ? '<div class="regel regel--gratis"><span class="koek-plek" data-koek="chocchip"></span>'
         + '<div><h4>' + (ACTIE.aan ? ACTIE.naam : BUNDEL.aantal + ' voor ' + euroNet(BUNDEL.prijs)) + '</h4>'
         + '<span style="font-size:.84rem;color:var(--zacht)">'
-        + (ACTIE.aan ? "elk koekje " + euro(ACTIE.stukPrijs) + " in plaats van " + euro(CONFIG.stukPrijs)
+        + (gratisActie() ? "bij elke " + actieGroep() + " koekjes er \u00e9\u00e9n gratis"
+           : ACTIE.aan ? "elk koekje " + euro(ACTIE.stukPrijs) + " in plaats van " + euro(CONFIG.stukPrijs)
                      : Math.floor(los / BUNDEL.aantal) + "× toegepast") + '</span></div>'
         + '<span class="r-prijs">− ' + euro(kort) + '</span></div>'
       : "");
@@ -2036,7 +2077,7 @@ function ververs(){
 
   $("#totaalPrijs").textContent = euro(sub);
   $("#totaalUitleg").textContent = koekjesTotaal() === 0 ? ""
-    : (kort > 0 ? euro(kort) + (ACTIE.aan ? " " + ACTIE.naam.toLowerCase() : " voordeel") + " · ophalen" : "ophalen");
+    : (kort > 0 ? euro(kort) + (ACTIE.aan ? " " + ACTIE.naam : " voordeel") + " · ophalen" : "ophalen");
   const grens = grensTekst();
   $("#grens").hidden = !grens;
   $("#grens").textContent = grens;
@@ -3162,6 +3203,9 @@ function dealTonen(){
   const telrij = $("#dealRij").closest(".toon");
   if (ACTIE.aan){
     $("#actieBalkTekst").textContent = ACTIE.banner;
+    $$(".actiebalk-blad").forEach(function(el){
+      el.textContent = ACTIE.teken || "\uD83C\uDF6A";   // standaard een koekje
+    });
     $("#actieBalk").hidden = false;
     $(".top").classList.add("met-actie");
     $("#dealEyebrow").textContent = ACTIE.naam;

@@ -666,13 +666,24 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         <input type="checkbox" id="pActieAan">
         <span>Er loopt een actie</span>
         </label>
-        <div id="pActieVelden" hidden>
-        <div class="tweeluik" style="margin-top:12px">
-        <div class="veld"><label for="pActieNaam">Naam van de actie</label>
-        <input id="pActieNaam" type="text" maxlength="40" placeholder="Kerstactie"></div>
-        <div class="veld"><label for="pActiePrijs">Prijs per koekje tijdens de actie</label>
-        <input id="pActiePrijs" type="number" min="0" step="0.05"></div>
-        </div>
+          <div id="pActieVelden" hidden>
+            <div class="veld" style="margin-top:12px"><label for="pActieSoort">Wat voor actie</label>
+              <select id="pActieSoort">
+                <option value="prijs">Elk koekje kost minder</option>
+                <option value="gratis">Bij zoveel koekjes eentje gratis</option>
+              </select></div>
+            <div class="tweeluik" style="margin-top:12px">
+              <div class="veld"><label for="pActieNaam">Naam van de actie</label>
+                <input id="pActieNaam" type="text" maxlength="40" placeholder="Kerstactie"></div>
+              <div class="veld" id="pPrijsVak"><label for="pActiePrijs">Prijs per koekje tijdens de actie</label>
+                <input id="pActiePrijs" type="number" min="0" step="0.05"></div>
+            </div>
+            <div class="tweeluik" id="pGratisVak" style="margin-top:12px" hidden>
+              <div class="veld"><label for="pActieKoop">Je betaalt voor</label>
+                <input id="pActieKoop" type="number" min="1" max="20" step="1"></div>
+              <div class="veld"><label for="pActieGratis">En krijgt er gratis bij</label>
+                <input id="pActieGratis" type="number" min="1" max="5" step="1"></div>
+            </div>
         <div class="veld" style="margin-top:12px"><label for="pActieTot">Loopt tot en met</label>
         <input id="pActieTot" type="date"></div>
         <div class="veld" style="margin-top:12px"><label for="pActieBanner">Balk bovenaan de site</label>
@@ -690,7 +701,8 @@ main{padding:18px 0 80px;display:grid;gap:16px}
         <div class="veld" style="margin-top:12px"><label for="pActieFaq">Extra zin bij de vragen</label>
         <textarea id="pActieFaq" rows="2" maxlength="300"></textarea></div>
         </div>
-        <button class="knop knop--vol" id="prijsOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+          <button class="knop knop--vol" id="prijsOpslaan" type="button" style="margin-top:16px">Opslaan</button>
+          <div id="klaaracties"></div>
         </div>
 
         <div class="kaart" style="margin-top:16px">
@@ -1059,7 +1071,15 @@ function actieVerlopen(){
   const eindActie = new Date(ACTIE.tot + "T23:59:59");
   if (!isNaN(eindActie.getTime()) && new Date() > eindActie) ACTIE.aan = false;
 }
-const nuPrijs = id => ACTIE.aan
+/* Een actie komt in twee soorten: een lagere stukprijs, of bij elke
+   zoveel koekjes eentje gratis. Bij dat laatste blijft de prijs per
+   koekje gewoon staan en zit de korting in het aantal. */
+const actieSoort = () => ACTIE.soort === "gratis" ? "gratis" : "prijs";
+const actieGroep = () => Math.max(2, (ACTIE.koop || 3) + (ACTIE.gratis || 1));
+const prijsActie = () => ACTIE.aan && actieSoort() === "prijs";
+const gratisActie = () => ACTIE.aan && actieSoort() === "gratis";
+
+const nuPrijs = id => prijsActie()
   ? Math.round((STUKS[id] || 1) * ACTIE.stukPrijs * 100) / 100
   : (PRIJZEN[id] || 0);
 // De combideal van de webshop: vier koekjes voor € 12, en zo bij elke volgende vier.
@@ -1069,6 +1089,17 @@ let BUNDEL = {aantal: 4, prijs: 12.00, stuk: 3.25};
 // zijn eigen prijs kan hebben, kan een groepje van vier niet meer zomaar op
 // een vaste prijs worden gezet: we tellen per groepje de goedkoopste eerst,
 // zodat de korting nooit meer is dan wat die koekjes samen kosten.
+// Bij elke groep is de goedkoopste gratis.
+function gratisKorting(prijzen){
+  const rij = prijzen.slice().sort((a, b) => a - b);
+  const groep = actieGroep(), weg = Math.max(1, ACTIE.gratis || 1);
+  let kort = 0;
+  for (let i = 0; i + groep <= rij.length; i += groep){
+    for (let n = 0; n < weg; n++) kort += rij[i + n];
+  }
+  return Math.round(kort * 100) / 100;
+}
+
 function kortingOverPrijzen(prijzen){
   if (!BUNDEL.aantal || BUNDEL.aantal < 1) return 0;
   const rij = prijzen.slice().sort((a, b) => a - b);
@@ -1150,6 +1181,13 @@ const VOLGENDE = {nieuw: "bevestigd", bevestigd: "gebakken", gebakken: "ingepakt
 function actieStrookTonen(){
   const strook = $("#actieStrook");
   if (!ACTIE.aan){ strook.hidden = true; return; }
+  if (gratisActie()){
+    strook.textContent = ACTIE.naam + ": bij elke " + actieGroep() + " koekjes \u00e9\u00e9n gratis"
+      + (ACTIE.tot ? " \u00b7 t/m " + new Date(ACTIE.tot + "T12:00:00")
+          .toLocaleDateString("nl-NL", {weekday: "long", day: "numeric", month: "long"}) : "");
+    strook.hidden = false;
+    return;
+  }
   strook.textContent = ACTIE.naam + ": elk koekje " + euro(ACTIE.stukPrijs)
     + " in plaats van " + euro(BUNDEL.stuk)
     + (ACTIE.tot ? " \u00b7 t/m " + new Date(ACTIE.tot + "T12:00:00")
@@ -1534,11 +1572,12 @@ function formulierSom(){
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
     if (!isBox(id)) los += n;
-    if (ACTIE.aan) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
+    if (prijsActie()) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
   });
   koekjes += formulier.gratisAantal || 0;
   // Loopt er een actie, dan die; anders de combideal van vier voor € 12.
-  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(formulier.aantallen));
+  if (gratisActie()) kort = gratisKorting(prijzenUitAantallen(formulier.aantallen));
+  else if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(formulier.aantallen));
   kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
@@ -2452,6 +2491,11 @@ function vulPrijsvelden(){
   const a = prijsBlad.actie || {};
   $("#pActieAan").checked = !!a.aan;
   $("#pActieVelden").hidden = !a.aan;
+  $("#pActieSoort").value = a.soort === "gratis" ? "gratis" : "prijs";
+  $("#pActieKoop").value = a.koop || 3;
+  $("#pActieGratis").value = a.gratis || 1;
+  actiesoortTonen();
+  klaaractiesTekenen();
   $("#pActieNaam").value = a.naam || "";
   $("#pActiePrijs").value = a.stukPrijs || "";
   $("#pActieTot").value = a.tot || "";
@@ -2472,12 +2516,21 @@ function boxenLezen(tekst){
   }).filter(Boolean).slice(0, 6);
 }
 
+// Alleen het vak dat bij de gekozen soort hoort laten zien.
+function actiesoortTonen(){
+  if (!$("#pActieSoort")) return;
+  const gratis = $("#pActieSoort").value === "gratis";
+  $("#pGratisVak").hidden = !gratis;
+  $("#pPrijsVak").hidden = gratis;
+}
+
 function prijsveldenLezen(){
   const dozen = boxenLezen($("#pBoxen").value);
   if (!dozen.length){ melden("Vul de boxen in als 4=12, 5=15."); return; }
   const aan = $("#pActieAan").checked;
+  const soort = $("#pActieSoort").value === "gratis" ? "gratis" : "prijs";
   const actiePrijs = getal("#pActiePrijs", 0);
-  if (aan && !actiePrijs){ melden("Vul een actieprijs in."); return; }
+  if (aan && soort === "prijs" && !actiePrijs){ melden("Vul een actieprijs in."); return; }
   prijsBlad = {
     stukPrijs: getal("#pStuk", prijsBlad.stukPrijs),
     maxPerBestelling: Math.round(getal("#pMax", 20)),
@@ -2486,6 +2539,9 @@ function prijsveldenLezen(){
     boxen: dozen,
     actie: {
       aan: aan,
+      soort: soort,
+      koop: Math.max(1, Math.round(getal("#pActieKoop", 3))),
+      gratis: Math.max(1, Math.round(getal("#pActieGratis", 1))),
       naam: $("#pActieNaam").value.trim().slice(0, 40) || "Actie",
       stukPrijs: actiePrijs,
       tot: $("#pActieTot").value || "",
@@ -2503,6 +2559,56 @@ function prijsveldenLezen(){
   tekenLijst();
   if (formulier) tekenFormulierItems();
   prijzenOpslaan();
+}
+
+/* Acties die ik heb voorbereid. Staat er een klaar die nu niet loopt, dan
+   zet je hem met een tik aan; de velden hierboven worden dan ingevuld en
+   meteen opgeslagen. Daarna kun je alles nog zelf bijstellen. */
+const KLAARACTIES = [
+  {
+    id: "chocolatefriday",
+    knop: "Chocolate Friday aanzetten",
+    actie: {
+      aan: true, soort: "gratis", koop: 3, gratis: 1,
+      naam: "Chocolate Friday",
+      teken: "\uD83C\uDF6B",
+      tot: "2026-11-29",
+      banner: "Chocolate Friday \u00b7 deze week 3 + 1 gratis op alle koeken",
+      kop: "3 + 1 gratis.",
+      lead: "Het is Chocolate Friday, mijn eigen versie van Black Friday. Neem je vier "
+          + "koekjes, dan betaal je er drie. Dat geldt deze hele week op alle smaken, "
+          + "zolang de oven het bijhoudt.",
+      sticker: "3 + 1 gratis",
+      mandje: "Chocolate Friday: bij elke vier koekjes is er \u00e9\u00e9n gratis.",
+      faq: "Deze week niet: dan loopt Chocolate Friday en krijg je bij elke vier koekjes "
+         + "de goedkoopste gratis. Daarna geldt de combideal hieronder gewoon weer."
+    }
+  }
+];
+
+function klaaractiesTekenen(){
+  const vak = $("#klaaracties");
+  if (!vak) return;
+  const nu = prijsBlad.actie || {};
+  const rij = KLAARACTIES.filter(k => !(nu.aan && nu.naam === k.actie.naam));
+  vak.innerHTML = rij.length
+    ? '<div class="klaarzet" style="margin-top:16px"><b>Klaargezet voor je</b>'
+      + rij.map(k => '<button class="knop knop--stil knop--vol" data-klaaractie="' + k.id
+          + '" type="button">' + veilig(k.knop) + '</button>').join("")
+      + '</div>'
+    : "";
+}
+
+async function klaaractieAanzetten(id){
+  const k = KLAARACTIES.filter(x => x.id === id)[0];
+  if (!k) return;
+  prijsBlad = Object.assign({}, prijsBlad, {actie: Object.assign({}, k.actie)});
+  winkelOpbouwen();
+  vulPrijsvelden();
+  actieStrookTonen();
+  tekenLijst();
+  if (formulier) tekenFormulierItems();
+  if (await prijzenOpslaan(true)) melden(k.actie.naam + " staat aan.");
 }
 
 /* ---------- even geen bakdagen ---------- */
@@ -2792,9 +2898,10 @@ function lijstSom(aantallen){
     bedrag += n * (PRIJZEN[id] || 0);
     koekjes += n * (STUKS[id] || 1);
     if (!isBox(id)) los += n;
-    if (ACTIE.aan) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
+    if (prijsActie()) kort += n * Math.max(0, (PRIJZEN[id] || 0) - nuPrijs(id));
   });
-  if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(aantallen));
+  if (gratisActie()) kort = gratisKorting(prijzenUitAantallen(aantallen));
+  else if (!ACTIE.aan) kort = kortingOverPrijzen(prijzenUitAantallen(aantallen));
   kort = Math.round(kort * 100) / 100;
   return {bedrag: Math.round((bedrag - kort) * 100) / 100, koekjes: koekjes, korting: kort};
 }
@@ -3024,6 +3131,7 @@ document.addEventListener("change", function(e){
     return;
   }
   if (e.target.id === "pActieAan"){ $("#pActieVelden").hidden = !e.target.checked; return; }
+  if (e.target.id === "pActieSoort"){ actiesoortTonen(); return; }
   const koekveld = e.target.closest("[data-koekveld]");
   if (koekveld){ koekVeldZetten(koekveld.dataset.id, koekveld.dataset.koekveld, koekveld.value); return; }
   const slotVak = e.target.closest("[data-slot]");
@@ -3154,6 +3262,8 @@ document.addEventListener("click", function(e){
   const opzet = e.target.closest("[data-opzet]");
   if (opzet){ opzetToevoegen(opzet.dataset.opzet); return; }
   if (e.target.closest("#prijsOpslaan")){ prijsveldenLezen(); return; }
+  const klaaractie = e.target.closest("[data-klaaractie]");
+  if (klaaractie){ klaaractieAanzetten(klaaractie.dataset.klaaractie); return; }
   if (e.target.closest("#pauzeOpslaan")){ pauzeOpslaan(); return; }
   if (e.target.closest("#lijstNakijken")){ lijstNakijken(); return; }
   if (e.target.closest("#lijstMaken")){ lijstAanmaken(); return; }
