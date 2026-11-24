@@ -330,11 +330,15 @@ button{font:inherit;color:inherit}
 .koek-slot--wazig:hover svg{transform:scale(1.04)}
 .koek-slot--wazig::after{content:"";position:absolute;inset:0;
   background:radial-gradient(60% 60% at 50% 45%, rgba(250,244,234,0), rgba(250,244,234,.55))}
-.slotje{position:absolute;z-index:1;width:46px;height:46px;border-radius:50%;
+.slotklok{position:absolute;z-index:1;top:calc(50% + 32px);left:50%;transform:translateX(-50%);
+  background:var(--inkt);color:var(--room);font-family:var(--kop);font-weight:800;
+  font-size:.82rem;letter-spacing:.06em;padding:5px 12px;border-radius:999px;
+  box-shadow:2px 2px 0 rgba(46,34,23,.25);font-variant-numeric:tabular-nums;white-space:nowrap}
+.slotje{position:absolute;z-index:1;top:calc(50% - 30px);left:50%;transform:translateX(-50%);
+  width:46px;height:46px;border-radius:50%;
   background:var(--papier);border:2px solid var(--inkt);display:grid;place-items:center;
   font-size:1.1rem;box-shadow:3px 3px 0 rgba(46,34,23,.2)}
 .prijs--stil{color:var(--zacht);font-size:1.15rem}
-.binnenkort-datum .aftel{display:block;font-weight:400;color:var(--zacht);font-size:.86rem;margin-top:2px}
 .binnenkort-datum{font-family:var(--kop);font-weight:700;color:var(--karamel-diep);font-size:.98rem}
 /* het vlaggetje linksboven op de foto, bijvoorbeeld Bestseller */
 .vlag{position:absolute;top:10px;left:10px;background:var(--karamel-diep);color:var(--room);
@@ -1520,20 +1524,32 @@ function komtNog(k){
   return new Date() < moment;
 }
 
-// Hoe lang het nog duurt, in woorden.
-function nogTeGaan(wanneer){
+// Een lopende klok bij het slotje. Onder een dag tellen we de seconden
+// mee, daarboven zijn dagen en uren genoeg.
+function aftelKlok(wanneer){
   const over = wanneer - new Date();
   if (over <= 0) return "";
-  const min = Math.floor(over / 60000);
-  const dagen = Math.floor(min / 1440);
-  const uren = Math.floor((min % 1440) / 60);
-  const minuten = min % 60;
-  if (dagen > 0) return dagen + (dagen === 1 ? " dag" : " dagen")
-    + (uren ? " en " + uren + (uren === 1 ? " uur" : " uur") : "");
-  if (uren > 0) return uren + (uren === 1 ? " uur" : " uur")
-    + (minuten ? " en " + minuten + " min" : "");
-  return minuten + (minuten === 1 ? " minuut" : " minuten");
+  const sec = Math.floor(over / 1000);
+  const dagen = Math.floor(sec / 86400);
+  if (dagen >= 1){
+    const uren = Math.floor((sec % 86400) / 3600);
+    return dagen + (dagen === 1 ? " dag " : " dagen ") + uren + " uur";
+  }
+  const tel = n => String(n).padStart(2, "0");
+  return tel(Math.floor(sec / 3600)) + ":" + tel(Math.floor((sec % 3600) / 60)) + ":" + tel(sec % 60);
 }
+
+// Elke seconde de klokjes bijwerken die op een kaart staan.
+function klokjesBijwerken(){
+  $$("[data-vanaf]").forEach(function(el){
+    const moment = new Date(el.dataset.vanaf);
+    if (isNaN(moment.getTime())){ el.hidden = true; return; }
+    const tekst = aftelKlok(moment);
+    el.hidden = !tekst;
+    if (tekst) el.textContent = tekst;
+  });
+}
+
 
 // De combideal: vier koekjes voor een vaste prijs, en dat bij elke volgende vier.
 // De koekjes en de prijzen zoals ze in dit bestand staan, als het netwerk
@@ -1639,12 +1655,10 @@ function aftelRegel(k){
   if (k.vanaf){
     const moment = new Date(k.vanaf);
     if (!isNaN(moment.getTime())){
-      const over = nogTeGaan(moment);
       const wanneer = moment.toLocaleDateString("nl-NL",
         {weekday: "long", day: "numeric", month: "long"})
         + " om " + moment.toLocaleTimeString("nl-NL", {hour: "2-digit", minute: "2-digit"});
-      return '<p class="binnenkort-datum">' + wanneer
-        + (over ? '<span class="aftel">nog ' + over + '</span>' : "") + '</p>';
+      return '<p class="binnenkort-datum">' + wanneer + '</p>';
     }
   }
   return k.wanneer ? '<p class="binnenkort-datum">' + vrijeTekst(k.wanneer, 80) + '</p>' : "";
@@ -1655,6 +1669,8 @@ function binnenkortKaart(k){
     + '<div class="koek-slot koek-slot--wazig">'
     +   '<span class="koek-plek" data-koek="' + k.id + '"></span>'
     +   '<span class="slotje" aria-hidden="true">\uD83D\uDD12</span>'
+    +   (k.vanaf && !isNaN(new Date(k.vanaf).getTime())
+          ? '<span class="slotklok" data-vanaf="' + vrijeTekst(k.vanaf, 20) + '"></span>' : "")
     + '</div>'
     + '<div class="kaart-tekst">'
     +   '<h3>' + vrijeTekst(k.kop || k.naam, 60) + '</h3>'
@@ -1741,6 +1757,7 @@ function tekenKaarten(){
     const k = vind(el.dataset.koek);
     if (k) el.innerHTML = koekSVG(k, {happen: komtNog(k) ? [] : (happenPer[k.id] || [])});
   });
+  klokjesBijwerken();   // meteen goed, niet pas na een seconde
 }
 
 const happenKlok = {};
@@ -2597,6 +2614,7 @@ function slotenNakijken(){
 
 function tikTak(){
   slotenNakijken();
+  klokjesBijwerken();
   const over = Math.max(0, volgendeBakdag() - new Date());
   const s = Math.floor(over / 1000);
   $("#kD").textContent = Math.floor(s / 86400);
