@@ -214,11 +214,16 @@ main{padding:18px 0 80px;display:grid;gap:16px}
 .koekmeer{margin-top:10px}
 .koekmeer summary{cursor:pointer;font-size:.84rem;color:var(--karamel-diep);font-weight:600}
 .koekvelden{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+/* Een rastervak krimpt van zichzelf niet kleiner dan zijn inhoud. Een
+   datumveld van de telefoon is breed, en liep daardoor de kaart uit. */
+.koekveld{min-width:0}
 .koekveld.breed{grid-column:1 / -1}
 .koekveld label{display:block;font-size:.74rem;color:var(--zacht);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:4px}
-.koekveld input,.koekveld select,.koekveld textarea{width:100%;padding:9px 10px;border:2px solid var(--lijn);
+.koekveld input,.koekveld select,.koekveld textarea{width:100%;max-width:100%;min-width:0;
+  padding:9px 10px;border:2px solid var(--lijn);
   border-radius:10px;font-family:var(--tekst);font-size:.9rem;background:var(--papier);color:var(--inkt)}
+.koekveld input[type=datetime-local]{text-align:left}
 @media (max-width:620px){ .koekvelden{grid-template-columns:1fr} }
 .slotrij{display:grid;grid-template-columns:1fr 112px 112px 86px auto;gap:10px;align-items:end;
   padding:12px 0;border-bottom:1px dashed var(--lijn)}
@@ -364,7 +369,12 @@ main{padding:18px 0 80px;display:grid;gap:16px}
   .balkrij{grid-template-columns:5.5rem 1fr auto;font-size:.86rem}
   .koekkop{grid-template-columns:34px 1fr;row-gap:8px}
   .koekknoppen{grid-column:1 / -1}
-  .reactieknoppen .knopje,.koekknoppen .knopje{flex:1 1 auto}
+  .reactieknoppen .knopje{flex:1 1 auto}
+  /* de stand met de drie knopjes op een regel, zodat het kruisje niet
+     alleen op een eigen rij komt te staan */
+  .koekknoppen{display:grid;grid-template-columns:1fr auto auto auto;gap:7px;width:100%}
+  .koekknoppen .knopje{flex:none;min-width:40px;padding:9px 8px}
+  .koekknoppen .standkiezer{min-width:0}
 }
 
 @media (max-width:420px){
